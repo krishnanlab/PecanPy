@@ -8,14 +8,6 @@ A fast, parallelized, memory efficient, and cache optimized Python implementatio
 * numpy==1.17.4
 * numba==0.46.0
 
-## Demo
-
-Execute the following command from the proect home directory for demonstration
-
-```bash
-sh demo/run_n2v
-```
-
 ## Basic Usage
 
 ### Example
@@ -38,13 +30,13 @@ sh demo/run_n2v
 
 Three different modes are available, each of which is better optimized for different network sizes/densities
 
-* `PreComp` (default) - precompute $2^{\text{nd}}$ order transition probabilities, using CSR graph
+* `PreComp` (default) - precompute second order transition probabilities, using CSR graph
 * `SparseOTF` - transition probabilites computed on-the-fly, using CSR graph
 * `DenseOTF` - transition probabilities computed on-the-fly, using dense matrix
 
 ### Input
 
-The supported input format is an edgelist `.edg` (node id does not have to be int type, could be string):
+The supported input format is edgelist `.edg` file (node id could be int or string):
 
 ```
 node1_id node2_id <weight_float, optional>
@@ -58,13 +50,13 @@ python -m n2v --input $input_edgelist --output $output_npz --task todense
 
 ### Output
 
-The output files has $n+1$ lines for graph with $n$ vertices, with a header line of the following format:
+The output files has *n+1 lines for graph with *n* vertices, with a header line of the following format:
 
 ```
 num_of_nodes dim_of_representation
 ```
 
-The following  next $n$ lines are the representations of dimension $d$ following the corresponding node ID:
+The following  next *n* lines are the representations of dimension $d$ following the corresponding node ID:
 
 ```
 node_id dim_1 dim_2 ... dim_d
