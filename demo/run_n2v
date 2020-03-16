@@ -1,0 +1,23 @@
+#!/bin/bash
+cd $(dirname $(realpath $0))
+cd ../
+
+set -v
+
+# run with PreComp mode (default)
+python -m n2v --input demo/karate.edg --output demo/karate.emb --verbose
+
+# run with SparseOTF mode
+python -m n2v --input demo/karate.edg --output demo/karate.emb --verbose --mode SparseOTF
+
+# run with DenseOTF mode
+python -m n2v --input demo/karate.edg --output demo/karate.emb --verbose --mode DenseOTF
+
+# convert and save edgelist as dense matrix
+python -m n2v --input demo/karate.edg --output demo/karate.npz --task todense
+
+# run with DenseOTF mode using dense array as input
+python -m n2v --input demo/karate.npz --output demo/karate.emb --verbose --mode DenseOTF
+
+# input parameters
+python -m n2v --help
