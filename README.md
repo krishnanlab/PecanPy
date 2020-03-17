@@ -1,5 +1,5 @@
 # Efficient node2vec
-A fast, parallelized, memory efficient, and cache optimized Python implementation of [node2vec](https://github.com/aditya-grover/node2vec). Implementation and optimization description could be found in this application note: [link to manuscript]()
+A fast, parallelized, memory efficient, and cache optimized Python implementation of [node2vec](https://github.com/aditya-grover/node2vec). Implementation and optimization description, along with benchmarks, could be found in this application note: [link to manuscript]()
 
 ## Requirements
 
@@ -42,7 +42,7 @@ The supported input format is edgelist `.edg` file (node id could be int or stri
 node1_id node2_id <weight_float, optional>
 ```
 
-Another supported input format (only for DenseOTF) is numpy array `.npz` file, run the following command to prepare the `.npz` file from `.edg`
+Another supported input format (only for `DenseOTF`) is numpy array `.npz` file, run the following command to prepare the `.npz` file from `.edg`
 
 ```bash
 python -m n2v --input $input_edgelist --output $output_npz --task todense
@@ -50,13 +50,13 @@ python -m n2v --input $input_edgelist --output $output_npz --task todense
 
 ### Output
 
-The output files has *n+1 lines for graph with *n* vertices, with a header line of the following format:
+The output files has *n+1* lines for graph with *n* vertices, with a header line of the following format:
 
 ```
 num_of_nodes dim_of_representation
 ```
 
-The following  next *n* lines are the representations of dimension $d$ following the corresponding node ID:
+The following  next *n* lines are the representations of dimension *d* following the corresponding node ID:
 
 ```
 node_id dim_1 dim_2 ... dim_d
