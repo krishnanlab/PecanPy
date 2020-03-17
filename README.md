@@ -6,7 +6,8 @@ A fast, parallelized, memory efficient, and cache optimized Python implementatio
 * python==3.7.4
 * gensim==3.8.0
 * numpy==1.17.4
-* numba==0.46.0
+* numba==0.46.0  
+**(YOU MIGHT GET SEGMENTATION FAULTS IF YOURE NUMBA IS OUTDATED)**
 
 ## Basic Usage
 
