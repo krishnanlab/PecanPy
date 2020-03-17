@@ -35,6 +35,13 @@ Three different modes are available, each of which is better optimized for diffe
 * `SparseOTF` - transition probabilites computed on-the-fly, using CSR graph
 * `DenseOTF` - transition probabilities computed on-the-fly, using dense matrix
 
+### Options
+
+Check out the full list of options available using:
+```bash
+python -m n2v --help
+```
+
 ### Input
 
 The supported input format is edgelist `.edg` file (node id could be int or string):
