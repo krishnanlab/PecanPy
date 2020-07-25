@@ -1,4 +1,4 @@
-# PECANPY: A Parallelized, Efficient, and Accelerated Node2vec in PYthon
+# PecanPy: A parallelized, efficient, and accelerated _node2vec_ in Python
 
 A fast, parallelized, memory efficient, and cache optimized Python implementation of [node2vec](https://github.com/aditya-grover/node2vec). The use of CSR representation of sparse graph is inspired by [this blog post](https://www.singlelunch.com/2019/08/01/700x-faster-node2vec-models-fastest-random-walks-on-a-graph/). Full implementation and optimization description, along with benchmarks, could be found in this application note: [link to manuscript]()
 
