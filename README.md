@@ -11,9 +11,9 @@ numpy 1.17.4
 numba 0.46.0 (you might get segmentation faults if your numba is outdated)
 ```
 
-## Basic Usage
+## Usage
 
-PecanPy operates in three different modes – PreComp, SparseOTF, and DenseOTF – that are optimized for networks of different sizes and densities; `PreComp` for networks that are small (≤10k nodes; any density), `SparseOTF` for networks that are large and sparse (>10k nodes; ≤10% of edges), and `DenseOTF` for networks that are large and dense (>10k nodes; >10% of edges). These modes appropriately take advantage of compact/dense graph data structures, precomputing transition probabilities, and computing 2nd-order transition probabilities during walk generation to achieve significant improvements in performance.
+PecanPy operates in three different modes – `PreComp`, `SparseOTF`, and `DenseOTF` – that are optimized for networks of different sizes and densities; `PreComp` for networks that are small (≤10k nodes; any density), `SparseOTF` for networks that are large and sparse (>10k nodes; ≤10% of edges), and `DenseOTF` for networks that are large and dense (>10k nodes; >10% of edges). These modes appropriately take advantage of compact/dense graph data structures, precomputing transition probabilities, and computing 2nd-order transition probabilities during walk generation to achieve significant improvements in performance.
 
 ### Example
 
