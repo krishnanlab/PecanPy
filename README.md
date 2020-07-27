@@ -114,7 +114,7 @@ Original _node2vec_ software and networks
 * Greene, C.S. et al. (2015) Understanding multicellular function and disease with human tissue-specific networks. Nat. Genet., 47, 569–576.
   * GIANT-TN is a generic genome-scale human gene network. GIANT-TN-c01 is a sub-network of GIANT-TN where edges with edge weight below 0.01 are discarded.
 
-BioGRID (Stark et al., 2006), STRING (Szklarczyk et al., 2015), and GIANT-TN (Greene et al., 2015) are molecular interaction networks (download from https://doi.org/10.5281/zenodo.3352323).
+BioGRID (Stark et al., 2006), STRING (Szklarczyk et al., 2015), and GIANT-TN (Greene et al., 2015) are available from https://doi.org/10.5281/zenodo.3352323.
 
 * Law, J.N. et al. (2019) Accurate and Efficient Gene Function Prediction using a Multi-Bacterial Network. bioRxiv, 646687.
   * SSN200 is a cross-species network of proteins from 200 species with the edges representing protein sequence similarities. Downloaded from https://bioinformatics.cs.vt.edu/~jeffl/supplements/2019-fastsinksource/.
