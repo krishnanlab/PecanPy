@@ -1,6 +1,6 @@
 # PecanPy: A parallelized, efficient, and accelerated _node2vec_ in Python
 
-Learning low-dimensional representations (embeddings) of nodes in large graphs is key to applying machine learning on massive biological networks. _Node2vec_ is the most widely used method for node embedding. PecanPy is a fast, parallelized, memory efficient, and cache optimized Python implementation of [node2vec](https://github.com/aditya-grover/node2vec). It uses cache-optimized compact graph data structures and precomputing/parallelization to result in fast, high-quality node embeddings for biological networks of all sizes and densities. The implementation and the optimizations, along with benchmarks, are described in this [preprint](https://doi.org/10.1101/2020.07.23.218487) `bioRxiv doi.org/10.1101/2020.07.23.218487`.
+Learning low-dimensional representations (embeddings) of nodes in large graphs is key to applying machine learning on massive biological networks. _Node2vec_ is the most widely used method for node embedding. PecanPy is a fast, parallelized, memory efficient, and cache optimized Python implementation of [_node2vec_](https://github.com/aditya-grover/node2vec). It uses cache-optimized compact graph data structures and precomputing/parallelization to result in fast, high-quality node embeddings for biological networks of all sizes and densities. The implementation and the optimizations, along with benchmarks, are described in this [preprint](https://doi.org/10.1101/2020.07.23.218487) `bioRxiv doi.org/10.1101/2020.07.23.218487`.
 
 ## Requirements
 
@@ -80,7 +80,7 @@ node_id dim_1 dim_2 ... dim_d
 For support please contact [Remy Liu](https://twitter.com/RemyLau3) at liurenmi@msu.edu.
 
 ### License
-See [LICENSE.md](https://github.com/krishnanlab/pecanpy/blob/master/LICENSE.md) for license information for all data used in this project.
+This repository and all its contents are released under the [Creative Commons License: Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode); See [LICENSE.md](https://github.com/krishnanlab/pecanpy/blob/master/LICENSE.md).
 
 ### Citation
 If you use this work, please cite:  
