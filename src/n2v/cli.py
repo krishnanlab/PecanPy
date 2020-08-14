@@ -65,7 +65,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def read_graph():
+def read_graph(args):
     """
     Reads the input network in networkx.
     """
@@ -106,7 +106,7 @@ def read_graph():
     return G
 
 
-def learn_embeddings(walks):
+def learn_embeddings(args, walks):
     """
     Learn embeddings by optimizing the Skipgram objective using SGD.
     """
@@ -116,13 +116,13 @@ def learn_embeddings(walks):
     model.wv.save_word2vec_format(args.output)
 
 
-def main():
+def main_helper(args):
     """
     Pipeline for representational learning for all nodes in a graph.
     """
     @Timer('load graph', True)
     def timed_read_graph():
-        return read_graph()
+        return read_graph(args)
 
     @Timer('pre-compute transition probabilities', True)
     def timed_preprocess():
@@ -134,7 +134,7 @@ def main():
 
     @Timer('train embeddings', True)
     def timed_emb():
-        learn_embeddings(walks)
+        learn_embeddings(args=args, walks=walks)
 
     G = timed_read_graph()
     timed_preprocess()
@@ -143,6 +143,10 @@ def main():
     timed_emb()
 
 
-if __name__ == '__main__':
+def main():
     args = parse_args()
+    main_helper(args)
+
+
+if __name__ == '__main__':
     main()

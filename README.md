@@ -2,14 +2,25 @@
 
 Learning low-dimensional representations (embeddings) of nodes in large graphs is key to applying machine learning on massive biological networks. _Node2vec_ is the most widely used method for node embedding. PecanPy is a fast, parallelized, memory efficient, and cache optimized Python implementation of [_node2vec_](https://github.com/aditya-grover/node2vec). It uses cache-optimized compact graph data structures and precomputing/parallelization to result in fast, high-quality node embeddings for biological networks of all sizes and densities. The implementation and the optimizations, along with benchmarks, are described in this [preprint](https://doi.org/10.1101/2020.07.23.218487) `bioRxiv doi.org/10.1101/2020.07.23.218487`.
 
-## Requirements
+## Installation
 
+Install from the latest code on [GitHub](https://github.com/krishnanlab/pecanpy) with:
+
+```bash
+$ pip install git+https://github.com/krishnanlab/pecanpy.git
 ```
-python 3.7.4
-gensim 3.8.0
-numpy 1.17.4
-numba 0.46.0 (you might get segmentation faults if your numba is outdated)
+
+Install in development mode with:
+
+```bash
+$ git clone https://github.com/krishnanlab/pecanpy.git
+$ cd pecanpy
+$ pip install -e .
 ```
+
+where `-e` means "editable" mode so you don't have to reinstall ever time you make changes.
+
+PecanPy installs a command line utility `n2v` that can be used directly.
 
 ## Usage
 
@@ -20,7 +31,7 @@ PecanPy operates in three different modes – `PreComp`, `SparseOTF`, and `Dense
 To run *node2vec* on Zachary's karate club network using `SparseOTF` mode, execute the following command from the project home directory:
 
 ```bash
-python -m n2v --input demo/karate.edg --output demo/karate.emb --mode SparseOTF
+n2v --input demo/karate.edg --output demo/karate.emb --mode SparseOTF
 ```
 
 ### Demo
@@ -44,7 +55,7 @@ As mentioned above, PecanPy contains three different modes, each of which is bet
 
 Check out the full list of options available using:
 ```bash
-python -m n2v --help
+n2v --help
 ```
 
 ### Input
@@ -58,7 +69,7 @@ node1_id node2_id <weight_float, optional>
 Another supported input format (only for `DenseOTF`) is the numpy array `.npz` file. Run the following command to prepare a `.npz` file from a `.edg` file.
 
 ```bash
-python -m n2v --input $input_edgelist --output $output_npz --task todense
+n2v --input $input_edgelist --output $output_npz --task todense
 ```
 
 ### Output
