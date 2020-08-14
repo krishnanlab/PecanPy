@@ -106,7 +106,7 @@ Renming Liu, Arjun Krishnan*
 This work was primarily supported by US National Institutes of Health (NIH) grants R35 GM128765 to AK and in part by MSU start-up funds to AK.
 
 ### Acknowledgements
-We thank Christopher A. Mancuso, Anna Yannakopoulos, and the rest of the [Krishnan Lab](https://www.thekrishnanlab.org) for valuable discussions and feedback on the software and manuscript.
+We thank Christopher A. Mancuso, Anna Yannakopoulos, and the rest of the [Krishnan Lab](https://www.thekrishnanlab.org) for valuable discussions and feedback on the software and manuscript. Thanks to [Charles T. Hoyt](https://github.com/cthoyt) for making the software `pip` installable.
 
 ### References
 
