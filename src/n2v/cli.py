@@ -10,7 +10,7 @@ def parse_args():
     """
     Parses the node2vec arguments.
     """
-    parser = argparse.ArgumentParser(description="Run node2vec.")
+    parser = argparse.ArgumentParser(description="Run pecanpy, a parallelized, efficient, and accelerated Python implementataion of node2vec")
 
     parser.add_argument('--input', nargs='?', default='graph/karate.edgelist',
                         help='Input graph path')

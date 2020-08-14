@@ -20,7 +20,7 @@ $ pip install -e .
 
 where `-e` means "editable" mode so you don't have to reinstall ever time you make changes.
 
-PecanPy installs a command line utility `n2v` that can be used directly.
+PecanPy installs a command line utility `pecanpy` that can be used directly.
 
 ## Usage
 
@@ -31,7 +31,7 @@ PecanPy operates in three different modes – `PreComp`, `SparseOTF`, and `Dense
 To run *node2vec* on Zachary's karate club network using `SparseOTF` mode, execute the following command from the project home directory:
 
 ```bash
-n2v --input demo/karate.edg --output demo/karate.emb --mode SparseOTF
+pecanpy --input demo/karate.edg --output demo/karate.emb --mode SparseOTF
 ```
 
 ### Demo
@@ -55,7 +55,7 @@ As mentioned above, PecanPy contains three different modes, each of which is bet
 
 Check out the full list of options available using:
 ```bash
-n2v --help
+pecanpy --help
 ```
 
 ### Input
@@ -69,7 +69,7 @@ node1_id node2_id <weight_float, optional>
 Another supported input format (only for `DenseOTF`) is the numpy array `.npz` file. Run the following command to prepare a `.npz` file from a `.edg` file.
 
 ```bash
-n2v --input $input_edgelist --output $output_npz --task todense
+pecanpy --input $input_edgelist --output $output_npz --task todense
 ```
 
 ### Output
