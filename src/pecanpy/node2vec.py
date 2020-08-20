@@ -1,6 +1,6 @@
 import numpy as np
 from numba import jit, prange, boolean
-from n2v.graph import SparseGraph, DenseGraph
+from pecanpy.graph import SparseGraph, DenseGraph
 
 class Base:
     """Improved version of original node2vec

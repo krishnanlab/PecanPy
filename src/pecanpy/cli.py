@@ -2,8 +2,8 @@ import warnings
 import argparse
 import numpy as np
 from gensim.models import Word2Vec
-from n2v import node2vec
-from n2v.wrappers import Timer
+from pecanpy import node2vec
+from pecanpy.wrappers import Timer
 
 
 def parse_args():
@@ -18,8 +18,8 @@ def parse_args():
     parser.add_argument('--output', nargs='?', default='emb/karate.emb',
                         help='Embeddings path')
 
-    parser.add_argument('--task', nargs='?', default='n2v', 
-                        help='Choose task: (n2v, todense)')
+    parser.add_argument('--task', nargs='?', default='pecanpy', 
+                        help='Choose task: (pecanpy, todense)')
 
     parser.add_argument('--mode', nargs='?', default='PreComp',
                         help='Choose another mode: (SparseOTF, DenseOTF)')
@@ -85,7 +85,7 @@ def read_graph(args):
         G.read_edg(fp, weighted, directed)
         G.save(output)
         exit()
-    elif task != 'n2v':
+    elif task != 'pecanpy':
         raise ValueError("Unknown task: %s"%repr(task))
 
     if mode == 'PreComp':

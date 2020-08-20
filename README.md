@@ -39,7 +39,7 @@ pecanpy --input demo/karate.edg --output demo/karate.emb --mode SparseOTF
 Execute the following command for full demonstration:
 
 ```bash
-sh demo/run_n2v
+sh demo/run_pecanpy
 ```
 
 ### Mode

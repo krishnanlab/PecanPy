@@ -1,4 +1,4 @@
-from n2v.cli import main
+from pecanpy.cli import main
 
 if __name__ == '__main__':
     main()
