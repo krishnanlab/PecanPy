@@ -1,0 +1,21 @@
+[flake8]
+ignore =
+    # line break before binary operator
+    W503
+exclude =
+    .tox,
+    .git,
+    __pycache__,
+    build,
+    dist,
+    *.pyc,
+    *.egg-info,
+    .cache,
+    .eggs
+max-line-length = 120
+import-order-style = pycharm
+application-import-names =
+    pybel
+    bel_resources
+    tests
+format = ${cyan}%(path)s${reset}:${yellow_bold}%(row)d${reset}:${green_bold}%(col)d${reset}: ${red_bold}%(code)s${reset} %(text)s
