@@ -15,7 +15,7 @@ class Timer:
             hrs = duration // 3600
             mins = duration % 3600 // 60
             secs = duration % 60
-            print("Took %d:%d:%.2f to %s"%(hrs, mins, secs, self.name))
+            print("Took %02d:%02d:%05.2f to %s"%(hrs, mins, secs, self.name))
 
             return result
             
