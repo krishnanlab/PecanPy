@@ -86,6 +86,10 @@ The following  next *n* lines are the representations of dimension *d* following
 node_id dim_1 dim_2 ... dim_d
 ```
 
+### Development Note
+
+Run `tox -e flake8` and resolve suggestions before committing to ensure consistent code style.
+
 ## Additional Information
 ### Support
 For support please contact [Remy Liu](https://twitter.com/RemyLau3) at liurenmi@msu.edu.

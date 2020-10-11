@@ -1,23 +1,28 @@
+"""Wrappers used by pecanpy."""
+
 import time
 
+
 class Timer:
+    """Timer for logging runtime of function."""
+
     def __init__(self, name, verbose):
+        """Initialize timer wrapper."""
         self.name = name
         self.verbose = verbose
-        
-    def __call__(self, func):
 
+    def __call__(self, func):
+        """Call timer decorator."""
         def wrapper(*args, **kwargs):
             start = time.time()
             result = func(*args, **kwargs)
             duration = time.time() - start
 
-            hrs = duration // 3600
-            mins = duration % 3600 // 60
+            hrs = int(duration // 3600)
+            mins = int(duration % 3600 // 60)
             secs = duration % 60
-            print("Took %02d:%02d:%05.2f to %s"%(hrs, mins, secs, self.name))
+            print(f"Took {hrs:02d}:{mins:02d}:{secs:05.2f} to {self.name}")
 
             return result
-            
 
         return wrapper if self.verbose else func

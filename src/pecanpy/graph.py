@@ -1,71 +1,75 @@
+"""Lite graph objects used by pecanpy."""
+
 import numpy as np
-from numba import jit, boolean
+from numba import boolean, jit
+
 
 class SparseGraph:
-    """Sparse Graph object that stores graph as adjacency list"""
+    """Sparse Graph object that stores graph as adjacency list."""
+
     def __init__(self):
+        """Initialize SparseGraph object."""
         self.data = []
         self.indptr = None
         self.indices = None
         self.IDlst = []
-        self.IDmap = {} # id -> index
-
+        self.IDmap = {}  # id -> index
 
     def read_edg(self, edg_fp, weighted, directed, csr=True):
-        """Read an edgelist file and create sparse graph
+        """Read an edgelist file and create sparse graph.
 
         Notes:
             Implicitly discard zero weighted edges
 
         Args:
-            edg_fp(str): path to edgelist file, where the file is tab 
-                         seperated and contains 2 or 3 columns depending 
-                         on whether the input graph is weighted, where the 
-                         the first column contains the source nodes and the 
-                         second column contains the destination nodes that 
+            edg_fp(str): path to edgelist file, where the file is tab
+                         seperated and contains 2 or 3 columns depending
+                         on whether the input graph is weighted, where the
+                         the first column contains the source nodes and the
+                         second column contains the destination nodes that
                          interact with the corresponding source nodes.
-            weighted(bool): whether the graph is weighted. If unweighted, 
-                            only two columns are expected in the edgelist 
-                            file, and the edge weights are implicitely set 
-                            to 1 for all interactions. If weighted, a third 
-                            column encoding the weight of the interaction in 
+            weighted(bool): whether the graph is weighted. If unweighted,
+                            only two columns are expected in the edgelist
+                            file, and the edge weights are implicitely set
+                            to 1 for all interactions. If weighted, a third
+                            column encoding the weight of the interaction in
                             numeric value is expected.
-            directed(bool): whether the graph is directed, if undirected, the 
-                            edge connecting from destination node to source 
-                            node is created with same edge weight from source 
+            directed(bool): whether the graph is directed, if undirected, the
+                            edge connecting from destination node to source
+                            node is created with same edge weight from source
                             node to destination node.
         """
         current_node = 0
 
-        with open(edg_fp, 'r') as f:
+        with open(edg_fp, "r") as f:
 
             for line in f:
                 if weighted:
-                    ID1, ID2, weight = line.split('\t')
+                    id1, id2, weight = line.split("\t")
                     weight = float(weight)
                     if weight == 0:
                         continue
                 else:
-                    terms = line.split('\t')
-                    ID1, ID2 = terms[0], terms[1]
+                    terms = line.split("\t")
+                    id1, id2 = terms[0], terms[1]
                     weight = float(1)
-                
-                ID1 = ID1.strip()
-                ID2 = ID2.strip()
+
+                id1 = id1.strip()
+                id2 = id2.strip()
 
                 # check if ID exist, add to IDmap if not
-                for ID in ID1, ID2:
-                    if ID not in self.IDmap:
-                        self.IDmap[ID] = current_node
+                for id_ in id1, id2:
+                    if id_ not in self.IDmap:
+                        self.IDmap[id_] = current_node
                         self.data.append({})
                         current_node += 1
 
-                idx1, idx2 = self.IDmap[ID1], self.IDmap[ID2]
+                idx1, idx2 = self.IDmap[id1], self.IDmap[id2]
                 # check if edge exists
                 if idx2 in self.data[idx1]:
                     if self.data[idx1][idx2] != weight:
-                        print("Warning: edge from %s to %s exists, with value of %.2f. "\
-                              %(ID1, ID2, self.data[idx1][idx2]) + "Now overwrite to %.2f."%weight)
+                        print(f"Warning: edge from {id1} to {id2} exists, with value of {self.data[idx1][idx2]:.2f}."
+                              + f" Now overwrite to {weight:.2f}.")
 
                 # update edge weight
                 self.data[idx1][idx2] = weight
@@ -77,34 +81,32 @@ class SparseGraph:
         if csr:
             self.to_csr()
 
-
     def get_has_nbrs(self):
-        """Wrapper for `has_nbrs`, which returns True if a node has outgoing edge"""
+        """Wrap has_nbrs."""
         indptr = self.indptr
 
         @jit(nopython=True, nogil=True)
         def has_nbrs(idx):
-            return indptr[idx] != indptr[idx+1]
+            return indptr[idx] != indptr[idx + 1]
 
         return has_nbrs
-
 
     @staticmethod
     @jit(nopython=True, nogil=True)
     def get_normalized_probs(data, indices, indptr, p, q, cur_idx, prev_idx=None):
-        """Calculate transition probabilities
+        """Calculate transition probabilities.
 
         Note:
-            If `prev_idx` present, calculate 2nd order biased transition, otherwise 
+            If `prev_idx` present, calculate 2nd order biased transition, otherwise
             calculate 1st order transition
 
         """
 
         def get_nbrs_idx(idx):
-            return indices[indptr[idx]:indptr[idx+1]]
+            return indices[indptr[idx]: indptr[idx + 1]]
 
         def get_nbrs_weight(idx):
-            return data[indptr[idx]:indptr[idx+1]].copy()
+            return data[indptr[idx]: indptr[idx + 1]].copy()
 
         def isnotin(ary1, ary2):
             indicator = np.ones(ary1.size, dtype=boolean)
@@ -114,11 +116,11 @@ class SparseGraph:
                 if ptr == ary2.size:
                     break
                 val1 = ary1[i]
-                if  val1 < val2:
+                if val1 < val2:
                     continue
                 elif val1 == val2:
                     indicator[i] = False
-                    ptr+= 1
+                    ptr += 1
                 elif val1 > val2:
                     for j in range(ptr, ary2.size):
                         if ary2[j] > val1:
@@ -131,7 +133,7 @@ class SparseGraph:
         nbrs_idx = get_nbrs_idx(cur_idx)
         unnormalized_probs = get_nbrs_weight(cur_idx)
 
-        if prev_idx is not None: # 2nd order biased walk
+        if prev_idx is not None:  # 2nd order biased walk
             src_nbrs_idx = get_nbrs_idx(prev_idx)
             non_com_nbr = isnotin(nbrs_idx, src_nbrs_idx)
 
@@ -142,12 +144,11 @@ class SparseGraph:
 
         return normalized_probs
 
-
     def to_csr(self):
-        """Construct compressed sparse row matrix"""
+        """Construct compressed sparse row matrix."""
         indptr = np.zeros(len(self.IDlst) + 1, dtype=np.uint32)
         for i, row_data in enumerate(self.data):
-            indptr[i+1] = indptr[i] + len(row_data)
+            indptr[i + 1] = indptr[i] + len(row_data)
 
         # last element of indptr indicates the total number of nonzero entries
         indices = np.zeros(indptr[-1], dtype=np.uint32)
@@ -155,7 +156,7 @@ class SparseGraph:
 
         for i in reversed(range(len(self.data))):
             start = indptr[i]
-            end = indptr[i+1]
+            end = indptr[i + 1]
 
             tmp = self.data.pop()
             sorted_keys = sorted(tmp)
@@ -167,9 +168,8 @@ class SparseGraph:
         self.data = data
         self.indices = indices
 
-
     def to_dense(self):
-        """Construct dense graph"""
+        """Construct dense graph."""
         n_nodes = len(self.IDlst)
         mat = np.zeros((n_nodes, n_nodes))
 
@@ -182,36 +182,36 @@ class SparseGraph:
 
 
 class DenseGraph:
-    """Dense Graph object that stores graph as array"""
+    """Dense Graph object that stores graph as array."""
+
     def __init__(self):
+        """Initialize DenseGraph object."""
         self.data = None
         self.nonzero = None
         self.IDlst = []
-        self.IDmap = {} # id -> index
-
+        self.IDmap = {}  # id -> index
 
     def read_npz(self, npz_fp, weighted, directed):
-        """Read `.npz` file and create dense graph
+        """Read `.npz` file and create dense graph.
 
         Notes:
             (note on `.npz` file)
 
         Args:
             npz_fp(str): path to `.npz` file.
-            weighted(bool): whether the graph is weighted, if unweighted, 
+            weighted(bool): whether the graph is weighted, if unweighted,
                             all none zero weights will be converted to 1
             directed(bool): not used, for compatibility with `SparseGraph`
 
         """
         raw = np.load(npz_fp)
-        self.data = raw['data']
+        self.data = raw["data"]
         self.nonzero = self.data != 0
-        self.IDlst = list(raw['IDs'])
-        self.IDmap = {j:i for i,j in enumerate(self.IDlst)}
-
+        self.IDlst = list(raw["IDs"])
+        self.IDmap = {j: i for i, j in enumerate(self.IDlst)}
 
     def read_edg(self, edg_fp, weighted, directed):
-        """Read an edgelist file and construct dense graph"""
+        """Read an edgelist file and construct dense graph."""
         sparse_graph = SparseGraph()
         sparse_graph.read_edg(edg_fp, weighted, directed, csr=False)
 
@@ -220,41 +220,37 @@ class DenseGraph:
         self.data = sparse_graph.to_dense()
         self.nonzero = self.data != 0
 
-
     def save(self, fp):
-        """Save as `.npz` file"""
+        """Save as `.npz` file."""
         np.savez(fp, data=self.data, IDs=self.IDlst)
 
-
     def get_has_nbrs(self):
-        """Wrapper for `has_nbrs`, which returns True if a node has outgoing edge"""
+        """Wrap has_nbrs."""
         nonzero = self.nonzero
 
         @jit(nopython=True, nogil=True)
         def has_nbrs(idx):
             for j in range(nonzero.shape[1]):
-                if nonzero[idx,j]:
+                if nonzero[idx, j]:
                     return True
             return False
 
         return has_nbrs
 
-
     @staticmethod
     @jit(nopython=True, nogil=True)
     def get_normalized_probs(data, nonzero, p, q, cur_idx, prev_idx=None):
-        """Calculate transition probabilities
+        """Calculate transition probabilities.
 
         Note:
-            If `prev_idx` present, calculate 2nd order biased transition, otherwise 
+            If `prev_idx` present, calculate 2nd order biased transition, otherwise
             calculate 1st order transition
 
         """
-
         nbrs_ind = nonzero[cur_idx]
         unnormalized_probs = data[cur_idx].copy()
 
-        if prev_idx is not None: # 2nd order biased walks
+        if prev_idx is not None:  # 2nd order biased walks
             non_com_nbr = np.logical_and(nbrs_ind, ~nonzero[prev_idx])
             unnormalized_probs[non_com_nbr] /= q
             unnormalized_probs[prev_idx] /= p
@@ -263,4 +259,3 @@ class DenseGraph:
         normalized_probs = unnormalized_probs / unnormalized_probs.sum()
 
         return normalized_probs
-
