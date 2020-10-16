@@ -9,7 +9,7 @@ Learning low-dimensional representations (embeddings) of nodes in large graphs i
 Install from the latest code on [GitHub](https://github.com/krishnanlab/pecanpy) with:
 
 ```bash
-$ pip install git+https://github.com/krishnanlab/pecanpy.git
+$ pip install pecanpy
 ```
 
 Install in development mode with:
