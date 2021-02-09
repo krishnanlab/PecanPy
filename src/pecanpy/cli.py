@@ -13,20 +13,21 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Run pecanpy, a parallelized, efficient, and accelerated Python implementataion of node2vec")
 
-    parser.add_argument(
-        "--input", nargs="?", default="graph/karate.edgelist", help="Input graph path")
+    parser.add_argument("--input", nargs="?", default="graph/karate.edgelist", help="Input graph path")
+
+    parser.add_argument("--output", nargs="?", default="emb/karate.emb", help="Embeddings path")
 
     parser.add_argument(
-        "--output", nargs="?", default="emb/karate.emb", help="Embeddings path")
-
-    parser.add_argument(
-        "--task", nargs="?", default="pecanpy", help="Choose task: (pecanpy, todense)")
+        "--task",
+        nargs="?",
+        default="pecanpy",
+        help="Choose task: (pecanpy, todense). Default is pecanpy")
 
     parser.add_argument(
         "--mode",
         nargs="?",
-        default="PreComp",
-        help="Choose another mode: (SparseOTF, DenseOTF)")
+        default="SparseOTF",
+        help="Choose mode: (PreComp, SparseOTF, DenseOTF). Default is SparseOTF")
 
     parser.add_argument(
         "--dimensions",
@@ -60,11 +61,9 @@ def parse_args():
         default=8,
         help="Number of parallel workers. Default is 8.")
 
-    parser.add_argument(
-        "--p", type=float, default=1, help="Return hyperparameter. Default is 1.")
+    parser.add_argument("--p", type=float, default=1, help="Return hyperparameter. Default is 1.")
 
-    parser.add_argument(
-        "--q", type=float, default=1, help="Inout hyperparameter. Default is 1.")
+    parser.add_argument("--q", type=float, default=1, help="Inout hyperparameter. Default is 1.")
 
     parser.add_argument(
         "--weighted",
@@ -90,6 +89,27 @@ def parse_args():
     parser.set_defaults(verbose=False)
 
     return parser.parse_args()
+
+
+def check_mode(g, mode):
+    """Check mode selection.
+
+    Give recommendation to user for pecanpy mode based on graph size and density.
+
+    """
+    g_size = len(g.IDlst)  # number of nodes in graph
+    if mode in ["PreComp", "SparseOTF"]:
+        edge_num = sum(len(i) for i in g.data) if type(g.data) == list else g.data.size
+    else:
+        edge_num = g.nonzero.sum()
+    g_dens = edge_num / g_size / (g_size - 1)
+
+    if (g_dens >= 0.2) & (mode != "DenseOTF"):
+        print(f"WARNING: network density = {g_dens:.3f} (> 0.2), recommend DenseOTF over {mode}")
+    if (g_dens < 0.001) & (g_size < 10000) & (mode != "PreComp"):
+        print(f"WARNING: network density = {g_dens:.2e} (< 0.001) with {g_size} nodes, recommend PreComp over {mode}")
+    if (g_dens >= 0.001) & (g_dens < 0.2) & (mode != "SparseOTF"):
+        print(f"WARNING: network density = {g_dens:.3f}, recommend SparseOTF over {mode}")
 
 
 def read_graph(args):
@@ -132,6 +152,8 @@ def read_graph(args):
             g.read_edg(fp, weighted, directed)
     else:
         raise ValueError(f"Unkown mode: {repr(mode)}")
+
+    check_mode(g, mode)
 
     return g
 
