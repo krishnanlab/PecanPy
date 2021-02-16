@@ -6,14 +6,55 @@ from pecanpy.graph import DenseGraph, SparseGraph
 
 
 class Base:
-    """Improved version of original node2vec.
+    """Base node2vec object.
 
-    Parallelized transition probabilities pre-computation and random walks
+    This base object provides the skeleton for the node2vec walk algorithm,
+    which consists of the ``simulate_walks`` method that generate node2vec
+    random walks. In contrast to the original Python implementaion of node2vec,
+    it is prallelized where each process generate walks independently.
+
+    Note:
+        The ``preprocess_transition_probs`` is required for implenetations that
+        precomputes and store 2nd order transition probabilities.
+
+    Examples:
+        Generate node2vec embeddings
+
+        >>> from pecanpy import node2vec
+        >>>
+        >>> # initialize node2vec object, similarly for SparseOTF and DenseOTF
+        >>> g = node2vec.PreComp(p=0.5, q=1, workers=4, verbose=True)
+        >>>
+        >>> g.read_edg(path_to_edg_file, weighted=True, directed=False) # load graph from edgelist file
+        >>> g.preprocess_transition_probs() # precompute and save 2nd order transition probs, required for PreComp
+        >>>
+        >>> walks = g.simulate_walks(num_walks=10, walk_length=80) # generate node2vec walks
+        >>> # at this point, the random walks could be fed to w2v to generate embeddings
+        >>>
 
     """
 
     def __init__(self, p, q, workers, verbose):
-        """Initializ node2vec base class."""
+        """Initializ node2vec base class.
+
+        Args:
+            p (float): return parameter, value less than 1 encourages returning
+                back to previous vertex, and discourage for value grater than 1.
+            q (float): in-out parameter, value less than 1 encourages walks to
+                go "outward", and value greater than 1 encourage walking within
+                a localized neighborhood.
+            workers (int):  number of threads to be spawned for runing node2vec
+                including walk generation and word2vec embedding.
+            verbose (bool): (not implemented yet due to issue with numba jit)
+                whether or not to display walk generation progress.
+
+        TODO:
+            * Fix numba threads, now uses all possible threads instead of the
+                specified number of workers.
+            * Think of a way to implement progress monitoring (for ``verbose``)
+                during walk generation.
+
+        """
         super(Base, self).__init__()
         self.p = p
         self.q = q
@@ -21,14 +62,16 @@ class Base:
         self.verbose = verbose
 
     def simulate_walks(self, num_walks, walk_length):
-        """Generate walks starting from each nodes `num_walks` time.
+        """Generate walks starting from each nodes ``num_walks`` time.
 
-        Notes:
-            This is master worker
+        Note:
+            This is the master process that spawns worker processes, where the
+            worker function ``node2vec_walks`` genearte a single random walk
+            starting from a vertex of the graph.
 
         Args:
-            num_walks(int): number of walks starting from each node
-            walks_length(int): length of walk
+            num_walks (int): number of walks starting from each node.
+            walks_length (int): length of walk.
 
         """
         num_nodes = len(self.IDlst)
@@ -71,14 +114,35 @@ class Base:
 
 
 class PreComp(Base, SparseGraph):
-    """Precompute transition probabilites."""
+    """Precompute transition probabilites.
+
+    This implementation precomputes and store 2nd order transition probabilites
+    first and uses read off transition probabilities during the process of
+    random walk. The graph type used is ``SparseGraph``.
+
+    Note:
+        Need to call ``preprocess_transition_probs()`` first before generating
+        walks.
+
+    """
 
     def __init__(self, p, q, workers, verbose):
         """Initialize PreComp mode node2vec."""
         Base.__init__(self, p, q, workers, verbose)
 
     def get_move_forward(self):
-        """Wrap move_forward."""
+        """Wrap ``move_forward``.
+
+        This function returns a ``numba.jit`` compiled function that takes
+        current vertex index (and the previous vertex index if available) and
+        return the next vertex index by sampling from a discrete random
+        distribution based on the transition probabilities that are read off
+        the precomputed transition probabilities table.
+
+        Note:
+            The returned function is used by the ``simulate_walks`` method.
+
+        """
         data = self.data
         indices = self.indices
         indptr = self.indptr
@@ -162,14 +226,31 @@ class PreComp(Base, SparseGraph):
 
 
 class SparseOTF(Base, SparseGraph):
-    """Sparse graph transition on the fly."""
+    """Sparse graph transition on the fly.
+
+    This implementation do *NOT* precompute transition probabilities in advance
+    but instead calculate them on-the-fly during the process of random walk.
+    The graph type used is ``SparseGraph``.
+
+    """
 
     def __init__(self, p, q, workers, verbose):
         """Initialize PreComp mode node2vec."""
         Base.__init__(self, p, q, workers, verbose)
 
     def get_move_forward(self):
-        """Wrap move_forward."""
+        """Wrap ``move_forward``.
+
+        This function returns a ``numba.jit`` compiled function that takes
+        current vertex index (and the previous vertex index if available) and
+        return the next vertex index by sampling from a discrete random
+        distribution based on the transition probabilities that are calculated
+        on-the-fly.
+
+        Note:
+            The returned function is used by the ``simulate_walks`` method.
+
+        """
         data = self.data
         indices = self.indices
         indptr = self.indptr
@@ -191,14 +272,31 @@ class SparseOTF(Base, SparseGraph):
 
 
 class DenseOTF(Base, DenseGraph):
-    """Dense graph transition on the fly."""
+    """Dense graph transition on the fly.
+
+    This implementation do *NOT* precompute transition probabilities in advance
+    but instead calculate them on-the-fly during the process of random walk.
+    The graph type used is ``DenseGraph``.
+
+    """
 
     def __init__(self, p, q, workers, verbose):
         """Initialize DenseOTF mode node2vec."""
         Base.__init__(self, p, q, workers, verbose)
 
     def get_move_forward(self):
-        """Wrap move_forward."""
+        """Wrap ``move_forward``.
+
+        This function returns a ``numba.jit`` compiled function that takes
+        current vertex index (and the previous vertex index if available) and
+        return the next vertex index by sampling from a discrete random
+        distribution based on the transition probabilities that are calculated
+        on-the-fly.
+
+        Note:
+            The returned function is used by the ``simulate_walks`` method.
+
+        """
         data = self.data
         nonzero = self.nonzero
         p = self.p
@@ -223,10 +321,15 @@ class DenseOTF(Base, DenseGraph):
 def alias_setup(probs):
     """Construct alias lookup table.
 
-    https://hips.seas.harvard.edu/blog/2013/03/03/the-alias-method-efficient-sampling-with-many-discrete-outcomes/
+    This code is modified from the blog post here:
+    https://lips.cs.princeton.edu/the-alias-method-efficient-sampling-with-many-discrete-outcomes/
+    , where you can find more details about how the method work. In general,
+    the alias method improves the time complexity of sampling from a discrete
+    random distribution to O(1) if the alias table is setup in advance.
 
     Args:
-        probs(*float64): normalized transition probabilities array
+        probs (list(float64)): normalized transition probabilities array, could
+            be in either list or numpy.ndarray, of float64 values.
 
     """
     k = probs.size
