@@ -1,4 +1,17 @@
-"""Command line utility for PecanPy."""
+"""Command line utility for PecanPy.
+
+This is the command line interface for the ``pecanpy`` package.
+
+Examples:
+    Run PecanPy in command line using ``PreComp`` mode to embed the karate network::
+
+        $ pecanpy --input demo/karate.edg --ouptut demo/karate.emb --mode PreComp
+
+    Checkout the full list of parameters by::
+
+        $ pecanpy --help
+
+"""
 
 import argparse
 import warnings
@@ -116,7 +129,7 @@ def read_graph(args):
     """Read input network to memory.
 
     Depending on the mode selected, reads the network either in CSR representation
-        (PreComp and SparseOTF) or numpy matrix (DenseOTF).
+    (``PreComp`` and ``SparseOTF``) or 2d numpy array (``DenseOTF``).
 
     """
     fp = args.input
@@ -173,8 +186,9 @@ def learn_embeddings(args, walks):
     model.wv.save_word2vec_format(args.output)
 
 
-def main_helper(args):
+def main():
     """Pipeline for representational learning for all nodes in a graph."""
+    args = parse_args()
 
     @Timer("load graph", True)
     def timed_read_graph():
@@ -197,11 +211,6 @@ def main_helper(args):
     walks = timed_walk()
     g = None
     timed_emb()
-
-
-def main():
-    """Command line script."""
-    main_helper(parse_args())
 
 
 if __name__ == "__main__":

@@ -14,7 +14,7 @@ class SparseGraph:
 
     Examples:
         Read ``.edg`` file and create ``SparseGraph`` object using ``.read_edg``
-         method.
+        method.
 
         >>> from pecanpy.graph import SparseGraph
         >>>
