@@ -1,8 +1,7 @@
 """Different strategies for generating node2vec walks."""
 
-import os
 import numpy as np
-from numba import jit, prange, set_num_threads
+from numba import jit, prange
 from pecanpy.graph import DenseGraph, SparseGraph
 
 
@@ -61,7 +60,6 @@ class Base:
         self.q = q
         self.workers = workers
         self.verbose = verbose
-        set_num_threads(workers)
 
     def simulate_walks(self, num_walks, walk_length):
         """Generate walks starting from each nodes ``num_walks`` time.
@@ -223,9 +221,6 @@ class PreComp(Base, SparseGraph):
                         alias_q[start + i] = q_tmp[i]
 
             return alias_j, alias_q
-
-        os.environ["NUMBA_NUM_THREADS"] = str(self.workers)
-        compute_all_transition_probs.recompile()
 
         self.alias_j, self.alias_q = compute_all_transition_probs()
 

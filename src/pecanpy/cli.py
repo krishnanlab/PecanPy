@@ -208,7 +208,7 @@ def main():
         learn_embeddings(args=args, walks=walks)
 
     if args.workers == 0: args.workers = numba.config.NUMBA_DEFAULT_NUM_THREADS
-    print(f"Number of threads = {args.workers}")
+    numba.set_num_threads(args.workers)
 
     g = timed_read_graph()
     timed_preprocess()
