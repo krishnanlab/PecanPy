@@ -5,7 +5,26 @@ from numba import boolean, jit
 
 
 class SparseGraph:
-    """Sparse Graph object that stores graph as adjacency list."""
+    """Sparse Graph object that stores graph as adjacency list.
+
+    Note:
+        By default the ``SparseGraph`` object converts the data to Compact
+        Sparse Row (csr) format after reading data from an edge list file
+        (``.edg``). This format enables more cache optimized computation.
+
+    Examples:
+        Read ``.edg`` file and create ``SparseGraph`` object using ``.read_edg``
+        method.
+
+        >>> from pecanpy.graph import SparseGraph
+        >>>
+        >>> g = SparseGraph() # initialize SparseGraph object
+        >>> g.read_edg(path_to_edg_file, weighted=True, directed=False) # read graph from edgelist
+        >>>
+        >>> dense_mat = g.to_dense() # convert to dense adjacency matrix
+        >>>
+
+    """
 
     def __init__(self):
         """Initialize SparseGraph object."""
@@ -18,26 +37,30 @@ class SparseGraph:
     def read_edg(self, edg_fp, weighted, directed, csr=True):
         """Read an edgelist file and create sparse graph.
 
-        Notes:
-            Implicitly discard zero weighted edges
+        Note:
+            Implicitly discard zero weighted edges; if the same edge is defined
+            multiple times with different edge weights, then the last specified
+            weight will be used (warning for such behavior will be printed)
 
         Args:
-            edg_fp(str): path to edgelist file, where the file is tab
-                         seperated and contains 2 or 3 columns depending
-                         on whether the input graph is weighted, where the
-                         the first column contains the source nodes and the
-                         second column contains the destination nodes that
-                         interact with the corresponding source nodes.
-            weighted(bool): whether the graph is weighted. If unweighted,
-                            only two columns are expected in the edgelist
-                            file, and the edge weights are implicitely set
-                            to 1 for all interactions. If weighted, a third
-                            column encoding the weight of the interaction in
-                            numeric value is expected.
-            directed(bool): whether the graph is directed, if undirected, the
-                            edge connecting from destination node to source
-                            node is created with same edge weight from source
-                            node to destination node.
+            edg_fp (str): path to edgelist file, where the file is tab
+                seperated and contains 2 or 3 columns depending on whether
+                the input graph is weighted, where the the first column
+                contains the source nodes and the second column contains the
+                destination nodes that interact with the corresponding source
+                nodes.
+            weighted (bool): whether the graph is weighted. If unweighted,
+                only two columns are expected in the edgelist file, and the
+                edge weights are implicitely set to 1 for all interactions. If
+                weighted, a third column encoding the weight of the interaction
+                in numeric value is expected.
+            directed (bool): whether the graph is directed, if undirected, the
+                edge connecting from destination node to source node is created
+                with same edge weight from source node to destination node.
+            csr (bool): whether or not to convert to compact sparse row format
+                after finished reading the whole edge list for a more compact
+                storage and more optimized cache utilization.
+
         """
         current_node = 0
 
@@ -82,7 +105,7 @@ class SparseGraph:
             self.to_csr()
 
     def get_has_nbrs(self):
-        """Wrap has_nbrs."""
+        """Wrap ``has_nbrs``."""
         indptr = self.indptr
 
         @jit(nopython=True, nogil=True)
@@ -97,8 +120,8 @@ class SparseGraph:
         """Calculate transition probabilities.
 
         Note:
-            If `prev_idx` present, calculate 2nd order biased transition, otherwise
-            calculate 1st order transition
+            If ``prev_idx`` present, calculate 2nd order biased transition, otherwise
+            calculate 1st order transition.
 
         """
 
@@ -169,7 +192,18 @@ class SparseGraph:
         self.indices = indices
 
     def to_dense(self):
-        """Construct dense graph."""
+        """Construct dense adjacency matrix.
+
+        Note:
+            This method does not return DenseGraph object, but instead return
+            dense adjacency matrix as ``numpy.ndarray``, the index is the same
+            as that of IDlst.
+
+        Return:
+            numpy.ndarray: full adjacency matrix indexed by IDmap as 2d numpy
+            array.
+
+        """
         n_nodes = len(self.IDlst)
         mat = np.zeros((n_nodes, n_nodes))
 
@@ -182,7 +216,27 @@ class SparseGraph:
 
 
 class DenseGraph:
-    """Dense Graph object that stores graph as array."""
+    """Dense Graph object that stores graph as array.
+
+    Examples:
+        Read ``.npz`` files and create ``DenseGraph`` object using ``.read_npz``
+        method.
+
+        >>> from pecanpy.graph import DenseGraph
+        >>> g = DenseGraph() # initialize DenseGraph object
+        >>> g.read_npz(paht_to_npz_file, weighted=True, directed=False) # read graph from npz
+
+        Read ``.edg`` files and create ``DenseGraph`` object using ``.read_edg``
+        method.
+
+        >>> from pecanpy.graph import DenseGraph
+        >>> g = DenseGraph() # initialize DenseGraph object
+        >>> g.read_edg(path_to_edg_file, weighted=True, directed=False) # read graph from edgelist
+        >>>
+        >>> g.save(npz_outpath) # save the network as npz file, which could be loaded faster if network is dense
+        >>>
+
+    """
 
     def __init__(self):
         """Initialize DenseGraph object."""
@@ -192,16 +246,13 @@ class DenseGraph:
         self.IDmap = {}  # id -> index
 
     def read_npz(self, npz_fp, weighted, directed):
-        """Read `.npz` file and create dense graph.
-
-        Notes:
-            (note on `.npz` file)
+        """Read ``.npz`` file and create dense graph.
 
         Args:
-            npz_fp(str): path to `.npz` file.
-            weighted(bool): whether the graph is weighted, if unweighted,
-                            all none zero weights will be converted to 1
-            directed(bool): not used, for compatibility with `SparseGraph`
+            npz_fp (str): path to ``.npz`` file.
+            weighted (bool): whether the graph is weighted, if unweighted,
+                all none zero weights will be converted to 1.
+            directed (bool): not used, for compatibility with ``SparseGraph``.
 
         """
         raw = np.load(npz_fp)
@@ -221,11 +272,11 @@ class DenseGraph:
         self.nonzero = self.data != 0
 
     def save(self, fp):
-        """Save as `.npz` file."""
+        """Save as ``.npz`` file."""
         np.savez(fp, data=self.data, IDs=self.IDlst)
 
     def get_has_nbrs(self):
-        """Wrap has_nbrs."""
+        """Wrap ``has_nbrs``."""
         nonzero = self.nonzero
 
         @jit(nopython=True, nogil=True)
@@ -243,8 +294,8 @@ class DenseGraph:
         """Calculate transition probabilities.
 
         Note:
-            If `prev_idx` present, calculate 2nd order biased transition, otherwise
-            calculate 1st order transition
+            If ``prev_idx`` present, calculate 2nd order biased transition, otherwise
+            calculate 1st order transition.
 
         """
         nbrs_ind = nonzero[cur_idx]

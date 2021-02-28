@@ -1,8 +1,9 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4079517.svg)](https://doi.org/10.5281/zenodo.4079517)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4079517.svg)](https://doi.org/10.5281/zenodo.4079517) 
+[![Documentation Status](https://readthedocs.org/projects/pip/badge/?version=stable)](https://pip.pypa.io/en/stable/?badge=stable)
 
 # PecanPy: A parallelized, efficient, and accelerated _node2vec_ in Python
 
-Learning low-dimensional representations (embeddings) of nodes in large graphs is key to applying machine learning on massive biological networks. _Node2vec_ is the most widely used method for node embedding. PecanPy is a fast, parallelized, memory efficient, and cache optimized Python implementation of [_node2vec_](https://github.com/aditya-grover/node2vec). It uses cache-optimized compact graph data structures and precomputing/parallelization to result in fast, high-quality node embeddings for biological networks of all sizes and densities. The implementation and the optimizations, along with benchmarks, are described in this [preprint](https://doi.org/10.1101/2020.07.23.218487) `bioRxiv doi.org/10.1101/2020.07.23.218487`.
+Learning low-dimensional representations (embeddings) of nodes in large graphs is key to applying machine learning on massive biological networks. _Node2vec_ is the most widely used method for node embedding. PecanPy is a fast, parallelized, memory efficient, and cache optimized Python implementation of [_node2vec_](https://github.com/aditya-grover/node2vec). It uses cache-optimized compact graph data structures and precomputing/parallelization to result in fast, high-quality node embeddings for biological networks of all sizes and densities. The implementation and the optimizations, along with benchmarks, are described in this [preprint](https://doi.org/10.1101/2020.07.23.218487) `bioRxiv doi.org/10.1101/2020.07.23.218487`. The benchmarking results presented in the preprint can be reproduced using the test scripts provided in the benchmarking repository [here](https://github.com/krishnanlab/PecanPy_benchmarks).
 
 ## Installation
 
