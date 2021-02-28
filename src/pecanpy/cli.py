@@ -2,6 +2,7 @@
 
 import argparse
 import warnings
+import numba
 
 from gensim.models import Word2Vec
 from pecanpy import node2vec
@@ -59,7 +60,7 @@ def parse_args():
         "--workers",
         type=int,
         default=8,
-        help="Number of parallel workers. Default is 8.")
+        help="Number of parallel workers. Default is 8. Set to 0 to use all.")
 
     parser.add_argument("--p", type=float, default=1, help="Return hyperparameter. Default is 1.")
 
@@ -191,6 +192,9 @@ def main_helper(args):
     @Timer("train embeddings", True)
     def timed_emb():
         learn_embeddings(args=args, walks=walks)
+
+    if args.workers == 0: args.workers = numba.config.NUMBA_DEFAULT_NUM_THREADS
+    print(f"Number of threads = {args.workers}")
 
     g = timed_read_graph()
     timed_preprocess()
