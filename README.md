@@ -3,7 +3,11 @@
 
 # PecanPy: A parallelized, efficient, and accelerated _node2vec_ in Python
 
-Learning low-dimensional representations (embeddings) of nodes in large graphs is key to applying machine learning on massive biological networks. _Node2vec_ is the most widely used method for node embedding. PecanPy is a fast, parallelized, memory efficient, and cache optimized Python implementation of [_node2vec_](https://github.com/aditya-grover/node2vec). It uses cache-optimized compact graph data structures and precomputing/parallelization to result in fast, high-quality node embeddings for biological networks of all sizes and densities. The implementation and the optimizations, along with benchmarks, are described in this [preprint](https://doi.org/10.1101/2020.07.23.218487) `bioRxiv doi.org/10.1101/2020.07.23.218487`. The benchmarking results presented in the preprint can be reproduced using the test scripts provided in the benchmarking repository [here](https://github.com/krishnanlab/PecanPy_benchmarks). Finally, you can read the docs of the code on [readthedocs](https://pecanpy.readthedocs.io/en/latest/).
+Learning low-dimensional representations (embeddings) of nodes in large graphs is key to applying machine learning on massive biological networks. _Node2vec_ is the most widely used method for node embedding. PecanPy is a fast, parallelized, memory efficient, and cache optimized Python implementation of [_node2vec_](https://github.com/aditya-grover/node2vec). It uses cache-optimized compact graph data structures and precomputing/parallelization to result in fast, high-quality node embeddings for biological networks of all sizes and densities.
+
+Below is a quick start guide. Detailed documentation is available [here](https://pecanpy.readthedocs.io/).
+
+The implementation and the optimizations, along with benchmarks, are described in this [preprint](https://doi.org/10.1101/2020.07.23.218487) `bioRxiv doi.org/10.1101/2020.07.23.218487`. The benchmarking results presented in the preprint can be reproduced using the test scripts provided in the companion [benchmarks repo](https://github.com/krishnanlab/PecanPy_benchmarks).
 
 ## Installation
 
@@ -94,6 +98,9 @@ node_id dim_1 dim_2 ... dim_d
 Run `tox -e flake8` and resolve suggestions before committing to ensure consistent code style.
 
 ## Additional Information
+### Documentation
+Detailed documentation for PecanPy is available [here](https://pecanpy.readthedocs.io/).
+
 ### Support
 For support please contact [Remy Liu](https://twitter.com/RemyLau3) at liurenmi@msu.edu.
 
@@ -106,14 +113,13 @@ Liu R, Krishnan A (2020) PecanPy: a fast, efficient, and parallelized Python imp
 
 ### Authors
 Renming Liu, Arjun Krishnan*
-
-*General correspondence should be addressed to AK at arjun@msu.edu.
+>*General correspondence should be addressed to AK at arjun@msu.edu.
 
 ### Funding
 This work was primarily supported by US National Institutes of Health (NIH) grants R35 GM128765 to AK and in part by MSU start-up funds to AK.
 
 ### Acknowledgements
-We thank Christopher A. Mancuso, Anna Yannakopoulos, and the rest of the [Krishnan Lab](https://www.thekrishnanlab.org) for valuable discussions and feedback on the software and manuscript. Thanks to [Charles T. Hoyt](https://github.com/cthoyt) for making the software `pip` installable.
+We thank [Christopher A. Mancuso](https://github.com/ChristopherMancuso), [Anna Yannakopoulos](http://yannakopoulos.com/), and the rest of the [Krishnan Lab](https://www.thekrishnanlab.org/team) for valuable discussions and feedback on the software and manuscript. Thanks to [Charles T. Hoyt](https://github.com/cthoyt) for making the software `pip` installable and for an extensive code review.
 
 ### References
 
