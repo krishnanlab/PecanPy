@@ -119,12 +119,12 @@ class SparseGraph:
     def get_normalized_probs(data, indices, indptr, p, q, cur_idx, prev_idx=None):
         """Calculate transition probabilities.
 
-        Calculate 2nc order transition probabilities by first finidng the
+        Calculate 2nd order transition probabilities by first finidng the
         neighbors of the current state that are not reachable from the previous
-        state, and devide the according edge weihts by the in-out paramter
+        state, and devide the according edge weights by the in-out parameter
         ``q``. Then devide the edge weight from previous state by the return
         parameter ``p``. Finally, the transition probabilities are computed by
-        normalizing the biased edgeweights.
+        normalizing the biased edge weights.
 
         Note:
             If ``prev_idx`` present, calculate 2nd order biased transition,
@@ -280,12 +280,12 @@ class DenseGraph:
     def get_normalized_probs(data, nonzero, p, q, cur_idx, prev_idx=None):
         """Calculate transition probabilities.
 
-        Calculate 2nc order transition probabilities by first finidng the
+        Calculate 2nd order transition probabilities by first finidng the
         neighbors of the current state that are not reachable from the previous
-        state, and devide the according edge weihts by the in-out paramter
+        state, and devide the according edge weights by the in-out parameter
         ``q``. Then devide the edge weight from previous state by the return
         parameter ``p``. Finally, the transition probabilities are computed by
-        normalizing the biased edgeweights.
+        normalizing the biased edge weights.
 
         Note:
             If ``prev_idx`` present, calculate 2nd order biased transition,
@@ -313,7 +313,7 @@ def isnotin(ary1, ary2):
     """Value in ary1 but not in ary2.
 
     Used to find neighbor indices that are in current state but not in the
-    previous state, which will be biased using the in-out paramter ``q``. The
+    previous state, which will be biased using the in-out parameter ``q``. The
     values in each of the two arrays are sorted ascendingly. The main idea is
     to scan through ``ary1`` and compare the values in ``ary2`` in a way that
     at most one pass of each array is needed instead of a nested loop (for
@@ -321,13 +321,13 @@ def isnotin(ary1, ary2):
     which is much more efficient. Checkout the following example for more
     intuition.
 
-    Exampls:
+    Examples:
         Consider the following example with two arrays, the ``*`` above
         ``ary1`` and ``ary2`` indicate the pointers (``ptr1`` and ``ptr2``
         respectively).
 
-        >>> ary1 = [1, 3, 5]
-        >>> ary2 = [2, 3]
+        >>> ary1 = [1, 2, 5]
+        >>> ary2 = [1, 5]
         >>>
         >>> # iteration1: indicator = [False, True, True]
         >>>  *
