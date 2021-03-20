@@ -15,8 +15,8 @@ Examples:
 
 import argparse
 import warnings
-import numba
 
+import numba
 from gensim.models import Word2Vec
 from pecanpy import node2vec
 from pecanpy.wrappers import Timer
@@ -207,7 +207,8 @@ def main():
     def timed_emb():
         learn_embeddings(args=args, walks=walks)
 
-    if args.workers == 0: args.workers = numba.config.NUMBA_DEFAULT_NUM_THREADS
+    if args.workers == 0:
+        args.workers = numba.config.NUMBA_DEFAULT_NUM_THREADS
     numba.set_num_threads(args.workers)
 
     g = timed_read_graph()

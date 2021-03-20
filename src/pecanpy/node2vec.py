@@ -99,7 +99,7 @@ class Base:
                         prev_idx = walk_idx_mat[i, j - 2]
                         walk_idx_mat[i, j] = move_forward(cur_idx, prev_idx)
                     else:
-                        print("Dead end!") # TODO: need to modify walks accordingly
+                        print("Dead end!")  # TODO: need to modify walks accordingly
                         break
 
             return walk_idx_mat
