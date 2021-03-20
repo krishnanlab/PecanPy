@@ -310,3 +310,33 @@ class DenseGraph:
         normalized_probs = unnormalized_probs / unnormalized_probs.sum()
 
         return normalized_probs
+
+    @staticmethod
+    @jit(nopython=True, nogil=True)
+    def get_extended_normalized_probs(data, nonzero, p, q, cur_idx, prev_idx=None):
+        """Calculate transition probabilities.
+
+        Note:
+            If ``prev_idx`` present, calculate 2nd order biased transition, otherwise
+            calculate 1st order transition.
+
+        """
+        cur_nbrs_ind = nonzero[cur_idx]
+        prev_nbrs_ind = nonzero[prev_idx]
+        unnormalized_probs = data[cur_idx].copy()
+
+        if prev_idx is not None:  # 2nd order biased walks
+            non_com_nbr = np.logical_and(cur_nbrs_ind, ~prev_nbrs_ind)
+            unnormalized_probs[non_com_nbr] /= q
+
+            com_nbr = np.logical_and(cur_nbrs_ind, prev_nbrs_ind)
+            com_nbr[prev_idx] = False # treat return bias differently
+            unnormalized_probs[com_nbr] *= ((1 / q) + (1 - 1 / q) * data[prev_idx, com_nbr])
+
+            unnormalized_probs[prev_idx] /= p
+
+        unnormalized_probs = unnormalized_probs[cur_nbrs_ind]
+        normalized_probs = unnormalized_probs / unnormalized_probs.sum()
+
+        return normalized_probs
+
