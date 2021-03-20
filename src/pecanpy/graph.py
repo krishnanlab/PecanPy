@@ -119,9 +119,16 @@ class SparseGraph:
     def get_normalized_probs(data, indices, indptr, p, q, cur_idx, prev_idx=None):
         """Calculate transition probabilities.
 
+        Calculate 2nc order transition probabilities by first finidng the 
+        neighbors of the current state that are not reachable from the previou 
+        state, and devide the according edge weihts by the in-out paramter 
+        ``q``. Then devide the edge weight from previous state by the return 
+        parameter ``p``. Finally, the transition probabilities are computed by 
+        normalizing the biased edgeweights.
+
         Note:
-            If ``prev_idx`` present, calculate 2nd order biased transition, otherwise
-            calculate 1st order transition.
+            If ``prev_idx`` present, calculate 2nd order biased transition, 
+        otherwise calculate 1st order transition.
 
         """
 
@@ -130,38 +137,18 @@ class SparseGraph:
 
         def get_nbrs_weight(idx):
             return data[indptr[idx]: indptr[idx + 1]].copy()
-
-        def isnotin(ary1, ary2):
-            indicator = np.ones(ary1.size, dtype=boolean)
-            ptr = 0
-            val2 = ary2[ptr]
-            for i in range(ary1.size):
-                if ptr == ary2.size:
-                    break
-                val1 = ary1[i]
-                if val1 < val2:
-                    continue
-                elif val1 == val2:
-                    indicator[i] = False
-                    ptr += 1
-                elif val1 > val2:
-                    for j in range(ptr, ary2.size):
-                        if ary2[j] > val1:
-                            val2 = ary2[j]
-                            ptr = j
-                            continue
-                    break
-            return indicator
-
+        
         nbrs_idx = get_nbrs_idx(cur_idx)
         unnormalized_probs = get_nbrs_weight(cur_idx)
 
         if prev_idx is not None:  # 2nd order biased walk
-            src_nbrs_idx = get_nbrs_idx(prev_idx)
-            non_com_nbr = isnotin(nbrs_idx, src_nbrs_idx)
+            prev_ptr = np.where(nbrs_idx == prev_idx)[0] # find previous state index
+            src_nbrs_idx = get_nbrs_idx(prev_idx) # neighbors of previous state
+            non_com_nbr = isnotin(nbrs_idx, src_nbrs_idx) # neighbors of current but not previous
+            non_com_nbr[prev_ptr] = False # exclude previous state in in-out bias
 
-            unnormalized_probs[non_com_nbr] /= q
-            unnormalized_probs[np.where(nbrs_idx == prev_idx)[0]] /= p
+            unnormalized_probs[non_com_nbr] /= q # apply in-out bias
+            unnormalized_probs[prev_ptr] /= p # apply return bias
 
         normalized_probs = unnormalized_probs / unnormalized_probs.sum()
 
@@ -310,3 +297,82 @@ class DenseGraph:
         normalized_probs = unnormalized_probs / unnormalized_probs.sum()
 
         return normalized_probs
+
+
+@jit(nopython=True, nogil=True)
+def isnotin(ary1, ary2):
+    """Value in ary1 but not in ary2.
+
+    Used to find neighbor indices that are in current state but not in the 
+    previous state, which will be biased using the in-out paramter ``q``. The 
+    values in each of the two arrays are sorted ascendingly. The main idea is 
+    to scan through ``ary1`` and compare the values in ``ary2`` in a way that 
+    at most one pass of each array is needed instead of a nested loop (for 
+    each element in ``ary1``, compare against every element in ``ary2``), 
+    which is much more efficient. Checkout the following example for more 
+    intuition.
+
+    Exampls: 
+        Consider the following example with two arrays, the ``*`` above ``ary1`` 
+        and ``ary2`` indicate the pointers (``ptr1`` and ``ptr2`` respectively)
+
+        >>> ary1 = [1, 3, 5]
+        >>> ary2 = [2, 3]
+        >>> 
+        >>> # iteration1: indicator = [False, True, True]
+        >>>  *
+        >>> [1, 2, 5]
+        >>>  *
+        >>> [1, 5]
+        >>> 
+        >>> # iteration2: indicator = [False, True, True]
+        >>>     *
+        >>> [1, 2, 5]
+        >>>     *   
+        >>> [1, 5]
+        >>> 
+        >>> # iteration3: indicator = [False, True, False]
+        >>>        *
+        >>> [1, 2, 5]
+        >>>     *
+        >>> [1, 5]
+        >>> 
+        >>> # end of loop
+
+        Note that this does not remove the index of the previous state. 
+        Instead, the index of the previous state will be removed once the 
+        indicator is returned to the ``get_normalized_probs``.
+
+
+    """
+    indicator = np.ones(ary1.size, dtype=boolean)
+    ptr2 = 0
+    for ptr1 in range(ary1.size):
+        if ptr2 == ary2.size: # end of ary2
+            break
+
+        val1 = ary1[ptr1]
+        val2 = ary2[ptr2]
+
+        if val1 < val2:
+            continue
+
+        elif val1 == val2: # found a matching value
+            indicator[ptr1] = False
+            ptr2 += 1
+
+        elif val1 > val2:
+            for j in range(ptr2, ary2.size):
+                if ary2[j] == val1:
+                    indicator[ptr1] = False
+                    ptr2 += 1
+                    break
+
+                elif ary2[j] > val1:
+                    ptr2 = j
+                    break
+
+            continue
+
+    return indicator
+
