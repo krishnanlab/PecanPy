@@ -7,7 +7,7 @@ Learning low-dimensional representations (embeddings) of nodes in large graphs i
 
 Below is a quick start guide. Detailed documentation is available [here](https://pecanpy.readthedocs.io/).
 
-The implementation and the optimizations, along with benchmarks, are described in this [preprint](https://doi.org/10.1101/2020.07.23.218487) `bioRxiv doi.org/10.1101/2020.07.23.218487`. The benchmarking results presented in the preprint can be reproduced using the test scripts provided in the companion [benchmarks repo](https://github.com/krishnanlab/PecanPy_benchmarks).
+The implementation and the optimizations, along with benchmarks, are described in this [application note](https://doi.org/10.1093/bioinformatics/btab202) published on Bioinformatics. The benchmarking results presented in the preprint can be reproduced using the test scripts provided in the companion [benchmarks repo](https://github.com/krishnanlab/PecanPy_benchmarks).
 
 ## Installation
 
