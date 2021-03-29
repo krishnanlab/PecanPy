@@ -7,7 +7,7 @@ Learning low-dimensional representations (embeddings) of nodes in large graphs i
 
 Below is a quick start guide. Detailed documentation is available [here](https://pecanpy.readthedocs.io/).
 
-The implementation and the optimizations, along with benchmarks, are described in this [application note](https://doi.org/10.1093/bioinformatics/btab202) published on Bioinformatics. The benchmarking results presented in the preprint can be reproduced using the test scripts provided in the companion [benchmarks repo](https://github.com/krishnanlab/PecanPy_benchmarks).
+The implementation and the optimizations, along with benchmarks, are described in this [application note](https://doi.org/10.1093/bioinformatics/btab202) published in _Bioinformatics_. The benchmarking results presented in the preprint can be reproduced using the test scripts provided in the companion [benchmarks repo](https://github.com/krishnanlab/PecanPy_benchmarks).
 
 ## Installation
 
@@ -109,11 +109,11 @@ This repository and all its contents are released under the [Creative Commons Li
 
 ### Citation
 If you use this work, please cite:  
-Liu R, Krishnan A (2020) PecanPy: a fast, efficient, and parallelized Python implementation of _node2vec_. _bioRxiv_ doi.org/10.1101/2020.07.23.218487.
+Liu R, Krishnan A (2020) **PecanPy: a fast, efficient, and parallelized Python implementation of node2vec.** _Bioinformatics_ https://doi.org/10.1093/bioinformatics/btab202
 
 ### Authors
 Renming Liu, Arjun Krishnan*
->*General correspondence should be addressed to AK at arjun@msu.edu.
+>\*General correspondence should be addressed to AK at arjun@msu.edu.
 
 ### Funding
 This work was primarily supported by US National Institutes of Health (NIH) grants R35 GM128765 to AK and in part by MSU start-up funds to AK.
