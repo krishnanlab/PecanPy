@@ -105,7 +105,7 @@ Detailed documentation for PecanPy is available [here](https://pecanpy.readthedo
 For support please contact [Remy Liu](https://twitter.com/RemyLau3) at liurenmi@msu.edu.
 
 ### License
-This repository and all its contents are released under the [Creative Commons License: Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode); See [LICENSE.md](https://github.com/krishnanlab/pecanpy/blob/master/LICENSE.md).
+This repository and all its contents are released under the [BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause); See [LICENSE.md](https://github.com/krishnanlab/pecanpy/blob/master/LICENSE.md).
 
 ### Citation
 If you use this work, please cite:  
