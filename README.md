@@ -109,7 +109,7 @@ This repository and all its contents are released under the [Creative Commons Li
 
 ### Citation
 If you use this work, please cite:  
-Liu R, Krishnan A (2020) **PecanPy: a fast, efficient, and parallelized Python implementation of node2vec.** _Bioinformatics_ https://doi.org/10.1093/bioinformatics/btab202
+Liu R, Krishnan A (2021) **PecanPy: a fast, efficient, and parallelized Python implementation of node2vec.** _Bioinformatics_ https://doi.org/10.1093/bioinformatics/btab202
 
 ### Authors
 Renming Liu, Arjun Krishnan*
