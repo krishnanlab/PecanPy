@@ -301,7 +301,8 @@ class DenseOTF(Base, DenseGraph):
         nonzero = self.nonzero
         p = self.p
         q = self.q
-        get_normalized_probs = self.get_normalized_probs
+        #get_normalized_probs = self.get_normalized_probs
+        get_normalized_probs = self.get_extended_normalized_probs
 
         @jit(nopython=True, nogil=True)
         def move_forward(cur_idx, prev_idx=None):

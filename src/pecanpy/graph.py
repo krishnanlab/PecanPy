@@ -318,17 +318,37 @@ class DenseGraph:
 
         """
         cur_nbrs_ind = nonzero[cur_idx]
-        prev_nbrs_ind = nonzero[prev_idx]
         unnormalized_probs = data[cur_idx].copy()
 
+        # TODO: make the following block attributes, and feed into function call
+        deg_ary = data.sum(axis=1)
+        n_nbrs_ary = nonzero.sum(axis=1)
+        average_weight_ary = deg_ary / n_nbrs_ary
+
         if prev_idx is not None:  # 2nd order biased walks
-            non_com_nbr = np.logical_and(cur_nbrs_ind, ~prev_nbrs_ind)
-            unnormalized_probs[non_com_nbr] /= q
+            prev_nbrs_ind = nonzero[prev_idx]
+            prev_nbrs_weight = data[prev_idx].copy()
 
-            com_nbr = np.logical_and(cur_nbrs_ind, prev_nbrs_ind)
-            com_nbr[prev_idx] = False # treat return bias differently
+            inout_ind = cur_nbrs_ind & (prev_nbrs_weight <= average_weight_ary)
+            return_ind = cur_nbrs_ind & ~inout_ind
+            inout_ind[prev_idx] = return_ind[prev_idx] = False  # deal with exact return differently
 
-            unnormalized_probs[com_nbr] *= ((1 / q) + (1 - 1 / q) * data[prev_idx, com_nbr])
+            #print("CURRENT: ", cur_idx)
+            #print("INOUT: ", np.where(inout_ind)[0])
+            ##print("RETURN: ", np.where(return_ind)[0])
+            #print("")
+
+            # apply extended inout bias
+            unnormalized_probs[inout_ind] = (1 / q) + (1 - 1 / q) * \
+                prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]
+
+            #print(prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind])
+
+            # apply extended return bias TODO: nee to test return
+            #unnormalized_probs[return_ind] = (1 / p) + (1 - 1 / p) * \
+            #    (1 - prev_nbrs_weight[return_ind] / deg_ary[return_ind]) * \
+            #    n_nbrs_ary[return_ind] / (n_nbrs_ary[return_ind] - 1)
+
             unnormalized_probs[prev_idx] /= p
 
         unnormalized_probs = unnormalized_probs[cur_nbrs_ind]
