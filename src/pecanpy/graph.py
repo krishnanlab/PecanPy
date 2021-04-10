@@ -339,13 +339,18 @@ class DenseGraph:
             #print("")
 
             # apply extended inout bias
-            unnormalized_probs[inout_ind] = (1 / q) + (1 - 1 / q) * \
-                prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]
+            if q >= 1:
+                unnormalized_probs[inout_ind] *= (1 / q) + (1 - 1 / q) * \
+                    prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]
+            else:
+                unnormalized_probs[inout_ind] *= 1 + unnormalized_probs[inout_ind] * \
+                    (((1 / q) + (1 - 1 / q) * \
+                    prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]) - 1)
 
             #print(prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind])
 
             # apply extended return bias TODO: nee to test return
-            #unnormalized_probs[return_ind] = (1 / p) + (1 - 1 / p) * \
+            #unnormalized_probs[return_ind] *= (1 / p) + (1 - 1 / p) * \
             #    (1 - prev_nbrs_weight[return_ind] / deg_ary[return_ind]) * \
             #    n_nbrs_ary[return_ind] / (n_nbrs_ary[return_ind] - 1)
 
