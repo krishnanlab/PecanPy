@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4079517.svg)](https://doi.org/10.5281/zenodo.4079517) 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4735797.svg)](https://doi.org/10.5281/zenodo.4735797)
 [![Documentation Status](https://readthedocs.org/projects/pecanpy/badge/?version=latest)](https://pecanpy.readthedocs.io/en/latest/?badge=latest)
 
 # PecanPy: A parallelized, efficient, and accelerated _node2vec_ in Python
