@@ -1,7 +1,8 @@
 """Different strategies for generating node2vec walks."""
 
 import numpy as np
-from numba import jit, prange
+from numba import get_num_threads, jit, prange
+from numba.np.ufunc.parallel import _get_thread_id
 from pecanpy.graph import DenseGraph, SparseGraph
 
 
@@ -81,6 +82,7 @@ class Base:
 
         move_forward = self.get_move_forward()
         has_nbrs = self.get_has_nbrs()
+        verbose = self.verbose
 
         @jit(parallel=True, nogil=True, nopython=True)
         def node2vec_walks():
@@ -88,10 +90,16 @@ class Base:
             n = start_node_idx_ary.size
             walk_idx_mat = np.zeros((n, walk_length + 1), dtype=np.uint32)
             walk_idx_mat[:, 0] = start_node_idx_ary
+
+            # progress bar parameters
+            n_checkpoints = 10
+            checkpoint = n / get_num_threads() // n_checkpoints
+            progress_bar_length = 25
+            private_count = 0
+
             for i in prange(n):
                 start_node_idx = walk_idx_mat[i, 0]
                 walk_idx_mat[i, 1] = move_forward(start_node_idx)
-                # TODO: print status in regular interval
 
                 for j in range(2, walk_length + 1):
                     cur_idx = walk_idx_mat[i, j - 1]
@@ -101,6 +109,22 @@ class Base:
                     else:
                         print("Dead end!")  # TODO: need to modify walks accordingly
                         break
+
+                if verbose:
+                    # TODO: make monitoring less messy
+                    private_count += 1
+                    if private_count % checkpoint == 0:
+                        progress = private_count / n * progress_bar_length * get_num_threads()
+
+                        # manuual construct progress bar since string formatting not supported
+                        progress_bar = '|'
+                        for k in range(progress_bar_length):
+                            progress_bar += '#' if k < progress else ' '
+                        progress_bar += '|'
+
+                        print("Thread # " if _get_thread_id() < 10 else "Thread #",
+                              _get_thread_id(), "progress:", progress_bar,
+                              get_num_threads() * private_count * 10000 // n / 100, "%")
 
             return walk_idx_mat
 
