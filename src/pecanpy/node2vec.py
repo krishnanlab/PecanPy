@@ -100,9 +100,15 @@ class Base:
             private_count = 0
 
             for i in prange(n):
+                # initialize first step as normal random walk
                 start_node_idx = walk_idx_mat[i, 0]
-                walk_idx_mat[i, 1] = move_forward(start_node_idx)
+                if has_nbrs(start_node_idx):
+                    walk_idx_mat[i, 1] = move_forward(start_node_idx)
+                else:
+                    walk_idx_mat[i, -1] = 1
+                    continue
 
+                # start bias random walk
                 for j in range(2, walk_length + 1):
                     cur_idx = walk_idx_mat[i, j - 1]
                     if has_nbrs(cur_idx):
