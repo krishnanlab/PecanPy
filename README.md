@@ -11,13 +11,13 @@ The implementation and the optimizations, along with benchmarks, are described i
 
 ## Installation
 
-Install from the latest code on [GitHub](https://github.com/krishnanlab/pecanpy) with:
+Install from the latest release with:
 
 ```bash
 $ pip install pecanpy
 ```
 
-Install in development mode with:
+Install latest version (unreleassed) in development mode with:
 
 ```bash
 $ git clone https://github.com/krishnanlab/pecanpy.git

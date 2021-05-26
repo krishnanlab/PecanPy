@@ -88,8 +88,10 @@ class Base:
         def node2vec_walks():
             """Simulate a random walk starting from start node."""
             n = start_node_idx_ary.size
-            walk_idx_mat = np.zeros((n, walk_length + 1), dtype=np.uint32)
-            walk_idx_mat[:, 0] = start_node_idx_ary
+            # use last entry of each walk index array to keep track of effective walk length
+            walk_idx_mat = np.zeros((n, walk_length + 2), dtype=np.uint32)
+            walk_idx_mat[:, 0] = start_node_idx_ary  # initialize seeds
+            walk_idx_mat[:, -1] = walk_length + 1  # set to full walk length by default
 
             # progress bar parameters
             n_checkpoints = 10
@@ -107,7 +109,7 @@ class Base:
                         prev_idx = walk_idx_mat[i, j - 2]
                         walk_idx_mat[i, j] = move_forward(cur_idx, prev_idx)
                     else:
-                        print("Dead end!")  # TODO: need to modify walks accordingly
+                        walk_idx_mat[i, -1] = j
                         break
 
                 if verbose:
@@ -128,7 +130,7 @@ class Base:
 
             return walk_idx_mat
 
-        walks = [[self.IDlst[idx] for idx in walk] for walk in node2vec_walks()]
+        walks = [[self.IDlst[idx] for idx in walk[:walk[-1]]] for walk in node2vec_walks()]
 
         return walks
 
