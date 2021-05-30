@@ -262,6 +262,11 @@ class DenseGraph:
         """Save as ``.npz`` file."""
         np.savez(fp, data=self.data, IDs=self.IDlst)
 
+    def get_average_weights(self):
+        self.deg_ary = self.data.sum(axis=1)
+        self.n_nbrs_ary = self.nonzero.sum(axis=1)
+        self.average_weight_ary = self.deg_ary / self.n_nbrs_ary
+
     def get_has_nbrs(self):
         """Wrap ``has_nbrs``."""
         nonzero = self.nonzero
@@ -309,7 +314,7 @@ class DenseGraph:
 
     @staticmethod
     @jit(nopython=True, nogil=True)
-    def get_extended_normalized_probs(data, nonzero, p, q, cur_idx, prev_idx=None):
+    def get_extended_normalized_probs(average_weight_ary, data, nonzero, p, q, cur_idx, prev_idx=None):
         """Calculate transition probabilities.
 
         Note:
@@ -319,11 +324,6 @@ class DenseGraph:
         """
         cur_nbrs_ind = nonzero[cur_idx]
         unnormalized_probs = data[cur_idx].copy()
-
-        # TODO: make the following block attributes, and feed into function call
-        deg_ary = data.sum(axis=1)
-        n_nbrs_ary = nonzero.sum(axis=1)
-        average_weight_ary = deg_ary / n_nbrs_ary
 
         if prev_idx is not None:  # 2nd order biased walks
             prev_nbrs_ind = nonzero[prev_idx]

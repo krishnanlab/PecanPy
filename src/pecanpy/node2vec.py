@@ -303,12 +303,15 @@ class DenseOTF(Base, DenseGraph):
         q = self.q
         #get_normalized_probs = self.get_normalized_probs
         get_normalized_probs = self.get_extended_normalized_probs
+        self.get_average_weights()  # for extented n2v
+        avg_wts = self.average_weight_ary
 
         @jit(nopython=True, nogil=True)
         def move_forward(cur_idx, prev_idx=None):
             """Move to next node."""
             normalized_probs = get_normalized_probs(
-                data, nonzero, p, q, cur_idx, prev_idx)
+                #data, nonzero, p, q, cur_idx, prev_idx)
+                avg_wts, data, nonzero, p, q, cur_idx, prev_idx)
             cdf = np.cumsum(normalized_probs)
             choice = np.searchsorted(cdf, np.random.random())
             nbrs = np.where(nonzero[cur_idx])[0]
