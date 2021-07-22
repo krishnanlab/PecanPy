@@ -329,7 +329,7 @@ class DenseGraph:
             prev_nbrs_ind = nonzero[prev_idx]
             prev_nbrs_weight = data[prev_idx].copy()
 
-            inout_ind = cur_nbrs_ind & (prev_nbrs_weight <= average_weight_ary)
+            inout_ind = cur_nbrs_ind & (prev_nbrs_weight < average_weight_ary)
             return_ind = cur_nbrs_ind & ~inout_ind
             inout_ind[prev_idx] = return_ind[prev_idx] = False  # deal with exact return differently
 
@@ -339,13 +339,17 @@ class DenseGraph:
             #print("")
 
             # apply extended inout bias
-            if q >= 1:
-                unnormalized_probs[inout_ind] *= (1 / q) + (1 - 1 / q) * \
-                    prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]
-            else:
-                unnormalized_probs[inout_ind] *= 1 + unnormalized_probs[inout_ind] * \
-                    (((1 / q) + (1 - 1 / q) * \
-                    prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]) - 1)
+            #if q >= 1:
+            #    unnormalized_probs[inout_ind] *= (1 / q) + (1 - 1 / q) * \
+            #        prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]
+            #else:
+            #    unnormalized_probs[inout_ind] *= 1 + unnormalized_probs[inout_ind] * \
+            #        (((1 / q) + (1 - 1 / q) * \
+            #        prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]) - 1)
+
+            alpha = 1 / q + (1 - 1 / q) * prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]            
+            alpha[unnormalized_probs[inout_ind] < average_weight_ary[cur_idx]] = np.minimum(1, 1 / q)
+            unnormalized_probs[inout_ind] *= alpha
 
             #print(prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind])
 
