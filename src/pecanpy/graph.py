@@ -282,7 +282,7 @@ class DenseGraph:
 
     @staticmethod
     @jit(nopython=True, nogil=True)
-    def get_normalized_probs(data, nonzero, p, q, cur_idx, prev_idx=None):
+    def get_normalized_probs(data, nonzero, p, q, cur_idx, prev_idx, average_weight_ary):
         """Calculate transition probabilities.
 
         Calculate 2nd order transition probabilities by first finidng the
@@ -314,7 +314,7 @@ class DenseGraph:
 
     @staticmethod
     @jit(nopython=True, nogil=True)
-    def get_extended_normalized_probs(average_weight_ary, data, nonzero, p, q, cur_idx, prev_idx=None):
+    def get_extended_normalized_probs(data, nonzero, p, q, cur_idx, prev_idx, average_weight_ary):
         """Calculate transition probabilities.
 
         Note:
@@ -347,8 +347,15 @@ class DenseGraph:
             #        (((1 / q) + (1 - 1 / q) * \
             #        prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]) - 1)
 
-            alpha = 1 / q + (1 - 1 / q) * prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]            
+            b = 1
+            t = prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]
+            t = b * t / (1 - (b - 1) * t)
+            alpha = 1 / q + (1 - 1 / q) * t
+
+            #alpha = 1 / q + (1 - 1 / q) * prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]
+
             alpha[unnormalized_probs[inout_ind] < average_weight_ary[cur_idx]] = np.minimum(1, 1 / q)
+            #alpha[unnormalized_probs[inout_ind] < average_weight_ary[cur_idx]] = 0
             unnormalized_probs[inout_ind] *= alpha
 
             #print(prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind])

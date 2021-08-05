@@ -311,7 +311,8 @@ class DenseOTF(Base, DenseGraph):
             """Move to next node."""
             normalized_probs = get_normalized_probs(
                 #data, nonzero, p, q, cur_idx, prev_idx)
-                avg_wts, data, nonzero, p, q, cur_idx, prev_idx)
+                #avg_wts, data, nonzero, p, q, cur_idx, prev_idx)
+                data, nonzero, p, q, cur_idx, prev_idx, avg_wts)
             cdf = np.cumsum(normalized_probs)
             choice = np.searchsorted(cdf, np.random.random())
             nbrs = np.where(nonzero[cur_idx])[0]
