@@ -114,6 +114,17 @@ class SparseGraph:
 
         return has_nbrs
 
+    def get_average_weights(self):
+        data = self.data
+        indptr = self.indptr
+
+        num_nodes = len(self.IDlst)
+        average_weight_ary = np.zeros(num_nodes, dtype=np.float64)
+        for idx in range(num_nodes):
+            average_weight_ary[idx] = data[indptr[idx]: indptr[idx + 1]].mean()
+
+        return average_weight_ary
+
     @staticmethod
     @jit(nopython=True, nogil=True)
     def get_normalized_probs(data, indices, indptr, p, q, cur_idx, prev_idx=None):
