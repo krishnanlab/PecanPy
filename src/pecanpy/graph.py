@@ -145,7 +145,7 @@ class SparseGraph:
             prev_ptr = np.where(nbrs_idx == prev_idx)[0]  # find previous state index
             src_nbrs_idx = get_nbrs_idx(prev_idx)  # neighbors of previous state
             non_com_nbr = isnotin(nbrs_idx, src_nbrs_idx)  # neighbors of current but not previous
-            non_com_nbr[prev_ptr] = False  # exclude previous state for in-out bias
+            non_com_nbr[prev_ptr] = False  # exclude previous state from in-out bias
 
             unnormalized_probs[non_com_nbr] /= q  # apply in-out bias
             unnormalized_probs[prev_ptr] /= p  # apply return bias
@@ -302,7 +302,7 @@ class DenseGraph:
 
         if prev_idx is not None:  # 2nd order biased walks
             non_com_nbr = np.logical_and(nbrs_ind, ~nonzero[prev_idx])  # nbrs of cur but not prev
-            non_com_nbr[prev_idx] = False  # exclude previous state for in-out biase
+            non_com_nbr[prev_idx] = False  # exclude previous state from in-out bias
 
             unnormalized_probs[non_com_nbr] /= q  # apply in-out bias
             unnormalized_probs[prev_idx] /= p  # apply return bias
@@ -330,41 +330,23 @@ class DenseGraph:
             prev_nbrs_weight = data[prev_idx].copy()
 
             inout_ind = cur_nbrs_ind & (prev_nbrs_weight < average_weight_ary)
-            return_ind = cur_nbrs_ind & ~inout_ind
-            inout_ind[prev_idx] = return_ind[prev_idx] = False  # deal with exact return differently
+            inout_ind[prev_idx] = False  # exclude previous state from in-out bias
 
-            #print("CURRENT: ", cur_idx)
-            #print("INOUT: ", np.where(inout_ind)[0])
-            ##print("RETURN: ", np.where(return_ind)[0])
-            #print("")
+            # print("CURRENT: ", cur_idx)
+            # print("INOUT: ", np.where(inout_ind)[0])
+            # print("NUM INOUT: ", inout_ind.sum(), "\n")
 
-            # apply extended inout bias
-            #if q >= 1:
-            #    unnormalized_probs[inout_ind] *= (1 / q) + (1 - 1 / q) * \
-            #        prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]
-            #else:
-            #    unnormalized_probs[inout_ind] *= 1 + unnormalized_probs[inout_ind] * \
-            #        (((1 / q) + (1 - 1 / q) * \
-            #        prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]) - 1)
-
-            b = 1
             t = prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]
-            t = b * t / (1 - (b - 1) * t)
+            #b = 1; t = b * t / (1 - (b - 1) * t)  # optional nonlinear parameterization
             alpha = 1 / q + (1 - 1 / q) * t
 
-            #alpha = 1 / q + (1 - 1 / q) * prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]
-
+            # suppress noisy edges
             alpha[unnormalized_probs[inout_ind] < average_weight_ary[cur_idx]] = np.minimum(1, 1 / q)
-            #alpha[unnormalized_probs[inout_ind] < average_weight_ary[cur_idx]] = 0
+
+            # apply in-out biases
             unnormalized_probs[inout_ind] *= alpha
 
-            #print(prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind])
-
-            # apply extended return bias TODO: nee to test return
-            #unnormalized_probs[return_ind] *= (1 / p) + (1 - 1 / p) * \
-            #    (1 - prev_nbrs_weight[return_ind] / deg_ary[return_ind]) * \
-            #    n_nbrs_ary[return_ind] / (n_nbrs_ary[return_ind] - 1)
-
+            # apply return bias
             unnormalized_probs[prev_idx] /= p
 
         unnormalized_probs = unnormalized_probs[cur_nbrs_ind]
