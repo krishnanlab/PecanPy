@@ -371,25 +371,25 @@ def isnotin(ptr_ary1, ptr_ary2):
     """Value in ``ptr_ary1`` but not in ``ptr_ary2``.
 
     Note: 
-        ``ptr_ary1`` and ``ptr_ary2`` are nbr pointer arrays for the current 
+        ``ptr_ary1`` and ``ptr_ary2`` are nbr pointer arrays for the current
         state and the previous state, respectively
 
     Used to find neighbor indices that are in current state but not in the
     previous state, which will be biased using the in-out parameter ``q``. The
     values in each of the two arrays are sorted ascendingly. The main idea is
-    to scan through ``ary1`` and compare the values in ``ary2`` in a way that
-    at most one pass of each array is needed instead of a nested loop (for
-    each element in ``ary1``, compare against every element in ``ary2``),
-    which is much more efficient. Checkout the following example for more
-    intuition.
+    to scan through ``ptr_ary1`` and compare the values in ``ptr_ary2`` in a 
+    way that at most one pass of each array is needed instead of a nested loop
+    (for each element in ``ptr_ary1``, compare against every element in
+    ``ptr_ary2``), which is much more efficient. Checkout the following example
+    for more intuition.
 
     Examples:
         Consider the following example with two arrays, the ``*`` above
-        ``ary1`` and ``ary2`` indicate the pointers (``ptr1`` and ``ptr2``
-        respectively).
+        ``ptr_ary1`` and ``ptr_ary2`` indicate the indices ``idx1`` and 
+        ``idx2``, respectively.
 
-        >>> ary1 = [1, 2, 5]
-        >>> ary2 = [1, 5]
+        >>> ptr_ary1 = [1, 2, 5]
+        >>> ptr_ary2 = [1, 5]
         >>>
         >>> # iteration1: indicator = [False, True, True]
         >>>  *
@@ -418,32 +418,32 @@ def isnotin(ptr_ary1, ptr_ary2):
 
     """
     indicator = np.ones(ptr_ary1.size, dtype=boolean)
-    ptr2 = 0
-    for ptr1 in range(ptr_ary1.size):
-        if ptr2 == ptr_ary2.size:  # end of ary2
+    idx2 = 0
+    for idx1 in range(ptr_ary1.size):
+        if idx2 == ptr_ary2.size:  # end of ary2
             break
 
-        val1 = ptr_ary1[ptr1]
-        val2 = ptr_ary2[ptr2]
+        ptr1 = ptr_ary1[idx1]
+        ptr2 = ptr_ary2[idx2]
 
-        if val1 < val2:
+        if ptr1 < ptr2:
             continue
 
-        elif val1 == val2:  # found a matching value
-            indicator[ptr1] = False
-            ptr2 += 1
+        elif ptr1 == ptr2:  # found a matching value
+            indicator[idx1] = False
+            idx2 += 1
 
-        elif val1 > val2:
-            for j in range(ptr2, ptr_ary2.size):
-                if ptr_ary2[j] == val1:
-                    indicator[ptr1] = False
-                    ptr2 += 1
+        elif ptr1 > ptr2:
+            # sweep through ptr_ary2 until ptr2 catch up on ptr1
+            for j in range(idx2, ptr_ary2.size):
+                ptr2 = ptr_ary2[j]
+                if ptr2 == ptr1:
+                    indicator[idx1] = False
+                    idx2 = j + 1
                     break
 
-                elif ptr_ary2[j] > val1:
-                    ptr2 = j
+                elif ptr2 > ptr1:
+                    idx2 = j
                     break
-
-            continue
 
     return indicator
