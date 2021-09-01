@@ -356,8 +356,12 @@ class DenseGraph:
 
 
 @jit(nopython=True, nogil=True)
-def isnotin(ary1, ary2):
-    """Value in ary1 but not in ary2.
+def isnotin(ptr_ary1, ptr_ary2):
+    """Value in ``ptr_ary1`` but not in ``ptr_ary2``.
+
+    Note: 
+        ``ptr_ary1`` and ``ptr_ary2`` are nbr pointer arrays for the current 
+        state and the previous state, respectively
 
     Used to find neighbor indices that are in current state but not in the
     previous state, which will be biased using the in-out parameter ``q``. The
@@ -402,14 +406,14 @@ def isnotin(ary1, ary2):
 
 
     """
-    indicator = np.ones(ary1.size, dtype=boolean)
+    indicator = np.ones(ptr_ary1.size, dtype=boolean)
     ptr2 = 0
-    for ptr1 in range(ary1.size):
-        if ptr2 == ary2.size:  # end of ary2
+    for ptr1 in range(ptr_ary1.size):
+        if ptr2 == ptr_ary2.size:  # end of ary2
             break
 
-        val1 = ary1[ptr1]
-        val2 = ary2[ptr2]
+        val1 = ptr_ary1[ptr1]
+        val2 = ptr_ary2[ptr2]
 
         if val1 < val2:
             continue
@@ -419,13 +423,13 @@ def isnotin(ary1, ary2):
             ptr2 += 1
 
         elif val1 > val2:
-            for j in range(ptr2, ary2.size):
-                if ary2[j] == val1:
+            for j in range(ptr2, ptr_ary2.size):
+                if ptr_ary2[j] == val1:
                     indicator[ptr1] = False
                     ptr2 += 1
                     break
 
-                elif ary2[j] > val1:
+                elif ptr_ary2[j] > val1:
                     ptr2 = j
                     break
 
