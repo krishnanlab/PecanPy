@@ -263,9 +263,9 @@ class DenseGraph:
         np.savez(fp, data=self.data, IDs=self.IDlst)
 
     def get_average_weights(self):
-        self.deg_ary = self.data.sum(axis=1)
-        self.n_nbrs_ary = self.nonzero.sum(axis=1)
-        self.average_weight_ary = self.deg_ary / self.n_nbrs_ary
+        deg_ary = self.data.sum(axis=1)
+        n_nbrs_ary = self.nonzero.sum(axis=1)
+        return deg_ary / n_nbrs_ary
 
     def get_has_nbrs(self):
         """Wrap ``has_nbrs``."""

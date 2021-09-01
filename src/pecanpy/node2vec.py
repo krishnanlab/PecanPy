@@ -303,8 +303,7 @@ class DenseOTF(Base, DenseGraph):
         q = self.q
         #get_normalized_probs = self.get_normalized_probs
         get_normalized_probs = self.get_extended_normalized_probs
-        self.get_average_weights()  # for extented n2v
-        avg_wts = self.average_weight_ary
+        avg_wts = self.get_average_weights()  # for n2v+
 
         @jit(nopython=True, nogil=True)
         def move_forward(cur_idx, prev_idx=None):
