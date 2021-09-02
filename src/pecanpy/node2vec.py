@@ -1,7 +1,8 @@
 """Different strategies for generating node2vec walks."""
 
 import numpy as np
-from numba import jit, prange
+from numba import get_num_threads, jit, prange
+from numba.np.ufunc.parallel import _get_thread_id
 from pecanpy.graph import DenseGraph, SparseGraph
 
 
@@ -84,30 +85,61 @@ class Base:
 
         move_forward = self.get_move_forward()
         has_nbrs = self.get_has_nbrs()
+        verbose = self.verbose
 
         @jit(parallel=True, nogil=True, nopython=True)
         def node2vec_walks():
             """Simulate a random walk starting from start node."""
             n = start_node_idx_ary.size
-            walk_idx_mat = np.zeros((n, walk_length + 1), dtype=np.uint32)
-            walk_idx_mat[:, 0] = start_node_idx_ary
-            for i in prange(n):
-                start_node_idx = walk_idx_mat[i, 0]
-                walk_idx_mat[i, 1] = move_forward(start_node_idx)
-                # TODO: print status in regular interval
+            # use last entry of each walk index array to keep track of effective walk length
+            walk_idx_mat = np.zeros((n, walk_length + 2), dtype=np.uint32)
+            walk_idx_mat[:, 0] = start_node_idx_ary  # initialize seeds
+            walk_idx_mat[:, -1] = walk_length + 1  # set to full walk length by default
 
+            # progress bar parameters
+            n_checkpoints = 10
+            checkpoint = n / get_num_threads() // n_checkpoints
+            progress_bar_length = 25
+            private_count = 0
+
+            for i in prange(n):
+                # initialize first step as normal random walk
+                start_node_idx = walk_idx_mat[i, 0]
+                if has_nbrs(start_node_idx):
+                    walk_idx_mat[i, 1] = move_forward(start_node_idx)
+                else:
+                    walk_idx_mat[i, -1] = 1
+                    continue
+
+                # start bias random walk
                 for j in range(2, walk_length + 1):
                     cur_idx = walk_idx_mat[i, j - 1]
                     if has_nbrs(cur_idx):
                         prev_idx = walk_idx_mat[i, j - 2]
                         walk_idx_mat[i, j] = move_forward(cur_idx, prev_idx)
                     else:
-                        print("Dead end!")  # TODO: need to modify walks accordingly
+                        walk_idx_mat[i, -1] = j
                         break
+
+                if verbose:
+                    # TODO: make monitoring less messy
+                    private_count += 1
+                    if private_count % checkpoint == 0:
+                        progress = private_count / n * progress_bar_length * get_num_threads()
+
+                        # manuual construct progress bar since string formatting not supported
+                        progress_bar = '|'
+                        for k in range(progress_bar_length):
+                            progress_bar += '#' if k < progress else ' '
+                        progress_bar += '|'
+
+                        print("Thread # " if _get_thread_id() < 10 else "Thread #",
+                              _get_thread_id(), "progress:", progress_bar,
+                              get_num_threads() * private_count * 10000 // n / 100, "%")
 
             return walk_idx_mat
 
-        walks = [[self.IDlst[idx] for idx in walk] for walk in node2vec_walks()]
+        walks = [[self.IDlst[idx] for idx in walk[:walk[-1]]] for walk in node2vec_walks()]
 
         return walks
 

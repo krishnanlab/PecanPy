@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4079517.svg)](https://doi.org/10.5281/zenodo.4079517) 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4735797.svg)](https://doi.org/10.5281/zenodo.4735797)
 [![Documentation Status](https://readthedocs.org/projects/pecanpy/badge/?version=latest)](https://pecanpy.readthedocs.io/en/latest/?badge=latest)
 
 # PecanPy: A parallelized, efficient, and accelerated _node2vec_ in Python
@@ -7,17 +7,17 @@ Learning low-dimensional representations (embeddings) of nodes in large graphs i
 
 Below is a quick start guide. Detailed documentation is available [here](https://pecanpy.readthedocs.io/).
 
-The implementation and the optimizations, along with benchmarks, are described in this [preprint](https://doi.org/10.1101/2020.07.23.218487) `bioRxiv doi.org/10.1101/2020.07.23.218487`. The benchmarking results presented in the preprint can be reproduced using the test scripts provided in the companion [benchmarks repo](https://github.com/krishnanlab/PecanPy_benchmarks).
+The implementation and the optimizations, along with benchmarks, are described in this [application note](https://doi.org/10.1093/bioinformatics/btab202) published in _Bioinformatics_. The benchmarking results presented in the preprint can be reproduced using the test scripts provided in the companion [benchmarks repo](https://github.com/krishnanlab/PecanPy_benchmarks).
 
 ## Installation
 
-Install from the latest code on [GitHub](https://github.com/krishnanlab/pecanpy) with:
+Install from the latest release with:
 
 ```bash
 $ pip install pecanpy
 ```
 
-Install in development mode with:
+Install latest version (unreleassed) in development mode with:
 
 ```bash
 $ git clone https://github.com/krishnanlab/pecanpy.git
@@ -105,15 +105,15 @@ Detailed documentation for PecanPy is available [here](https://pecanpy.readthedo
 For support please contact [Remy Liu](https://twitter.com/RemyLau3) at liurenmi@msu.edu.
 
 ### License
-This repository and all its contents are released under the [Creative Commons License: Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode); See [LICENSE.md](https://github.com/krishnanlab/pecanpy/blob/master/LICENSE.md).
+This repository and all its contents are released under the [BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause); See [LICENSE.md](https://github.com/krishnanlab/pecanpy/blob/master/LICENSE.md).
 
 ### Citation
 If you use this work, please cite:  
-Liu R, Krishnan A (2020) PecanPy: a fast, efficient, and parallelized Python implementation of _node2vec_. _bioRxiv_ doi.org/10.1101/2020.07.23.218487.
+Liu R, Krishnan A (2021) **PecanPy: a fast, efficient, and parallelized Python implementation of node2vec.** _Bioinformatics_ https://doi.org/10.1093/bioinformatics/btab202
 
 ### Authors
 Renming Liu, Arjun Krishnan*
->*General correspondence should be addressed to AK at arjun@msu.edu.
+>\*General correspondence should be addressed to AK at arjun@msu.edu.
 
 ### Funding
 This work was primarily supported by US National Institutes of Health (NIH) grants R35 GM128765 to AK and in part by MSU start-up funds to AK.
