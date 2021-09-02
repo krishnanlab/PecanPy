@@ -115,6 +115,7 @@ class SparseGraph:
         return has_nbrs
 
     def get_average_weights(self):
+        """Compute average edge weights."""
         data = self.data
         indptr = self.indptr
 
@@ -128,7 +129,7 @@ class SparseGraph:
     @staticmethod
     @jit(nopython=True, nogil=True)
     def get_normalized_probs(data, indices, indptr, p, q, cur_idx, prev_idx, average_weight_ary):
-        """Calculate transition probabilities.
+        """Calculate node2vec transition probabilities.
 
         Calculate 2nd order transition probabilities by first finidng the
         neighbors of the current state that are not reachable from the previous
@@ -167,7 +168,7 @@ class SparseGraph:
     @staticmethod
     @jit(nopython=True, nogil=True)
     def get_extended_normalized_probs(data, indices, indptr, p, q, cur_idx, prev_idx, average_weight_ary):
-        """Calculate n2v+ transition probabilities."""
+        """Calculate node2vec+ transition probabilities."""
         def get_nbrs_idx(idx):
             return indices[indptr[idx]: indptr[idx + 1]]
 
@@ -180,8 +181,8 @@ class SparseGraph:
         if prev_idx is not None:  # 2nd order biased walk
             prev_ptr = np.where(nbrs_idx == prev_idx)[0]  # find previous state index
             src_nbrs_idx = get_nbrs_idx(prev_idx)  # neighbors of previous state
-            out_ind, t = isnotin_extended(nbrs_idx, src_nbrs_idx, \
-                                          get_nbrs_weight(prev_idx), \
+            out_ind, t = isnotin_extended(nbrs_idx, src_nbrs_idx,
+                                          get_nbrs_weight(prev_idx),
                                           average_weight_ary)  # determine out edges
             out_ind[prev_ptr] = False  # exclude previous state from out biases
 
@@ -306,6 +307,7 @@ class DenseGraph:
         np.savez(fp, data=self.data, IDs=self.IDlst)
 
     def get_average_weights(self):
+        """Compute average edge weights."""
         deg_ary = self.data.sum(axis=1)
         n_nbrs_ary = self.nonzero.sum(axis=1)
         return deg_ary / n_nbrs_ary
@@ -326,7 +328,7 @@ class DenseGraph:
     @staticmethod
     @jit(nopython=True, nogil=True)
     def get_normalized_probs(data, nonzero, p, q, cur_idx, prev_idx, average_weight_ary):
-        """Calculate transition probabilities.
+        """Calculate node2vec transition probabilities.
 
         Calculate 2nd order transition probabilities by first finidng the
         neighbors of the current state that are not reachable from the previous
@@ -358,18 +360,11 @@ class DenseGraph:
     @staticmethod
     @jit(nopython=True, nogil=True)
     def get_extended_normalized_probs(data, nonzero, p, q, cur_idx, prev_idx, average_weight_ary):
-        """Calculate transition probabilities.
-
-        Note:
-            If ``prev_idx`` present, calculate 2nd order biased transition, otherwise
-            calculate 1st order transition.
-
-        """
+        """Calculate node2vec+ transition probabilities."""
         cur_nbrs_ind = nonzero[cur_idx]
         unnormalized_probs = data[cur_idx].copy()
 
         if prev_idx is not None:  # 2nd order biased walks
-            prev_nbrs_ind = nonzero[prev_idx]
             prev_nbrs_weight = data[prev_idx].copy()
 
             inout_ind = cur_nbrs_ind & (prev_nbrs_weight < average_weight_ary)
@@ -380,7 +375,7 @@ class DenseGraph:
             # print("NUM INOUT: ", inout_ind.sum(), "\n")
 
             t = prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]
-            #b = 1; t = b * t / (1 - (b - 1) * t)  # optional nonlinear parameterization
+            # b = 1; t = b * t / (1 - (b - 1) * t)  # optional nonlinear parameterization
 
             # compute out biases
             alpha = 1 / q + (1 - 1 / q) * t
@@ -398,16 +393,16 @@ class DenseGraph:
 
 @jit(nopython=True, nogil=True)
 def isnotin(ptr_ary1, ptr_ary2):
-    """Find node2vec out edges
+    """Find node2vec out edges.
 
     The node2vec out edges is determined by non-common neighbors. This function
     find out neighbors of node1 that are not neighbors of node2, by picking out
-    values in ``ptr_ary1`` but not in ``ptr_ary2``, which correspond to the 
+    values in ``ptr_ary1`` but not in ``ptr_ary2``, which correspond to the
     neighbor pointers for the current state and the previous state, resp.
 
     Note:
         This function does not remove the index of the previous state. Instead,
-    the index of the previous state will be removed once the indicator is 
+    the index of the previous state will be removed once the indicator is
     returned to the ``get_normalized_probs``.
 
     Args:
@@ -489,7 +484,7 @@ def isnotin(ptr_ary1, ptr_ary2):
 
 @jit(nopython=True, nogil=True)
 def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, avg_wts):
-    """Find node2vec+ out edges
+    """Find node2vec+ out edges.
 
     The node2vec+ out edges is determined by considering the edge weights
     connecting node2 (the potential next state) to the previous state. Unlinke
@@ -502,7 +497,7 @@ def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, avg_wts):
             the neighbors of the current state
         ptr_ary2 (:obj:`numpy.ndarray` of :obj:`uint32`): array of pointers to
             the neighbors of the previous state
-        wts_ary2 (:obj: `numpy.ndarray` of :obj:`float64`): array of edge 
+        wts_ary2 (:obj: `numpy.ndarray` of :obj:`float64`): array of edge
             weights of the previous state
         avg_wts (:obj: `numpy.ndarray` of :obj:`float64`): array of average
             edge weights of each node

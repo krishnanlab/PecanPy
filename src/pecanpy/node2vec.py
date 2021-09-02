@@ -112,13 +112,13 @@ class Base:
         return walks
 
     def setup_get_normalized_probs(self):
-        """Setup transition probability coomputation function
+        """Transition probability computation setup.
 
-        This is function performs necessary preprocessing of computing the 
-        average edge weights array, which is used later by the transition 
-        probability computation function ``get_extended_normalized_probs``, 
-        if node2vec+ is used. Otherwise, return the normal transition function 
-        ``get_noramlized_probs`` with a trivial placeholder for average edge 
+        This is function performs necessary preprocessing of computing the
+        average edge weights array, which is used later by the transition
+        probability computation function ``get_extended_normalized_probs``,
+        if node2vec+ is used. Otherwise, return the normal transition function
+        ``get_noramlized_probs`` with a trivial placeholder for average edge
         weights array ``avg_wts``.
 
         """
@@ -333,8 +333,6 @@ class DenseOTF(Base, DenseGraph):
         def move_forward(cur_idx, prev_idx=None):
             """Move to next node."""
             normalized_probs = get_normalized_probs(
-                #data, nonzero, p, q, cur_idx, prev_idx)
-                #avg_wts, data, nonzero, p, q, cur_idx, prev_idx)
                 data, nonzero, p, q, cur_idx, prev_idx, avg_wts)
             cdf = np.cumsum(normalized_probs)
             choice = np.searchsorted(cdf, np.random.random())
