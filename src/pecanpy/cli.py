@@ -210,6 +210,9 @@ def main():
     """Pipeline for representational learning for all nodes in a graph."""
     args = parse_args()
 
+    if args.directed and args.extend:
+        raise NotImplementedError("Node2vec+ not implemented for directed graph yet.")
+
     @Timer("load graph", True)
     def timed_read_graph():
         return read_graph(args)
