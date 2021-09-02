@@ -398,25 +398,38 @@ class DenseGraph:
 
 @jit(nopython=True, nogil=True)
 def isnotin(ptr_ary1, ptr_ary2):
-    """Value in ``ptr_ary1`` but not in ``ptr_ary2``.
+    """Find node2vec out edges
 
-    Note: 
-        ``ptr_ary1`` and ``ptr_ary2`` are nbr pointer arrays for the current
-        state and the previous state, respectively
+    The node2vec out edges is determined by non-common neighbors. This function
+    find out neighbors of node1 that are not neighbors of node2, by picking out
+    values in ``ptr_ary1`` but not in ``ptr_ary2``, which correspond to the 
+    neighbor pointers for the current state and the previous state, resp.
 
-    Used to find neighbor indices that are in current state but not in the
-    previous state, which will be biased using the in-out parameter ``q``. The
-    values in each of the two arrays are sorted ascendingly. The main idea is
-    to scan through ``ptr_ary1`` and compare the values in ``ptr_ary2`` in a 
-    way that at most one pass of each array is needed instead of a nested loop
-    (for each element in ``ptr_ary1``, compare against every element in
-    ``ptr_ary2``), which is much more efficient. Checkout the following example
-    for more intuition.
+    Note:
+        This function does not remove the index of the previous state. Instead,
+    the index of the previous state will be removed once the indicator is 
+    returned to the ``get_normalized_probs``.
 
-    Examples:
-        Consider the following example with two arrays, the ``*`` above
-        ``ptr_ary1`` and ``ptr_ary2`` indicate the indices ``idx1`` and 
-        ``idx2``, respectively.
+    Args:
+        ptr_ary1 (:obj:`numpy.ndarray` of :obj:`uint32`): array of pointers to
+            the neighbors of the current state
+        ptr_ary2 (:obj:`numpy.ndarray` of :obj:`uint32`): array of pointers to
+            the neighbors of the previous state
+
+    Returns:
+        indicator (:obj:`numpy.ndarray` of :obj:`bool`): indicator of whether
+            a neighbor of the current state is considered as an "out edge"
+
+    Example:
+        The values in the two neighbor pointer arrays are sorted ascendingly.
+        The main idea is to scan through ``ptr_ary1`` and compare the values in
+        ``ptr_ary2``. In this way, at most one pass per array is needed to find
+        out the non-common neighbor pointers instead of a nested loop (for each
+        element in ``ptr_ary1``, compare against every element in``ptr_ary2``),
+        which is much slower. Checkout the following example for more intuition.
+        The ``*`` above ``ptr_ary1`` and ``ptr_ary2`` indicate the indices
+        ``idx1`` and ``idx2``, respectively, which keep track of the scaning
+        progress.
 
         >>> ptr_ary1 = [1, 2, 5]
         >>> ptr_ary2 = [1, 5]
@@ -440,11 +453,6 @@ def isnotin(ptr_ary1, ptr_ary2):
         >>> [1, 5]
         >>>
         >>> # end of loop
-
-        Note that this does not remove the index of the previous state.
-        Instead, the index of the previous state will be removed once the
-        indicator is returned to the ``get_normalized_probs``.
-
 
     """
     indicator = np.ones(ptr_ary1.size, dtype=boolean)
@@ -481,7 +489,31 @@ def isnotin(ptr_ary1, ptr_ary2):
 
 @jit(nopython=True, nogil=True)
 def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, avg_wts):
-    """n2v+ version of ``isnotin``"""
+    """Find node2vec+ out edges
+
+    The node2vec+ out edges is determined by considering the edge weights
+    connecting node2 (the potential next state) to the previous state. Unlinke
+    node2vec, which only considers neighbors of current state that are not
+    neighbors of the previous state, node2vec+ also considers neighbors of
+    the previous state as out edges if the edge weight is below average.
+
+    Args:
+        ptr_ary1 (:obj:`numpy.ndarray` of :obj:`uint32`): array of pointers to
+            the neighbors of the current state
+        ptr_ary2 (:obj:`numpy.ndarray` of :obj:`uint32`): array of pointers to
+            the neighbors of the previous state
+        wts_ary2 (:obj: `numpy.ndarray` of :obj:`float64`): array of edge 
+            weights of the previous state
+        avg_wts (:obj: `numpy.ndarray` of :obj:`float64`): array of average
+            edge weights of each node
+
+    Return:
+        indicator (:obj:`numpy.ndarray` of :obj:`bool`): indicator of whether
+            a neighbor of the current state is considered as an "out edge"
+        t (:obj:`numpy.ndarray` of :obj:`float64`): parameters used to fine
+            tune the out biases
+
+    """
     indicator = np.ones(ptr_ary1.size, dtype=boolean)
     t = np.zeros(ptr_ary1.size, dtype=np.float64)
     idx2 = 0
