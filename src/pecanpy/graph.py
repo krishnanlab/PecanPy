@@ -127,7 +127,7 @@ class SparseGraph:
 
     @staticmethod
     @jit(nopython=True, nogil=True)
-    def get_normalized_probs(data, indices, indptr, p, q, cur_idx, prev_idx=None):
+    def get_normalized_probs(data, indices, indptr, p, q, cur_idx, prev_idx, average_weight_ary):
         """Calculate transition probabilities.
 
         Calculate 2nd order transition probabilities by first finidng the
@@ -155,10 +155,10 @@ class SparseGraph:
             prev_ptr = np.where(nbrs_idx == prev_idx)[0]  # find previous state index
             src_nbrs_idx = get_nbrs_idx(prev_idx)  # neighbors of previous state
             non_com_nbr = isnotin(nbrs_idx, src_nbrs_idx)  # neighbors of current but not previous
-            non_com_nbr[prev_ptr] = False  # exclude previous state from in-out bias
+            non_com_nbr[prev_ptr] = False  # exclude previous state from out biases
 
-            unnormalized_probs[non_com_nbr] /= q  # apply in-out bias
-            unnormalized_probs[prev_ptr] /= p  # apply return bias
+            unnormalized_probs[non_com_nbr] /= q  # apply out biases
+            unnormalized_probs[prev_ptr] /= p  # apply the return bias
 
         normalized_probs = unnormalized_probs / unnormalized_probs.sum()
 
@@ -183,7 +183,7 @@ class SparseGraph:
             out_ind, t = isnotin_extended(nbrs_idx, src_nbrs_idx, \
                                           get_nbrs_weight(prev_idx), \
                                           average_weight_ary)  # determine out edges
-            out_ind[prev_ptr] = False  # exclude previous state from in-out bias
+            out_ind[prev_ptr] = False  # exclude previous state from out biases
 
             # compute out biases
             alpha = (1 / q + (1 - 1 / q) * t[out_ind])
@@ -345,10 +345,10 @@ class DenseGraph:
 
         if prev_idx is not None:  # 2nd order biased walks
             non_com_nbr = np.logical_and(nbrs_ind, ~nonzero[prev_idx])  # nbrs of cur but not prev
-            non_com_nbr[prev_idx] = False  # exclude previous state from in-out bias
+            non_com_nbr[prev_idx] = False  # exclude previous state from out biases
 
-            unnormalized_probs[non_com_nbr] /= q  # apply in-out bias
-            unnormalized_probs[prev_idx] /= p  # apply return bias
+            unnormalized_probs[non_com_nbr] /= q  # apply out biases
+            unnormalized_probs[prev_idx] /= p  # apply the return bias
 
         unnormalized_probs = unnormalized_probs[nbrs_ind]
         normalized_probs = unnormalized_probs / unnormalized_probs.sum()
@@ -373,7 +373,7 @@ class DenseGraph:
             prev_nbrs_weight = data[prev_idx].copy()
 
             inout_ind = cur_nbrs_ind & (prev_nbrs_weight < average_weight_ary)
-            inout_ind[prev_idx] = False  # exclude previous state from in-out bias
+            inout_ind[prev_idx] = False  # exclude previous state from out biases
 
             # print("CURRENT: ", cur_idx)
             # print("INOUT: ", np.where(inout_ind)[0])
@@ -387,7 +387,7 @@ class DenseGraph:
 
             # suppress noisy edges
             alpha[unnormalized_probs[inout_ind] < average_weight_ary[cur_idx]] = np.minimum(1, 1 / q)
-            unnormalized_probs[inout_ind] *= alpha  # apply in-out biases
+            unnormalized_probs[inout_ind] *= alpha  # apply out biases
             unnormalized_probs[prev_idx] /= p  # apply  the return bias
 
         unnormalized_probs = unnormalized_probs[cur_nbrs_ind]
