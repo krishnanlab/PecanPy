@@ -412,8 +412,9 @@ def isnotin(ptr_ary1, ptr_ary2):
             the neighbors of the previous state
 
     Returns:
-        (:obj:`numpy.ndarray` of :obj:`bool`): indicator of whether a neighbor
-            of the current state is considered as an "out edge"
+        :obj:`numpy.ndarray` of :obj:`bool`: indicator
+            indicator of whether a neighbor of the current state is considered
+            as an "out edge"
 
     Example:
         The values in the two neighbor pointer arrays are sorted ascendingly.
@@ -503,10 +504,10 @@ def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, avg_wts):
             edge weights of each node
 
     Return:
-        (:obj:`numpy.ndarray` of :obj:`bool`): indicator of whether a neighbor
-            of the current state is considered as an "out edge"
-        (:obj:`numpy.ndarray` of :obj:`float64`): parameters used to fine tune
-            the out biases
+        (:obj:`numpy.ndarray` of :obj:`bool`, :obj:`numpy.ndarray` of :obj:`float64): indicator, t
+            indicator of whether a neighbor of the current state is considered
+            as an "out edge", with the corresponding parameters used to fine
+            tune the out biases
 
     """
     indicator = np.ones(ptr_ary1.size, dtype=boolean)
