@@ -102,6 +102,13 @@ def parse_args():
         help="Print out training details")
     parser.set_defaults(verbose=False)
 
+    parser.add_argument(
+        "--extend",
+        dest="extend",
+        action="store_true",
+        help="Use node2vec+ extension")
+    parser.set_defaults(extend=False)
+
     return parser.parse_args()
 
 
@@ -141,6 +148,7 @@ def read_graph(args):
     verbose = args.verbose
     weighted = args.weighted
     directed = args.directed
+    extend = args.extend
     mode = args.mode
     task = args.task
 
@@ -153,13 +161,13 @@ def read_graph(args):
         raise ValueError(f"Unknown task: {repr(task)}")
 
     if mode == "PreComp":
-        g = node2vec.PreComp(p, q, workers, verbose)
+        g = node2vec.PreComp(p, q, workers, verbose, extend)
         g.read_edg(fp, weighted, directed)
     elif mode == "SparseOTF":
-        g = node2vec.SparseOTF(p, q, workers, verbose)
+        g = node2vec.SparseOTF(p, q, workers, verbose, extend)
         g.read_edg(fp, weighted, directed)
     elif mode == "DenseOTF":
-        g = node2vec.DenseOTF(p, q, workers, verbose)
+        g = node2vec.DenseOTF(p, q, workers, verbose, extend)
         if fp.endswith(".npz"):
             g.read_npz(fp, weighted, directed)
         else:

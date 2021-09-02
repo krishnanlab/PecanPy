@@ -23,7 +23,8 @@ class Base:
         >>> from pecanpy import node2vec
         >>>
         >>> # initialize node2vec object, similarly for SparseOTF and DenseOTF
-        >>> g = node2vec.PreComp(p=0.5, q=1, workers=4, verbose=True)
+        >>> g = node2vec.PreComp(p=0.5, q=1, workers=4, verbose=True, extend=False)
+        >>> # alternatively, can specify extend=True for using node2vec+
         >>>
         >>> g.read_edg(path_to_edg_file, weighted=True, directed=False) # load graph from edgelist file
         >>> g.preprocess_transition_probs() # precompute and save 2nd order transition probs, required for PreComp
@@ -34,7 +35,7 @@ class Base:
 
     """
 
-    def __init__(self, p, q, workers, verbose):
+    def __init__(self, p, q, workers, verbose, extend=False):
         """Initializ node2vec base class.
 
         Args:
@@ -47,6 +48,7 @@ class Base:
                 including walk generation and word2vec embedding.
             verbose (bool): (not implemented yet due to issue with numba jit)
                 whether or not to display walk generation progress.
+            extend (bool): ``True`` if use node2vec+ extension, default is ``False``
 
         TODO:
             * Fix numba threads, now uses all possible threads instead of the
@@ -60,6 +62,7 @@ class Base:
         self.q = q
         self.workers = workers
         self.verbose = verbose
+        self.extend = extend
 
     def simulate_walks(self, num_walks, walk_length):
         """Generate walks starting from each nodes ``num_walks`` time.
@@ -108,6 +111,25 @@ class Base:
 
         return walks
 
+    def setup_get_normalized_probs(self):
+        """Setup transition probability coomputation function
+
+        This is function performs necessary preprocessing of computing the 
+        average edge weights array, which is used later by the transition 
+        probability computation function ``get_extended_normalized_probs``, 
+        if node2vec+ is used. Otherwise, return the normal transition function 
+        ``get_noramlized_probs`` with a trivial placeholder for average edge 
+        weights array ``avg_wts``.
+
+        """
+        if self.extend:  # use n2v+
+            get_normalized_probs = self.get_extended_normalized_probs
+            avg_wts = self.get_average_weights()
+        else:  # use normal n2v
+            get_normalized_probs = self.get_normalized_probs
+            avg_wts = None
+        return get_normalized_probs, avg_wts
+
     def preprocess_transition_probs(self):
         """Null default preprocess method."""
         pass
@@ -126,9 +148,9 @@ class PreComp(Base, SparseGraph):
 
     """
 
-    def __init__(self, p, q, workers, verbose):
+    def __init__(self, p, q, workers, verbose, extend=False):
         """Initialize PreComp mode node2vec."""
-        Base.__init__(self, p, q, workers, verbose)
+        Base.__init__(self, p, q, workers, verbose, extend)
 
     def get_move_forward(self):
         """Wrap ``move_forward``.
@@ -160,7 +182,7 @@ class PreComp(Base, SparseGraph):
             """Move to next node based on transition probabilities."""
             if prev_idx is None:
                 normalized_probs = get_normalized_probs(
-                    data, indices, indptr, p, q, cur_idx)
+                    data, indices, indptr, p, q, cur_idx, None, None)
                 cdf = np.cumsum(normalized_probs)
                 choice = np.searchsorted(cdf, np.random.random())
             else:
@@ -187,7 +209,8 @@ class PreComp(Base, SparseGraph):
         indptr = self.indptr
         p = self.p
         q = self.q
-        get_normalized_probs = self.get_normalized_probs
+
+        get_normalized_probs, avg_wts = self.setup_get_normalized_probs()
 
         n_nodes = self.indptr.size - 1  # number of nodes
         n = self.indptr[1:] - self.indptr[:-1]  # number of nbrs per node
@@ -211,7 +234,7 @@ class PreComp(Base, SparseGraph):
                 nbrs = indices[indptr[idx]: indptr[idx + 1]]
                 for nbr_idx in prange(n[idx]):
                     nbr = nbrs[nbr_idx]
-                    probs = get_normalized_probs(data, indices, indptr, p, q, idx, nbr)
+                    probs = get_normalized_probs(data, indices, indptr, p, q, idx, nbr, avg_wts)
 
                     start = offset + dim * nbr_idx
                     j_tmp, q_tmp = alias_setup(probs)
@@ -234,9 +257,9 @@ class SparseOTF(Base, SparseGraph):
 
     """
 
-    def __init__(self, p, q, workers, verbose):
+    def __init__(self, p, q, workers, verbose, extend=False):
         """Initialize PreComp mode node2vec."""
-        Base.__init__(self, p, q, workers, verbose)
+        Base.__init__(self, p, q, workers, verbose, extend)
 
     def get_move_forward(self):
         """Wrap ``move_forward``.
@@ -256,9 +279,8 @@ class SparseOTF(Base, SparseGraph):
         indptr = self.indptr
         p = self.p
         q = self.q
-        # get_normalized_probs = self.get_normalized_probs
-        get_normalized_probs = self.get_extended_normalized_probs
-        avg_wts = self.get_average_weights()  # for n2v+
+
+        get_normalized_probs, avg_wts = self.setup_get_normalized_probs()
 
         @jit(nopython=True, nogil=True)
         def move_forward(cur_idx, prev_idx=None):
@@ -283,9 +305,9 @@ class DenseOTF(Base, DenseGraph):
 
     """
 
-    def __init__(self, p, q, workers, verbose):
+    def __init__(self, p, q, workers, verbose, extend=False):
         """Initialize DenseOTF mode node2vec."""
-        Base.__init__(self, p, q, workers, verbose)
+        Base.__init__(self, p, q, workers, verbose, extend)
 
     def get_move_forward(self):
         """Wrap ``move_forward``.
@@ -304,9 +326,8 @@ class DenseOTF(Base, DenseGraph):
         nonzero = self.nonzero
         p = self.p
         q = self.q
-        #get_normalized_probs = self.get_normalized_probs
-        get_normalized_probs = self.get_extended_normalized_probs
-        avg_wts = self.get_average_weights()  # for n2v+
+
+        get_normalized_probs, avg_wts = self.setup_get_normalized_probs()
 
         @jit(nopython=True, nogil=True)
         def move_forward(cur_idx, prev_idx=None):
