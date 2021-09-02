@@ -142,7 +142,6 @@ class SparseGraph:
         otherwise calculate 1st order transition.
 
         """
-
         def get_nbrs_idx(idx):
             return indices[indptr[idx]: indptr[idx + 1]]
 
@@ -160,6 +159,39 @@ class SparseGraph:
 
             unnormalized_probs[non_com_nbr] /= q  # apply in-out bias
             unnormalized_probs[prev_ptr] /= p  # apply return bias
+
+        normalized_probs = unnormalized_probs / unnormalized_probs.sum()
+
+        return normalized_probs
+
+    @staticmethod
+    @jit(nopython=True, nogil=True)
+    def get_extended_normalized_probs(data, indices, indptr, p, q, cur_idx, prev_idx, average_weight_ary):
+        """Calculate n2v+ transition probabilities."""
+        def get_nbrs_idx(idx):
+            return indices[indptr[idx]: indptr[idx + 1]]
+
+        def get_nbrs_weight(idx):
+            return data[indptr[idx]: indptr[idx + 1]].copy()
+
+        nbrs_idx = get_nbrs_idx(cur_idx)
+        unnormalized_probs = get_nbrs_weight(cur_idx)
+
+        if prev_idx is not None:  # 2nd order biased walk
+            prev_ptr = np.where(nbrs_idx == prev_idx)[0]  # find previous state index
+            src_nbrs_idx = get_nbrs_idx(prev_idx)  # neighbors of previous state
+            out_ind, t = isnotin_extended(nbrs_idx, src_nbrs_idx, \
+                                          get_nbrs_weight(prev_idx), \
+                                          average_weight_ary)  # determine out edges
+            out_ind[prev_ptr] = False  # exclude previous state from in-out bias
+
+            # compute out biases
+            alpha = (1 / q + (1 - 1 / q) * t[out_ind])
+
+            # surpress noisy edges
+            alpha[unnormalized_probs[out_ind] < average_weight_ary[cur_idx]] = np.minimum(1, 1 / q)
+            unnormalized_probs[out_ind] *= alpha  # apply out biases
+            unnormalized_probs[prev_ptr] /= p  # apply the return bias
 
         normalized_probs = unnormalized_probs / unnormalized_probs.sum()
 
@@ -349,16 +381,14 @@ class DenseGraph:
 
             t = prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]
             #b = 1; t = b * t / (1 - (b - 1) * t)  # optional nonlinear parameterization
+
+            # compute out biases
             alpha = 1 / q + (1 - 1 / q) * t
 
             # suppress noisy edges
             alpha[unnormalized_probs[inout_ind] < average_weight_ary[cur_idx]] = np.minimum(1, 1 / q)
-
-            # apply in-out biases
-            unnormalized_probs[inout_ind] *= alpha
-
-            # apply return bias
-            unnormalized_probs[prev_idx] /= p
+            unnormalized_probs[inout_ind] *= alpha  # apply in-out biases
+            unnormalized_probs[prev_idx] /= p  # apply  the return bias
 
         unnormalized_probs = unnormalized_probs[cur_nbrs_ind]
         normalized_probs = unnormalized_probs / unnormalized_probs.sum()
@@ -447,3 +477,45 @@ def isnotin(ptr_ary1, ptr_ary2):
                     break
 
     return indicator
+
+
+@jit(nopython=True, nogil=True)
+def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, avg_wts):
+    """n2v+ version of ``isnotin``"""
+    indicator = np.ones(ptr_ary1.size, dtype=boolean)
+    t = np.zeros(ptr_ary1.size, dtype=np.float64)
+    idx2 = 0
+    for idx1 in range(ptr_ary1.size):
+        if idx2 == ptr_ary2.size:  # end of ary2
+            break
+
+        ptr1 = ptr_ary1[idx1]
+        ptr2 = ptr_ary2[idx2]
+
+        if ptr1 < ptr2:
+            continue
+
+        elif ptr1 == ptr2:  # found a matching value
+            if wts_ary2[idx2] >= avg_wts[ptr2]:  # check if loose
+                indicator[idx1] = False
+            else:
+                t[idx1] = wts_ary2[idx2] / avg_wts[ptr2]
+            idx2 += 1
+
+        elif ptr1 > ptr2:
+            # sweep through ptr_ary2 until ptr2 catch up on ptr1
+            for j in range(idx2, ptr_ary2.size):
+                ptr2 = ptr_ary2[j]
+                if ptr2 == ptr1:
+                    if wts_ary2[j] >= avg_wts[ptr2]:
+                        indicator[idx1] = False
+                    else:
+                        t[idx1] = wts_ary2[j] / avg_wts[ptr2]
+                    idx2 = j + 1
+                    break
+
+                elif ptr2 > ptr1:
+                    idx2 = j
+                    break
+
+    return indicator, t

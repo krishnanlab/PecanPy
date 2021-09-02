@@ -256,13 +256,16 @@ class SparseOTF(Base, SparseGraph):
         indptr = self.indptr
         p = self.p
         q = self.q
-        get_normalized_probs = self.get_normalized_probs
+        # get_normalized_probs = self.get_normalized_probs
+        get_normalized_probs = self.get_extended_normalized_probs
+        avg_wts = self.get_average_weights()  # for n2v+
 
         @jit(nopython=True, nogil=True)
         def move_forward(cur_idx, prev_idx=None):
             """Move to next node."""
             normalized_probs = get_normalized_probs(
-                data, indices, indptr, p, q, cur_idx, prev_idx)
+                # data, indices, indptr, p, q, cur_idx, prev_idx)
+                data, indices, indptr, p, q, cur_idx, prev_idx, avg_wts)
             cdf = np.cumsum(normalized_probs)
             choice = np.searchsorted(cdf, np.random.random())
 
