@@ -302,6 +302,19 @@ class DenseGraph:
         self.data = sparse_graph.to_dense()
         self.nonzero = self.data != 0
 
+    def from_mat(self, adj_mat, ids):
+        """Construct graph using adjacency matrix and node ids.
+
+        Args:
+            adj_mat(:obj:`numpy.ndarray`): 2D numpy array of adjacency matrix
+            ids(:obj:`list` of str): node ID list
+
+        """
+        self.data = adj_mat
+        self.nonzero = adj_mat != 0
+        self.IDlst = ids
+        self.IDmap = {j: i for i, j in enumerate(self.IDlst)}
+
     def save(self, fp):
         """Save as ``.npz`` file."""
         np.savez(fp, data=self.data, IDs=self.IDlst)
