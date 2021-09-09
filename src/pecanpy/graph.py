@@ -91,8 +91,9 @@ class SparseGraph:
                 # check if edge exists
                 if idx2 in self.data[idx1]:
                     if self.data[idx1][idx2] != weight:
-                        print(f"Warning: edge from {id1} to {id2} exists, with value of {self.data[idx1][idx2]:.2f}."
-                              + f" Now overwrite to {weight:.2f}.")
+                        print(f"WARNING: edge from {id1} to {id2} exists, with "
+                              f"value of {self.data[idx1][idx2]:.2f}. "
+                              f"Now overwrite to {weight:.2f}.")
 
                 # update edge weight
                 self.data[idx1][idx2] = weight
@@ -103,6 +104,15 @@ class SparseGraph:
 
         if csr:
             self.to_csr()
+
+    def from_mat(self, adj_mat, ids):
+        """Construct graph using adjacency matrix and node ids.
+
+        Args:
+            adj_mat(:obj:`numpy.ndarray`): 2D numpy array of adjacency matrix
+            ids(:obj:`list` of str): node ID list
+
+        """
 
     def get_has_nbrs(self):
         """Wrap ``has_nbrs``."""

@@ -14,7 +14,6 @@ Examples:
 """
 
 import argparse
-import warnings
 
 import numba
 from pecanpy import node2vec
@@ -66,8 +65,8 @@ def parse_args():
         default=10,
         help="Context size for optimization. Default is 10. Support list of values")
 
-    parser.add_argument("--epochs", default=1, type=int, 
-        help="Number of epochs in SGD when training Word2Vec")
+    parser.add_argument("--epochs", default=1, type=int,
+                        help="Number of epochs in SGD when training Word2Vec")
 
     parser.add_argument(
         "--workers",

@@ -1,10 +1,10 @@
 """Different strategies for generating node2vec walks."""
 
 import numpy as np
+from gensim.models import Word2Vec
 from numba import get_num_threads, jit, prange
 from numba.np.ufunc.parallel import _get_thread_id
 from pecanpy.graph import DenseGraph, SparseGraph
-from gensim.models import Word2Vec
 
 
 class Base:
@@ -178,7 +178,7 @@ class Base:
         ``Word2Vec`` to generate the node2vec embedding.
 
         Note:
-            The resulting embeddings are aligned with the graph, i.e., the 
+            The resulting embeddings are aligned with the graph, i.e., the
             index of embeddings is the same as that for the graph.
 
         Args:
