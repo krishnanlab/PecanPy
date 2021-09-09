@@ -17,7 +17,6 @@ import argparse
 import warnings
 
 import numba
-from gensim.models import Word2Vec
 from pecanpy import node2vec
 from pecanpy.wrappers import Timer
 
@@ -67,7 +66,8 @@ def parse_args():
         default=10,
         help="Context size for optimization. Default is 10. Support list of values")
 
-    parser.add_argument("--iter", default=1, type=int, help="Number of epochs in SGD")
+    parser.add_argument("--epochs", default=1, type=int, 
+        help="Number of epochs in SGD when training Word2Vec")
 
     parser.add_argument(
         "--workers",
@@ -182,27 +182,15 @@ def read_graph(args):
 
 def learn_embeddings(args, walks):
     """Learn embeddings by optimizing the Skipgram objective using SGD."""
-    try:
-        model = Word2Vec(
-            walks,
-            size=args.dimensions,
-            window=args.window_size,
-            min_count=0,
-            sg=1,
-            workers=args.workers,
-            iter=args.iter,
-        )
-    except TypeError:  # gensim 4.0.1 changed a coupld keywords, not back compatible
-        model = Word2Vec(
-            walks,
-            vector_size=args.dimensions,
-            window=args.window_size,
-            min_count=0,
-            sg=1,
-            workers=args.workers,
-            epochs=args.iter,
-        )
-    warnings.filterwarnings("ignore")  # disable warning from smart_open used by gensim
+    model = node2vec.Word2Vec(
+        walks,
+        vector_size=args.dimensions,
+        window=args.window_size,
+        min_count=0,
+        sg=1,
+        workers=args.workers,
+        epochs=args.epochs,
+    )
     model.wv.save_word2vec_format(args.output)
 
 
