@@ -4,6 +4,7 @@ import numpy as np
 from numba import get_num_threads, jit, prange
 from numba.np.ufunc.parallel import _get_thread_id
 from pecanpy.graph import DenseGraph, SparseGraph
+from gensim.models import Word2Vec
 
 
 class Base:
@@ -24,15 +25,19 @@ class Base:
         >>> from pecanpy import node2vec
         >>>
         >>> # initialize node2vec object, similarly for SparseOTF and DenseOTF
-        >>> g = node2vec.PreComp(p=0.5, q=1, workers=4, verbose=True, extend=False)
-        >>> # alternatively, can specify extend=True for using node2vec+
+        >>> g = node2vec.PreComp(p=0.5, q=1, workers=4, verbose=True)
+        >>> # alternatively, can specify ``extend=True`` for using node2vec+
         >>>
-        >>> g.read_edg(path_to_edg_file, weighted=True, directed=False) # load graph from edgelist file
-        >>> g.preprocess_transition_probs() # precompute and save 2nd order transition probs, required for PreComp
+        >>> # load graph from edgelist file
+        >>> g.read_edg(path_to_edg_file, weighted=True, directed=False)
+        >>> # precompute and save 2nd order transition probs (for PreComp only)
+        >>> g.preprocess_transition_probs()
         >>>
-        >>> walks = g.simulate_walks(num_walks=10, walk_length=80) # generate node2vec walks
-        >>> # at this point, the random walks could be fed to w2v to generate embeddings
+        >>> # generate random walks, which could then be used to train w2v
+        >>> walks = g.simulate_walks(num_walks=10, walk_length=80)
         >>>
+        >>> # alternatively, generate the embeddings directly using ``embed``
+        >>> emd = g.embed()
 
     """
 
@@ -165,6 +170,40 @@ class Base:
     def preprocess_transition_probs(self):
         """Null default preprocess method."""
         pass
+
+    def embed(self, dim=128, num_walks=10, walk_length=80, window_size=10, epochs=1):
+        """Generate embeddings.
+
+        This is a shortcut function that combines ``simulate_walks`` with
+        ``Word2Vec`` to generate the node2vec embedding.
+
+        Note:
+            The resulting embeddings are aligned with the graph, i.e., the 
+            index of embeddings is the same as that for the graph.
+
+        Args:
+            dim (int): dimension of the final embedding, default is 128
+            num_walks (int): number of random walks generated using each node
+                as the seed node, default is 10
+            walk_length (int): length of the random walks, default is 80
+            window_size (int): context window sized for training the
+                ``Word2Vec`` model, default is 10
+            epochs (int): number of epochs for training ``Word2Vec``, default
+                is 1
+
+        Return:
+            numpy.ndarray: The embedding matrix, each row is a node embedding
+                vector. The index is the same as that for the graph.
+
+        """
+        walks = self.simulate_walks(num_walks=num_walks, walk_length=walk_length)
+        w2v = Word2Vec(walks, vector_size=dim, window=window_size, sg=1,
+                       min_count=0, workers=self.workers, epochs=epochs)
+
+        # index mapping back to node IDs
+        idx_list = [w2v.wv.get_index(i) for i in self.IDlst]
+
+        return w2v.wv.vectors[idx_list]
 
 
 class PreComp(Base, SparseGraph):
