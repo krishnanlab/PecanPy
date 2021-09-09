@@ -113,6 +113,17 @@ class SparseGraph:
             ids(:obj:`list` of str): node ID list
 
         """
+        data = []  # construct edge list
+        for row in adj_mat:
+            data.append({})
+            for j, weight in enumerate(row):
+                if weight != 0:
+                    data[-1][j] = weight
+
+        # save edgelist and id data and convert to csr format
+        self.data, self.IDlst = data, ids
+        self.IDmap = {j: i for i, j in enumerate(ids)}
+        self.to_csr()
 
     def get_has_nbrs(self):
         """Wrap ``has_nbrs``."""
