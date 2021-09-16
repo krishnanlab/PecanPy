@@ -127,9 +127,13 @@ def check_mode(g, mode):
     if (g_dens >= 0.2) & (mode != "DenseOTF"):
         print(f"WARNING: network density = {g_dens:.3f} (> 0.2), recommend DenseOTF over {mode}")
     if (g_dens < 0.001) & (g_size < 10000) & (mode != "PreComp"):
-        print(f"WARNING: network density = {g_dens:.2e} (< 0.001) with {g_size} nodes, recommend PreComp over {mode}")
+        print(f"WARNING: network density = {g_dens:.2e} (< 0.001) with "
+              f"{g_size} nodes (< 10000), recommend PreComp over {mode}")
     if (g_dens >= 0.001) & (g_dens < 0.2) & (mode != "SparseOTF"):
         print(f"WARNING: network density = {g_dens:.3f}, recommend SparseOTF over {mode}")
+    if (g_dens < 0.001) & (g_size >= 10000) & (mode != "SparseOTF"):
+        print(f"WARNING: network density = {g_dens:.3f} (< 0.001) with "
+              f"{g_size} nodes (>= 10000), recommend SparseOTF over {mode}")
 
 
 def read_graph(args):
