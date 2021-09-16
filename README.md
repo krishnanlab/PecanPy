@@ -7,7 +7,7 @@ Learning low-dimensional representations (embeddings) of nodes in large graphs i
 
 The details of implementation and the optimizations, along with benchmarks, are described in the application note [_PecanPy: a fast, efficient and parallelized Python implementation of node2vec_](https://doi.org/10.1093/bioinformatics/btab202), which is published in _Bioinformatics_. The benchmarking results presented in the preprint can be reproduced using the test scripts provided in the companion [benchmarks repo](https://github.com/krishnanlab/PecanPy_benchmarks).
 
-**v2 update**: PecanPy is now equipped with _node2vec+_, which handles weighted graph more effectively. For more information, see [*Accurately Modeling Biased Random Walks on Weighted Wraphs Using Node2vec+*](). The datasets and test scripts for reproducing the presented results are available in the [node2vec+ benchmarks repo](https://github.com/krishnanlab/node2vecplus_benchmarks).
+**v2 update**: PecanPy is now equipped with _node2vec+_, which is a natural extension of _node2vec_, and handles weighted graph more effectively. For more information, see [*Accurately Modeling Biased Random Walks on Weighted Wraphs Using Node2vec+*](). The datasets and test scripts for reproducing the presented results are available in the [node2vec+ benchmarks repo](https://github.com/krishnanlab/node2vecplus_benchmarks).
 
 ## Installation
 
@@ -25,7 +25,7 @@ $ cd pecanpy
 $ pip install -e .
 ```
 
-where `-e` means "editable" mode so you don't have to reinstall ever time you make changes.
+where `-e` means "editable" mode so you don't have to reinstall every time you make changes.
 
 PecanPy installs a command line utility `pecanpy` that can be used directly.
 
@@ -40,6 +40,16 @@ To run *node2vec* on Zachary's karate club network using `SparseOTF` mode, execu
 ```bash
 pecanpy --input demo/karate.edg --output demo/karate.emb --mode SparseOTF
 ```
+
+### Node2vec+
+
+To enable _node2vec+_, specify the `--extend` option.
+
+```bash
+pecanpy --input demo/karate.edge --output demo/karate_n2vplus.emb --mode SparseOTF --extend
+```
+
+**Note**: _node2vec+_ is only beneficial for embedding _weighted_ graphs. For unweighted graphs, _node2vec+_ is equivalent to _node2vec_. The above example only serves as a demonstration of enabling _node2vec+_.
 
 ### Demo
 
