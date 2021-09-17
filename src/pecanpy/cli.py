@@ -179,6 +179,8 @@ def read_graph(args):
         raise ValueError(f"Unkown mode: {repr(mode)}")
 
     check_mode(g, mode)
+    if extend and not weighted:
+        print("WARNING: node2vec+ is equivalent to node2vec for unweighted graphs.")
 
     return g
 
