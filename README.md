@@ -1,13 +1,13 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4735797.svg)](https://doi.org/10.5281/zenodo.4735797)
 [![Documentation Status](https://readthedocs.org/projects/pecanpy/badge/?version=latest)](https://pecanpy.readthedocs.io/en/latest/?badge=latest)
 
-# PecanPy: A parallelized, efficient, and accelerated _node2vec_ in Python
+# PecanPy: A parallelized, efficient, and accelerated _node2vec(+)_ in Python
 
 Learning low-dimensional representations (embeddings) of nodes in large graphs is key to applying machine learning on massive biological networks. _Node2vec_ is the most widely used method for node embedding. PecanPy is a fast, parallelized, memory efficient, and cache optimized Python implementation of [_node2vec_](https://github.com/aditya-grover/node2vec). It uses cache-optimized compact graph data structures and precomputing/parallelization to result in fast, high-quality node embeddings for biological networks of all sizes and densities. Detailed source code documentation can be found [here](https://pecanpy.readthedocs.io/).
 
 The details of implementation and the optimizations, along with benchmarks, are described in the application note [_PecanPy: a fast, efficient and parallelized Python implementation of node2vec_](https://doi.org/10.1093/bioinformatics/btab202), which is published in _Bioinformatics_. The benchmarking results presented in the preprint can be reproduced using the test scripts provided in the companion [benchmarks repo](https://github.com/krishnanlab/PecanPy_benchmarks).
 
-**v2 update**: PecanPy is now equipped with _node2vec+_, which is a natural extension of _node2vec_, and handles weighted graph more effectively. For more information, see [*Accurately Modeling Biased Random Walks on Weighted Wraphs Using Node2vec+*](https://arxiv.org/abs/2109.08031). The datasets and test scripts for reproducing the presented results are available in the [node2vec+ benchmarks repo](https://github.com/krishnanlab/node2vecplus_benchmarks).
+**v2 update**: PecanPy is now equipped with _node2vec+_, which is a natural extension of _node2vec_ and handles weighted graph more effectively. For more information, see [*Accurately Modeling Biased Random Walks on Weighted Wraphs Using Node2vec+*](https://arxiv.org/abs/2109.08031). The datasets and test scripts for reproducing the presented results are available in the [node2vec+ benchmarks repo](https://github.com/krishnanlab/node2vecplus_benchmarks).
 
 ## Installation
 
