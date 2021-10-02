@@ -1,5 +1,7 @@
 """Different strategies for generating node2vec walks."""
 
+from time import time
+
 import numpy as np
 from gensim.models import Word2Vec
 from numba import get_num_threads, jit, prange
@@ -171,7 +173,8 @@ class Base:
         """Null default preprocess method."""
         pass
 
-    def embed(self, dim=128, num_walks=10, walk_length=80, window_size=10, epochs=1):
+    def embed(self, dim=128, num_walks=10, walk_length=80, window_size=10,
+              epochs=1, verbose=False):
         """Generate embeddings.
 
         This is a shortcut function that combines ``simulate_walks`` with
@@ -190,15 +193,24 @@ class Base:
                 ``Word2Vec`` model, default is 10
             epochs (int): number of epochs for training ``Word2Vec``, default
                 is 1
+            verbose (bool): print time usage for random walk generation and
+                skip-gram training if set to True
 
         Return:
             numpy.ndarray: The embedding matrix, each row is a node embedding
                 vector. The index is the same as that for the graph.
 
         """
+        t = time()
         walks = self.simulate_walks(num_walks=num_walks, walk_length=walk_length)
+        if verbose:
+            print(f"Took {time() - t:.2f} sec to generate walks")
+
+        t = time()
         w2v = Word2Vec(walks, vector_size=dim, window=window_size, sg=1,
                        min_count=0, workers=self.workers, epochs=epochs)
+        if verbose:
+            print(f"Took {time() - t:.2f} sec to train")
 
         # index mapping back to node IDs
         idx_list = [w2v.wv.get_index(i) for i in self.IDlst]
