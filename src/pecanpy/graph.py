@@ -346,7 +346,15 @@ class DenseGraph:
         """Compute average edge weights."""
         deg_ary = self.data.sum(axis=1)
         n_nbrs_ary = self.nonzero.sum(axis=1)
-        return deg_ary / n_nbrs_ary
+        avg_ary = deg_ary / n_nbrs_ary
+
+        data_copy = (self.data.copy().T - avg_ary).T
+        data_copy[~self.nonzero] = 0
+        std_ary = np.sqrt((data_copy ** 2).sum(axis=1) / n_nbrs_ary)
+        # TODO: add a parameter epsilon to control amount of std to add
+        # TODO: update get_average_weights for SparseOTF
+        # TODO: update variable name avg_ary to threshold_ary
+        return avg_ary + std_ary
 
     def get_has_nbrs(self):
         """Wrap ``has_nbrs``."""
