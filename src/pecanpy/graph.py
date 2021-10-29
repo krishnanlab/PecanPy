@@ -105,6 +105,34 @@ class SparseGraph:
         if csr:
             self.to_csr()
 
+    def read_csr(self, fp):
+        """Directly read a CSR sparse graph.
+
+        Note:
+            To generate a CSR file compatible with PecanPy, first load the graph
+                as a sparse graph using the SparseGraph (with ``csr=True``).
+                Then save the sparse graph to a csr file using the ``save``
+                method from ``SparseGraph``. The saved ``.npz`` file can then
+                be loaded directly by ``SparseGraph`` later.
+
+        Args:
+            fp (str): path to the csr file, which is an npz file with four
+                arrays with keys 'IDs', 'data', 'indptr', 'indices', which 
+                correspond to the node IDs, the edge weights, the offset array
+                for each node, and the indices of the edges.
+        """
+        raw = np.load(fp)
+        self.IDlst = raw['IDs'].tolist()
+        self.IDmap = {j: i for i, j in enumerate(self.IDlst)}
+        self.data = raw['data']
+        self.indptr = raw['indptr']
+        self.indices = raw['indices']
+
+    def save(self, fp):
+        """Save CSR as ``.npz`` file."""
+        np.savez(fp, IDs=self.IDlst, data=self.data, indptr=self.indptr,
+                 indices=self.indices)
+
     def from_mat(self, adj_mat, ids):
         """Construct graph using adjacency matrix and node ids.
 
