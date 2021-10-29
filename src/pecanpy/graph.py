@@ -4,7 +4,22 @@ import numpy as np
 from numba import boolean, jit
 
 
-class SparseGraph:
+class IDHandle:
+    """Node ID handler."""
+    def __init__(self):
+        self.IDlst = []
+        self.IDmap = {}  # id -> index
+
+    def set_IDlst(self, ids):
+        """Update ID list and mapping.
+
+        Set IDlst given the input ids and also set the IDmap based on it.
+        """
+        self.IDlst = ids
+        self.IDmap = {j: i for i, j in enumerate(ids)}
+
+
+class SparseGraph(IDHandle):
     """Sparse Graph object that stores graph as adjacency list.
 
     Note:
@@ -28,11 +43,10 @@ class SparseGraph:
 
     def __init__(self):
         """Initialize SparseGraph object."""
+        super(SparseGraph, self).__init__()
         self.data = []
         self.indptr = None
         self.indices = None
-        self.IDlst = []
-        self.IDmap = {}  # id -> index
 
     def read_edg(self, edg_fp, weighted, directed, csr=True):
         """Read an edgelist file and create sparse graph.
@@ -122,8 +136,7 @@ class SparseGraph:
                 for each node, and the indices of the edges.
         """
         raw = np.load(fp)
-        self.IDlst = raw['IDs'].tolist()
-        self.IDmap = {j: i for i, j in enumerate(self.IDlst)}
+        self.set_IDlst(raw['IDs'].tolist())
         self.data = raw['data']
         self.indptr = raw['indptr']
         self.indices = raw['indices']
@@ -149,8 +162,8 @@ class SparseGraph:
                     data[-1][j] = weight
 
         # save edgelist and id data and convert to csr format
-        self.data, self.IDlst = data, ids
-        self.IDmap = {j: i for i, j in enumerate(ids)}
+        self.data = data
+        self.set_IDlst(ids)
         self.to_csr()
 
     def get_has_nbrs(self):
@@ -295,7 +308,7 @@ class SparseGraph:
         return mat
 
 
-class DenseGraph:
+class DenseGraph(IDHandle):
     """Dense Graph object that stores graph as array.
 
     Examples:
@@ -320,10 +333,9 @@ class DenseGraph:
 
     def __init__(self):
         """Initialize DenseGraph object."""
+        super(DenseGraph, self).__init__()
         self.data = None
         self.nonzero = None
-        self.IDlst = []
-        self.IDmap = {}  # id -> index
 
     def read_npz(self, npz_fp, weighted, directed):
         """Read ``.npz`` file and create dense graph.
@@ -340,16 +352,15 @@ class DenseGraph:
         self.nonzero = self.data != 0
         if not weighted:  # convert edge weights to binary
             self.data = self.nonzero * 1
-        self.IDlst = list(raw["IDs"])
-        self.IDmap = {j: i for i, j in enumerate(self.IDlst)}
+        self.set_IDlst(raw['IDs'].tolist())
+
 
     def read_edg(self, edg_fp, weighted, directed):
         """Read an edgelist file and construct dense graph."""
         sparse_graph = SparseGraph()
         sparse_graph.read_edg(edg_fp, weighted, directed, csr=False)
 
-        self.IDlst = sparse_graph.IDlst
-        self.IDmap = sparse_graph.IDmap
+        self.set_IDlst(sparse_graph.IDlst)
         self.data = sparse_graph.to_dense()
         self.nonzero = self.data != 0
 
@@ -363,8 +374,7 @@ class DenseGraph:
         """
         self.data = adj_mat
         self.nonzero = adj_mat != 0
-        self.IDlst = ids
-        self.IDmap = {j: i for i, j in enumerate(self.IDlst)}
+        self.set_IDlst(ids)
 
     def save(self, fp):
         """Save as ``.npz`` file."""
