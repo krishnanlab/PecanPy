@@ -119,7 +119,7 @@ class SparseGraph(IDHandle):
         if csr:
             self.to_csr()
 
-    def read_npz(self, fp, weighted, directed):
+    def read_csr(self, fp):
         """Directly read a CSR sparse graph.
 
         Note:
