@@ -71,7 +71,7 @@ def parse_args():
     parser.add_argument(
         "--workers",
         type=int,
-        default=8,
+        default=0,
         help="Number of parallel workers. Default is 8. Set to 0 to use all.")
 
     parser.add_argument("--p", type=float, default=1, help="Return hyperparameter. Default is 1.")
