@@ -339,7 +339,7 @@ class DenseGraph:
         self.data = raw["data"]
         self.nonzero = self.data != 0
         if not weighted:  # convert edge weights to binary
-            self.data = self.nonzero * 1
+            self.data = self.nonzero * 1.0
         self.IDlst = list(raw["IDs"])
         self.IDmap = {j: i for i, j in enumerate(self.IDlst)}
 
