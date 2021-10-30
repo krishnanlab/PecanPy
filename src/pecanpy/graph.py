@@ -117,7 +117,7 @@ class SparseGraph:
 
         Args:
             fp (str): path to the csr file, which is an npz file with four
-                arrays with keys 'IDs', 'data', 'indptr', 'indices', which 
+                arrays with keys 'IDs', 'data', 'indptr', 'indices', which
                 correspond to the node IDs, the edge weights, the offset array
                 for each node, and the indices of the edges.
             weighted (bool): whether the graph is weighted, if unweighted,
