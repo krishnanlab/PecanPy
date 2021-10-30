@@ -43,12 +43,14 @@ def parse_args():
     parser.add_argument(
         "--task",
         default="pecanpy",
+        choices=["pecanpy", "tocsr", "todense"],
         help="Task to be performed.",
     )
 
     parser.add_argument(
         "--mode",
         default="SparseOTF",
+        choices=["PreComp", "SparseOTF", "DenseOTF"],
         help="PecanPy execution mode.",
     )
 
@@ -192,17 +194,13 @@ def read_graph(args):
     mode = args.mode
     task = args.task
 
-    if task in ["tocsr", "todense"]:
+    if task in ["tocsr", "todense"]:  # perform conversion then save and exit
         g = node2vec.SparseGraph() if task == "tocsr" else node2vec.DenseGraph()
         g.read_edg(fp, weighted, directed)
         g.save(output)
         exit()
-    elif task != "pecanpy":
-        raise ValueError(f"Unknown task: {task!r}")
 
     pecanpy_mode = getattr(node2vec, mode, None)
-    if pecanpy_mode is None:
-        raise ValueError(f"Unkown mode: {mode!r}")
 
     g = pecanpy_mode(p, q, workers, verbose, extend)
     if fp.endswith(".npz"):
