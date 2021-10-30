@@ -106,7 +106,7 @@ node_id dim_1 dim_2 ... dim_d
 
 ### Development Note
 
-Run `black src/pecanpy/` to automatically follow black code formatting
+Run `black src/pecanpy/` to automatically follow black code formatting.  
 Run `tox -e flake8` and resolve suggestions before committing to ensure consistent code style.
 
 ## Additional Information
