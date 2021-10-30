@@ -13,6 +13,7 @@ class Timer:
 
     def __call__(self, func):
         """Call timer decorator."""
+
         def wrapper(*args, **kwargs):
             start = time.time()
             result = func(*args, **kwargs)

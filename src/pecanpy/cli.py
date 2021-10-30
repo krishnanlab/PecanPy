@@ -23,89 +23,119 @@ from pecanpy.wrappers import Timer
 def parse_args():
     """Parse node2vec arguments."""
     parser = argparse.ArgumentParser(
-        description="Run pecanpy, a parallelized, efficient, and accelerated Python implementataion of node2vec")
+        description="Run pecanpy, a parallelized, efficient, and accelerated "
+        "Python implementataion of node2vec",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
 
-    parser.add_argument("--input", nargs="?", default="graph/karate.edgelist", help="Input graph path")
+    parser.add_argument(
+        "--input",
+        default="graph/karate.edg",
+        help="Input graph (.edg or .npz) file path.",
+    )
 
-    parser.add_argument("--output", nargs="?", default="emb/karate.emb", help="Embeddings path")
+    parser.add_argument(
+        "--output",
+        default="emb/karate.emb",
+        help="Output embeddings (.emd) file path.",
+    )
 
     parser.add_argument(
         "--task",
-        nargs="?",
         default="pecanpy",
-        help="Choose task: (pecanpy, todense). Default is pecanpy")
+        choices=["pecanpy", "tocsr", "todense"],
+        help="Task to be performed.",
+    )
 
     parser.add_argument(
         "--mode",
-        nargs="?",
         default="SparseOTF",
-        help="Choose mode: (PreComp, SparseOTF, DenseOTF). Default is SparseOTF")
+        choices=["PreComp", "SparseOTF", "DenseOTF"],
+        help="PecanPy execution mode.",
+    )
 
     parser.add_argument(
         "--dimensions",
         type=int,
         default=128,
-        help="Number of dimensions. Default is 128.")
+        help="Number of dimensions.",
+    )
 
     parser.add_argument(
         "--walk-length",
         type=int,
         default=80,
-        help="Length of walk per source. Default is 80.")
+        help="Length of walk per source.",
+    )
 
     parser.add_argument(
         "--num-walks",
         type=int,
         default=10,
-        help="Number of walks per source. Default is 10.")
+        help="Number of walks per source.",
+    )
 
     parser.add_argument(
         "--window-size",
         type=int,
         default=10,
-        help="Context size for optimization. Default is 10. Support list of values")
+        help="Context size for optimization.",
+    )
 
-    parser.add_argument("--epochs", default=1, type=int,
-                        help="Number of epochs in SGD when training Word2Vec")
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=1,
+        help="Number of epochs in SGD when training Word2Vec",
+    )
 
     parser.add_argument(
         "--workers",
         type=int,
-        default=8,
-        help="Number of parallel workers. Default is 8. Set to 0 to use all.")
+        default=0,
+        help="Number of parallel workers (0 to use all available threads).",
+    )
 
-    parser.add_argument("--p", type=float, default=1, help="Return hyperparameter. Default is 1.")
+    parser.add_argument(
+        "--p",
+        type=float,
+        default=1,
+        help="Return hyperparameter.",
+    )
 
-    parser.add_argument("--q", type=float, default=1, help="Inout hyperparameter. Default is 1.")
+    parser.add_argument(
+        "--q",
+        type=float,
+        default=1,
+        help="Inout hyperparameter.",
+    )
 
     parser.add_argument(
         "--weighted",
-        dest="weighted",
         action="store_true",
-        help="Boolean specifying (un)weighted. Default is unweighted.")
-    parser.add_argument("--unweighted", dest="unweighted", action="store_false")
-    parser.set_defaults(weighted=False)
+        help="Boolean specifying (un)weighted.",
+    )
 
     parser.add_argument(
         "--directed",
-        dest="directed",
         action="store_true",
-        help="Graph is (un)directed. Default is undirected.")
-    parser.add_argument("--undirected", dest="undirected", action="store_false")
-    parser.set_defaults(directed=False)
+        help="Graph is (un)directed.",
+    )
 
     parser.add_argument(
         "--verbose",
         dest="verbose",
         action="store_true",
-        help="Print out training details")
+        help="Print out training details",
+    )
     parser.set_defaults(verbose=False)
 
     parser.add_argument(
         "--extend",
         dest="extend",
         action="store_true",
-        help="Use node2vec+ extension")
+        help="Use node2vec+ extension",
+    )
     parser.set_defaults(extend=False)
 
     return parser.parse_args()
@@ -125,15 +155,24 @@ def check_mode(g, mode):
     g_dens = edge_num / g_size / (g_size - 1)
 
     if (g_dens >= 0.2) & (mode != "DenseOTF"):
-        print(f"WARNING: network density = {g_dens:.3f} (> 0.2), recommend DenseOTF over {mode}")
+        print(
+            f"WARNING: network density = {g_dens:.3f} (> 0.2), recommend "
+            f"DenseOTF over {mode}",
+        )
     if (g_dens < 0.001) & (g_size < 10000) & (mode != "PreComp"):
-        print(f"WARNING: network density = {g_dens:.2e} (< 0.001) with "
-              f"{g_size} nodes (< 10000), recommend PreComp over {mode}")
+        print(
+            f"WARNING: network density = {g_dens:.2e} (< 0.001) with "
+            f"{g_size} nodes (< 10000), recommend PreComp over {mode}",
+        )
     if (g_dens >= 0.001) & (g_dens < 0.2) & (mode != "SparseOTF"):
-        print(f"WARNING: network density = {g_dens:.3f}, recommend SparseOTF over {mode}")
+        print(
+            f"WARNING: network density = {g_dens:.3f}, recommend SparseOTF over {mode}",
+        )
     if (g_dens < 0.001) & (g_size >= 10000) & (mode != "SparseOTF"):
-        print(f"WARNING: network density = {g_dens:.3f} (< 0.001) with "
-              f"{g_size} nodes (>= 10000), recommend SparseOTF over {mode}")
+        print(
+            f"WARNING: network density = {g_dens:.3f} (< 0.001) with "
+            f"{g_size} nodes (>= 10000), recommend SparseOTF over {mode}",
+        )
 
 
 def read_graph(args):
@@ -155,17 +194,13 @@ def read_graph(args):
     mode = args.mode
     task = args.task
 
-    if task in ['tocsr', 'todense']:
-        g = node2vec.SparseGraph() if task == 'tocsr' else node2vec.DenseGraph()
+    if task in ["tocsr", "todense"]:  # perform conversion then save and exit
+        g = node2vec.SparseGraph() if task == "tocsr" else node2vec.DenseGraph()
         g.read_edg(fp, weighted, directed)
         g.save(output)
         exit()
-    elif task != "pecanpy":
-        raise ValueError(f"Unknown task: {repr(task)}")
 
     pecanpy_mode = getattr(node2vec, mode, None)
-    if pecanpy_mode is None:
-        raise ValueError(f"Unkown mode: {repr(mode)}")
 
     g = pecanpy_mode(p, q, workers, verbose, extend)
     if fp.endswith(".npz"):

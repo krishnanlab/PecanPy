@@ -1,5 +1,6 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4735797.svg)](https://doi.org/10.5281/zenodo.4735797)
 [![Documentation Status](https://readthedocs.org/projects/pecanpy/badge/?version=latest)](https://pecanpy.readthedocs.io/en/latest/?badge=latest)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # PecanPy: A parallelized, efficient, and accelerated _node2vec(+)_ in Python
 
@@ -105,6 +106,7 @@ node_id dim_1 dim_2 ... dim_d
 
 ### Development Note
 
+Run `black src/pecanpy/` to automatically follow black code formatting.  
 Run `tox -e flake8` and resolve suggestions before committing to ensure consistent code style.
 
 ## Additional Information
