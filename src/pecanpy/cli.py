@@ -155,8 +155,8 @@ def read_graph(args):
     mode = args.mode
     task = args.task
 
-    if task == "todense":
-        g = node2vec.DenseGraph()
+    if task in ['tocsr', 'todense']:
+        g = node2vec.SparseGraph() if task == 'tocsr' else node2vec.DenseGraph()
         g.read_edg(fp, weighted, directed)
         g.save(output)
         exit()
@@ -165,10 +165,16 @@ def read_graph(args):
 
     if mode == "PreComp":
         g = node2vec.PreComp(p, q, workers, verbose, extend)
-        g.read_edg(fp, weighted, directed)
+        if fp.endswith(".npz"):
+            g.read_csr(fp)
+        else:
+            g.read_edg(fp, weighted, directed)
     elif mode == "SparseOTF":
         g = node2vec.SparseOTF(p, q, workers, verbose, extend)
-        g.read_edg(fp, weighted, directed)
+        if fp.endswith(".npz"):
+            g.read_csr(fp)
+        else:
+            g.read_edg(fp, weighted, directed)
     elif mode == "DenseOTF":
         g = node2vec.DenseOTF(p, q, workers, verbose, extend)
         if fp.endswith(".npz"):
