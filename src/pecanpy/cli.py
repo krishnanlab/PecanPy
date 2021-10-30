@@ -166,13 +166,13 @@ def read_graph(args):
     if mode == "PreComp":
         g = node2vec.PreComp(p, q, workers, verbose, extend)
         if fp.endswith(".npz"):
-            g.read_csr(fp)
+            g.read_npz(fp, weighted, directed)
         else:
             g.read_edg(fp, weighted, directed)
     elif mode == "SparseOTF":
         g = node2vec.SparseOTF(p, q, workers, verbose, extend)
         if fp.endswith(".npz"):
-            g.read_csr(fp)
+            g.read_npz(fp, weighted, directed)
         else:
             g.read_edg(fp, weighted, directed)
     elif mode == "DenseOTF":

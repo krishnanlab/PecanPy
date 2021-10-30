@@ -105,7 +105,7 @@ class SparseGraph:
         if csr:
             self.to_csr()
 
-    def read_csr(self, fp):
+    def read_npz(self, fp, weighted, directed):
         """Directly read a CSR sparse graph.
 
         Note:
@@ -120,11 +120,16 @@ class SparseGraph:
                 arrays with keys 'IDs', 'data', 'indptr', 'indices', which 
                 correspond to the node IDs, the edge weights, the offset array
                 for each node, and the indices of the edges.
+            weighted (bool): whether the graph is weighted, if unweighted,
+                all edge weights will be converted to 1.
+            directed (bool): not used, for compatibility with ``SparseGraph``.
         """
         raw = np.load(fp)
         self.IDlst = raw['IDs'].tolist()
         self.IDmap = {j: i for i, j in enumerate(self.IDlst)}
         self.data = raw['data']
+        if not weighted:  # overwrite edge weights with constant
+            self.data[:] = 1.0
         self.indptr = raw['indptr']
         self.indices = raw['indices']
 
@@ -325,20 +330,20 @@ class DenseGraph:
         self.IDlst = []
         self.IDmap = {}  # id -> index
 
-    def read_npz(self, npz_fp, weighted, directed):
+    def read_npz(self, fp, weighted, directed):
         """Read ``.npz`` file and create dense graph.
 
         Args:
-            npz_fp (str): path to ``.npz`` file.
+            fp (str): path to ``.npz`` file.
             weighted (bool): whether the graph is weighted, if unweighted,
                 all none zero weights will be converted to 1.
             directed (bool): not used, for compatibility with ``SparseGraph``.
 
         """
-        raw = np.load(npz_fp)
+        raw = np.load(fp)
         self.data = raw["data"]
         self.nonzero = self.data != 0
-        if not weighted:  # convert edge weights to binary
+        if not weighted:  # overwrite edge weights with constant
             self.data = self.nonzero * 1.0
         self.IDlst = list(raw["IDs"])
         self.IDmap = {j: i for i, j in enumerate(self.IDlst)}
