@@ -132,21 +132,30 @@ class Base:
                     # TODO: make monitoring less messy
                     private_count += 1
                     if private_count % checkpoint == 0:
-                        progress = private_count / n * progress_bar_length * get_num_threads()
+                        progress = (
+                            private_count / n * progress_bar_length * get_num_threads()
+                        )
 
                         # manuual construct progress bar since string formatting not supported
-                        progress_bar = '|'
+                        progress_bar = "|"
                         for k in range(progress_bar_length):
-                            progress_bar += '#' if k < progress else ' '
-                        progress_bar += '|'
+                            progress_bar += "#" if k < progress else " "
+                        progress_bar += "|"
 
-                        print("Thread # " if _get_thread_id() < 10 else "Thread #",
-                              _get_thread_id(), "progress:", progress_bar,
-                              get_num_threads() * private_count * 10000 // n / 100, "%")
+                        print(
+                            "Thread # " if _get_thread_id() < 10 else "Thread #",
+                            _get_thread_id(),
+                            "progress:",
+                            progress_bar,
+                            get_num_threads() * private_count * 10000 // n / 100,
+                            "%",
+                        )
 
             return walk_idx_mat
 
-        walks = [[self.IDlst[idx] for idx in walk[:walk[-1]]] for walk in node2vec_walks()]
+        walks = [
+            [self.IDlst[idx] for idx in walk[: walk[-1]]] for walk in node2vec_walks()
+        ]
 
         return walks
 
@@ -173,8 +182,15 @@ class Base:
         """Null default preprocess method."""
         pass
 
-    def embed(self, dim=128, num_walks=10, walk_length=80, window_size=10,
-              epochs=1, verbose=False):
+    def embed(
+        self,
+        dim=128,
+        num_walks=10,
+        walk_length=80,
+        window_size=10,
+        epochs=1,
+        verbose=False,
+    ):
         """Generate embeddings.
 
         This is a shortcut function that combines ``simulate_walks`` with
@@ -207,8 +223,15 @@ class Base:
             print(f"Took {time() - t:.2f} sec to generate walks")
 
         t = time()
-        w2v = Word2Vec(walks, vector_size=dim, window=window_size, sg=1,
-                       min_count=0, workers=self.workers, epochs=epochs)
+        w2v = Word2Vec(
+            walks,
+            vector_size=dim,
+            window=window_size,
+            sg=1,
+            min_count=0,
+            workers=self.workers,
+            epochs=epochs,
+        )
         if verbose:
             print(f"Took {time() - t:.2f} sec to train")
 
@@ -265,7 +288,8 @@ class PreComp(Base, SparseGraph):
             """Move to next node based on transition probabilities."""
             if prev_idx is None:
                 normalized_probs = get_normalized_probs(
-                    data, indices, indptr, p, q, cur_idx, None, None)
+                    data, indices, indptr, p, q, cur_idx, None, None,
+                )
                 cdf = np.cumsum(normalized_probs)
                 choice = np.searchsorted(cdf, np.random.random())
             else:
@@ -314,10 +338,12 @@ class PreComp(Base, SparseGraph):
                 offset = alias_indptr[idx]
                 dim = alias_dim[idx]
 
-                nbrs = indices[indptr[idx]: indptr[idx + 1]]
+                nbrs = indices[indptr[idx] : indptr[idx + 1]]
                 for nbr_idx in prange(n[idx]):
                     nbr = nbrs[nbr_idx]
-                    probs = get_normalized_probs(data, indices, indptr, p, q, idx, nbr, avg_wts)
+                    probs = get_normalized_probs(
+                        data, indices, indptr, p, q, idx, nbr, avg_wts,
+                    )
 
                     start = offset + dim * nbr_idx
                     j_tmp, q_tmp = alias_setup(probs)
@@ -370,7 +396,15 @@ class SparseOTF(Base, SparseGraph):
             """Move to next node."""
             normalized_probs = get_normalized_probs(
                 # data, indices, indptr, p, q, cur_idx, prev_idx)
-                data, indices, indptr, p, q, cur_idx, prev_idx, avg_wts)
+                data,
+                indices,
+                indptr,
+                p,
+                q,
+                cur_idx,
+                prev_idx,
+                avg_wts,
+            )
             cdf = np.cumsum(normalized_probs)
             choice = np.searchsorted(cdf, np.random.random())
 
@@ -416,7 +450,8 @@ class DenseOTF(Base, DenseGraph):
         def move_forward(cur_idx, prev_idx=None):
             """Move to next node."""
             normalized_probs = get_normalized_probs(
-                data, nonzero, p, q, cur_idx, prev_idx, avg_wts)
+                data, nonzero, p, q, cur_idx, prev_idx, avg_wts,
+            )
             cdf = np.cumsum(normalized_probs)
             choice = np.searchsorted(cdf, np.random.random())
             nbrs = np.where(nonzero[cur_idx])[0]

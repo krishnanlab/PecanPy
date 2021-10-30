@@ -6,11 +6,13 @@ from numba import boolean, jit
 
 class IDHandle:
     """Node ID handler."""
+
     def __init__(self):
+        """Initialize ID list and ID map."""
         self.IDlst = []
         self.IDmap = {}  # id -> index
 
-    def set_IDlst(self, ids):
+    def set_ids(self, ids):
         """Update ID list and mapping.
 
         Set IDlst given the input ids and also set the IDmap based on it.
@@ -33,8 +35,11 @@ class SparseGraph(IDHandle):
 
         >>> from pecanpy.graph import SparseGraph
         >>>
-        >>> g = SparseGraph() # initialize SparseGraph object
-        >>> g.read_edg(path_to_edg_file, weighted=True, directed=False) # read graph from edgelist
+        >>> # initialize SparseGraph object
+        >>> g = SparseGraph()
+        >>>
+        >>> # read graph from edgelist
+        >>> g.read_edg(path_to_edg_file, weighted=True, directed=False)
         >>>
         >>> dense_mat = g.to_dense() # convert to dense adjacency matrix
         >>>
@@ -105,9 +110,11 @@ class SparseGraph(IDHandle):
                 # check if edge exists
                 if idx2 in self.data[idx1]:
                     if self.data[idx1][idx2] != weight:
-                        print(f"WARNING: edge from {id1} to {id2} exists, with "
-                              f"value of {self.data[idx1][idx2]:.2f}. "
-                              f"Now overwrite to {weight:.2f}.")
+                        print(
+                            f"WARNING: edge from {id1} to {id2} exists, with "
+                            f"value of {self.data[idx1][idx2]:.2f}. "
+                            f"Now overwrite to {weight:.2f}.",
+                        )
 
                 # update edge weight
                 self.data[idx1][idx2] = weight
@@ -139,17 +146,18 @@ class SparseGraph(IDHandle):
             directed (bool): not used, for compatibility with ``SparseGraph``.
         """
         raw = np.load(fp)
-        self.set_IDlst(raw['IDs'].tolist())
-        self.data = raw['data']
+        self.set_ids(raw["IDs"].tolist())
+        self.data = raw["data"]
         if not weighted:  # overwrite edge weights with constant
             self.data[:] = 1.0
-        self.indptr = raw['indptr']
-        self.indices = raw['indices']
+        self.indptr = raw["indptr"]
+        self.indices = raw["indices"]
 
     def save(self, fp):
         """Save CSR as ``.npz`` file."""
-        np.savez(fp, IDs=self.IDlst, data=self.data, indptr=self.indptr,
-                 indices=self.indices)
+        np.savez(
+            fp, IDs=self.IDlst, data=self.data, indptr=self.indptr, indices=self.indices,
+        )
 
     def from_mat(self, adj_mat, ids):
         """Construct graph using adjacency matrix and node ids.
@@ -168,7 +176,7 @@ class SparseGraph(IDHandle):
 
         # save edgelist and id data and convert to csr format
         self.data = data
-        self.set_IDlst(ids)
+        self.set_ids(ids)
         self.to_csr()
 
     def get_has_nbrs(self):
@@ -189,13 +197,15 @@ class SparseGraph(IDHandle):
         num_nodes = len(self.IDlst)
         average_weight_ary = np.zeros(num_nodes, dtype=np.float64)
         for idx in range(num_nodes):
-            average_weight_ary[idx] = data[indptr[idx]: indptr[idx + 1]].mean()
+            average_weight_ary[idx] = data[indptr[idx] : indptr[idx + 1]].mean()
 
         return average_weight_ary
 
     @staticmethod
     @jit(nopython=True, nogil=True)
-    def get_normalized_probs(data, indices, indptr, p, q, cur_idx, prev_idx, average_weight_ary):
+    def get_normalized_probs(
+        data, indices, indptr, p, q, cur_idx, prev_idx, average_weight_ary,
+    ):
         """Calculate node2vec transition probabilities.
 
         Calculate 2nd order transition probabilities by first finidng the
@@ -210,11 +220,12 @@ class SparseGraph(IDHandle):
         otherwise calculate 1st order transition.
 
         """
+
         def get_nbrs_idx(idx):
-            return indices[indptr[idx]: indptr[idx + 1]]
+            return indices[indptr[idx] : indptr[idx + 1]]
 
         def get_nbrs_weight(idx):
-            return data[indptr[idx]: indptr[idx + 1]].copy()
+            return data[indptr[idx] : indptr[idx + 1]].copy()
 
         nbrs_idx = get_nbrs_idx(cur_idx)
         unnormalized_probs = get_nbrs_weight(cur_idx)
@@ -222,7 +233,9 @@ class SparseGraph(IDHandle):
         if prev_idx is not None:  # 2nd order biased walk
             prev_ptr = np.where(nbrs_idx == prev_idx)[0]  # find previous state index
             src_nbrs_idx = get_nbrs_idx(prev_idx)  # neighbors of previous state
-            non_com_nbr = isnotin(nbrs_idx, src_nbrs_idx)  # neighbors of current but not previous
+            non_com_nbr = isnotin(
+                nbrs_idx, src_nbrs_idx,
+            )  # neighbors of current but not previous
             non_com_nbr[prev_ptr] = False  # exclude previous state from out biases
 
             unnormalized_probs[non_com_nbr] /= q  # apply out biases
@@ -234,13 +247,16 @@ class SparseGraph(IDHandle):
 
     @staticmethod
     @jit(nopython=True, nogil=True)
-    def get_extended_normalized_probs(data, indices, indptr, p, q, cur_idx, prev_idx, average_weight_ary):
+    def get_extended_normalized_probs(
+        data, indices, indptr, p, q, cur_idx, prev_idx, average_weight_ary,
+    ):
         """Calculate node2vec+ transition probabilities."""
+
         def get_nbrs_idx(idx):
-            return indices[indptr[idx]: indptr[idx + 1]]
+            return indices[indptr[idx] : indptr[idx + 1]]
 
         def get_nbrs_weight(idx):
-            return data[indptr[idx]: indptr[idx + 1]].copy()
+            return data[indptr[idx] : indptr[idx + 1]].copy()
 
         nbrs_idx = get_nbrs_idx(cur_idx)
         unnormalized_probs = get_nbrs_weight(cur_idx)
@@ -248,16 +264,18 @@ class SparseGraph(IDHandle):
         if prev_idx is not None:  # 2nd order biased walk
             prev_ptr = np.where(nbrs_idx == prev_idx)[0]  # find previous state index
             src_nbrs_idx = get_nbrs_idx(prev_idx)  # neighbors of previous state
-            out_ind, t = isnotin_extended(nbrs_idx, src_nbrs_idx,
-                                          get_nbrs_weight(prev_idx),
-                                          average_weight_ary)  # determine out edges
+            out_ind, t = isnotin_extended(
+                nbrs_idx, src_nbrs_idx, get_nbrs_weight(prev_idx), average_weight_ary,
+            )  # determine out edges
             out_ind[prev_ptr] = False  # exclude previous state from out biases
 
             # compute out biases
-            alpha = (1 / q + (1 - 1 / q) * t[out_ind])
+            alpha = 1 / q + (1 - 1 / q) * t[out_ind]
 
             # surpress noisy edges
-            alpha[unnormalized_probs[out_ind] < average_weight_ary[cur_idx]] = np.minimum(1, 1 / q)
+            alpha[
+                unnormalized_probs[out_ind] < average_weight_ary[cur_idx]
+            ] = np.minimum(1, 1 / q)
             unnormalized_probs[out_ind] *= alpha  # apply out biases
             unnormalized_probs[prev_ptr] /= p  # apply the return bias
 
@@ -357,14 +375,14 @@ class DenseGraph(IDHandle):
         self.nonzero = self.data != 0
         if not weighted:  # overwrite edge weights with constant
             self.data = self.nonzero * 1.0
-        self.set_IDlst(raw['IDs'].tolist())
+        self.set_ids(raw["IDs"].tolist())
 
     def read_edg(self, edg_fp, weighted, directed):
         """Read an edgelist file and construct dense graph."""
         sparse_graph = SparseGraph()
         sparse_graph.read_edg(edg_fp, weighted, directed, csr=False)
 
-        self.set_IDlst(sparse_graph.IDlst)
+        self.set_ids(sparse_graph.IDlst)
         self.data = sparse_graph.to_dense()
         self.nonzero = self.data != 0
 
@@ -378,7 +396,7 @@ class DenseGraph(IDHandle):
         """
         self.data = adj_mat
         self.nonzero = adj_mat != 0
-        self.set_IDlst(ids)
+        self.set_ids(ids)
 
     def save(self, fp):
         """Save as ``.npz`` file."""
@@ -405,7 +423,9 @@ class DenseGraph(IDHandle):
 
     @staticmethod
     @jit(nopython=True, nogil=True)
-    def get_normalized_probs(data, nonzero, p, q, cur_idx, prev_idx, average_weight_ary):
+    def get_normalized_probs(
+        data, nonzero, p, q, cur_idx, prev_idx, average_weight_ary,
+    ):
         """Calculate node2vec transition probabilities.
 
         Calculate 2nd order transition probabilities by first finidng the
@@ -424,7 +444,9 @@ class DenseGraph(IDHandle):
         unnormalized_probs = data[cur_idx].copy()
 
         if prev_idx is not None:  # 2nd order biased walks
-            non_com_nbr = np.logical_and(nbrs_ind, ~nonzero[prev_idx])  # nbrs of cur but not prev
+            non_com_nbr = np.logical_and(
+                nbrs_ind, ~nonzero[prev_idx],
+            )  # nbrs of cur but not prev
             non_com_nbr[prev_idx] = False  # exclude previous state from out biases
 
             unnormalized_probs[non_com_nbr] /= q  # apply out biases
@@ -437,7 +459,9 @@ class DenseGraph(IDHandle):
 
     @staticmethod
     @jit(nopython=True, nogil=True)
-    def get_extended_normalized_probs(data, nonzero, p, q, cur_idx, prev_idx, average_weight_ary):
+    def get_extended_normalized_probs(
+        data, nonzero, p, q, cur_idx, prev_idx, average_weight_ary,
+    ):
         """Calculate node2vec+ transition probabilities."""
         cur_nbrs_ind = nonzero[cur_idx]
         unnormalized_probs = data[cur_idx].copy()
@@ -459,7 +483,9 @@ class DenseGraph(IDHandle):
             alpha = 1 / q + (1 - 1 / q) * t
 
             # suppress noisy edges
-            alpha[unnormalized_probs[inout_ind] < average_weight_ary[cur_idx]] = np.minimum(1, 1 / q)
+            alpha[
+                unnormalized_probs[inout_ind] < average_weight_ary[cur_idx]
+            ] = np.minimum(1, 1 / q)
             unnormalized_probs[inout_ind] *= alpha  # apply out biases
             unnormalized_probs[prev_idx] /= p  # apply  the return bias
 
