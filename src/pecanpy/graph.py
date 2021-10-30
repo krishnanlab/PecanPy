@@ -351,9 +351,8 @@ class DenseGraph(IDHandle):
         self.data = raw["data"]
         self.nonzero = self.data != 0
         if not weighted:  # convert edge weights to binary
-            self.data = self.nonzero * 1
+            self.data = self.nonzero * 1.0
         self.set_IDlst(raw['IDs'].tolist())
-
 
     def read_edg(self, edg_fp, weighted, directed):
         """Read an edgelist file and construct dense graph."""
