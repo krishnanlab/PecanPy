@@ -288,7 +288,14 @@ class PreComp(Base, SparseGraph):
             """Move to next node based on transition probabilities."""
             if prev_idx is None:
                 normalized_probs = get_normalized_probs(
-                    data, indices, indptr, p, q, cur_idx, None, None,
+                    data,
+                    indices,
+                    indptr,
+                    p,
+                    q,
+                    cur_idx,
+                    None,
+                    None,
                 )
                 cdf = np.cumsum(normalized_probs)
                 choice = np.searchsorted(cdf, np.random.random())
@@ -342,7 +349,14 @@ class PreComp(Base, SparseGraph):
                 for nbr_idx in prange(n[idx]):
                     nbr = nbrs[nbr_idx]
                     probs = get_normalized_probs(
-                        data, indices, indptr, p, q, idx, nbr, avg_wts,
+                        data,
+                        indices,
+                        indptr,
+                        p,
+                        q,
+                        idx,
+                        nbr,
+                        avg_wts,
                     )
 
                     start = offset + dim * nbr_idx
@@ -450,7 +464,13 @@ class DenseOTF(Base, DenseGraph):
         def move_forward(cur_idx, prev_idx=None):
             """Move to next node."""
             normalized_probs = get_normalized_probs(
-                data, nonzero, p, q, cur_idx, prev_idx, avg_wts,
+                data,
+                nonzero,
+                p,
+                q,
+                cur_idx,
+                prev_idx,
+                avg_wts,
             )
             cdf = np.cumsum(normalized_probs)
             choice = np.searchsorted(cdf, np.random.random())

@@ -159,7 +159,11 @@ class SparseGraph(IDHandle):
     def save(self, fp):
         """Save CSR as ``.csr.npz`` file."""
         np.savez(
-            fp, IDs=self.IDlst, data=self.data, indptr=self.indptr, indices=self.indices,
+            fp,
+            IDs=self.IDlst,
+            data=self.data,
+            indptr=self.indptr,
+            indices=self.indices,
         )
 
     def from_mat(self, adj_mat, ids):
@@ -207,7 +211,14 @@ class SparseGraph(IDHandle):
     @staticmethod
     @jit(nopython=True, nogil=True)
     def get_normalized_probs(
-        data, indices, indptr, p, q, cur_idx, prev_idx, average_weight_ary,
+        data,
+        indices,
+        indptr,
+        p,
+        q,
+        cur_idx,
+        prev_idx,
+        average_weight_ary,
     ):
         """Calculate node2vec transition probabilities.
 
@@ -237,7 +248,8 @@ class SparseGraph(IDHandle):
             prev_ptr = np.where(nbrs_idx == prev_idx)[0]  # find previous state index
             src_nbrs_idx = get_nbrs_idx(prev_idx)  # neighbors of previous state
             non_com_nbr = isnotin(
-                nbrs_idx, src_nbrs_idx,
+                nbrs_idx,
+                src_nbrs_idx,
             )  # neighbors of current but not previous
             non_com_nbr[prev_ptr] = False  # exclude previous state from out biases
 
@@ -251,7 +263,14 @@ class SparseGraph(IDHandle):
     @staticmethod
     @jit(nopython=True, nogil=True)
     def get_extended_normalized_probs(
-        data, indices, indptr, p, q, cur_idx, prev_idx, average_weight_ary,
+        data,
+        indices,
+        indptr,
+        p,
+        q,
+        cur_idx,
+        prev_idx,
+        average_weight_ary,
     ):
         """Calculate node2vec+ transition probabilities."""
 
@@ -268,7 +287,10 @@ class SparseGraph(IDHandle):
             prev_ptr = np.where(nbrs_idx == prev_idx)[0]  # find previous state index
             src_nbrs_idx = get_nbrs_idx(prev_idx)  # neighbors of previous state
             out_ind, t = isnotin_extended(
-                nbrs_idx, src_nbrs_idx, get_nbrs_weight(prev_idx), average_weight_ary,
+                nbrs_idx,
+                src_nbrs_idx,
+                get_nbrs_weight(prev_idx),
+                average_weight_ary,
             )  # determine out edges
             out_ind[prev_ptr] = False  # exclude previous state from out biases
 
@@ -429,7 +451,13 @@ class DenseGraph(IDHandle):
     @staticmethod
     @jit(nopython=True, nogil=True)
     def get_normalized_probs(
-        data, nonzero, p, q, cur_idx, prev_idx, average_weight_ary,
+        data,
+        nonzero,
+        p,
+        q,
+        cur_idx,
+        prev_idx,
+        average_weight_ary,
     ):
         """Calculate node2vec transition probabilities.
 
@@ -450,7 +478,8 @@ class DenseGraph(IDHandle):
 
         if prev_idx is not None:  # 2nd order biased walks
             non_com_nbr = np.logical_and(
-                nbrs_ind, ~nonzero[prev_idx],
+                nbrs_ind,
+                ~nonzero[prev_idx],
             )  # nbrs of cur but not prev
             non_com_nbr[prev_idx] = False  # exclude previous state from out biases
 
@@ -465,7 +494,13 @@ class DenseGraph(IDHandle):
     @staticmethod
     @jit(nopython=True, nogil=True)
     def get_extended_normalized_probs(
-        data, nonzero, p, q, cur_idx, prev_idx, average_weight_ary,
+        data,
+        nonzero,
+        p,
+        q,
+        cur_idx,
+        prev_idx,
+        average_weight_ary,
     ):
         """Calculate node2vec+ transition probabilities."""
         cur_nbrs_ind = nonzero[cur_idx]
