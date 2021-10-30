@@ -150,7 +150,8 @@ def check_mode(g, mode):
 
     if (g_dens >= 0.2) & (mode != "DenseOTF"):
         print(
-            f"WARNING: network density = {g_dens:.3f} (> 0.2), recommend DenseOTF over {mode}",
+            f"WARNING: network density = {g_dens:.3f} (> 0.2), recommend "
+            f"DenseOTF over {mode}",
         )
     if (g_dens < 0.001) & (g_size < 10000) & (mode != "PreComp"):
         print(
@@ -193,11 +194,11 @@ def read_graph(args):
         g.save(output)
         exit()
     elif task != "pecanpy":
-        raise ValueError(f"Unknown task: {repr(task)}")
+        raise ValueError(f"Unknown task: {task!r}")
 
     pecanpy_mode = getattr(node2vec, mode, None)
     if pecanpy_mode is None:
-        raise ValueError(f"Unkown mode: {repr(mode)}")
+        raise ValueError(f"Unkown mode: {mode!r}")
 
     g = pecanpy_mode(p, q, workers, verbose, extend)
     if fp.endswith(".npz"):

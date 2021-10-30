@@ -43,6 +43,8 @@ class SparseGraph(IDHandle):
         >>>
         >>> dense_mat = g.to_dense() # convert to dense adjacency matrix
         >>>
+        >>> # save the csr graph as npz file to be used later
+        >>> g.save(npz_outpath)
 
     """
 
@@ -144,6 +146,7 @@ class SparseGraph(IDHandle):
             weighted (bool): whether the graph is weighted, if unweighted,
                 all edge weights will be converted to 1.
             directed (bool): not used, for compatibility with ``SparseGraph``.
+
         """
         raw = np.load(fp)
         self.set_ids(raw["IDs"].tolist())
@@ -154,7 +157,7 @@ class SparseGraph(IDHandle):
         self.indices = raw["indices"]
 
     def save(self, fp):
-        """Save CSR as ``.npz`` file."""
+        """Save CSR as ``.csr.npz`` file."""
         np.savez(
             fp, IDs=self.IDlst, data=self.data, indptr=self.indptr, indices=self.indices,
         )
@@ -335,22 +338,24 @@ class DenseGraph(IDHandle):
     """Dense Graph object that stores graph as array.
 
     Examples:
-        Read ``.npz`` files and create ``DenseGraph`` object using ``.read_npz``
-        method.
+        Read ``.npz`` files and create ``DenseGraph`` object using ``read_npz``.
 
         >>> from pecanpy.graph import DenseGraph
         >>> g = DenseGraph() # initialize DenseGraph object
-        >>> g.read_npz(paht_to_npz_file, weighted=True, directed=False) # read graph from npz
+        >>> g.read_npz(paht_to_npz_file, weighted=True, directed=False)
 
-        Read ``.edg`` files and create ``DenseGraph`` object using ``.read_edg``
-        method.
+        Read ``.edg`` files and create ``DenseGraph`` object using ``read_edg``.
 
         >>> from pecanpy.graph import DenseGraph
-        >>> g = DenseGraph() # initialize DenseGraph object
-        >>> g.read_edg(path_to_edg_file, weighted=True, directed=False) # read graph from edgelist
         >>>
-        >>> g.save(npz_outpath) # save the network as npz file, which could be loaded faster if network is dense
+        >>> # initialize DenseGraph object
+        >>> g = DenseGraph()
         >>>
+        >>> # read graph from edgelist
+        >>> g.read_edg(path_to_edg_file, weighted=True, directed=False)
+        >>>
+        >>> # save the dense graph as npz file to be used later
+        >>> g.save(npz_outpath)
 
     """
 
@@ -399,7 +404,7 @@ class DenseGraph(IDHandle):
         self.set_ids(ids)
 
     def save(self, fp):
-        """Save as ``.npz`` file."""
+        """Save dense graph  as ``.dense.npz`` file."""
         np.savez(fp, data=self.data, IDs=self.IDlst)
 
     def get_average_weights(self):
