@@ -163,26 +163,15 @@ def read_graph(args):
     elif task != "pecanpy":
         raise ValueError(f"Unknown task: {repr(task)}")
 
-    if mode == "PreComp":
-        g = node2vec.PreComp(p, q, workers, verbose, extend)
-        if fp.endswith(".npz"):
-            g.read_npz(fp, weighted, directed)
-        else:
-            g.read_edg(fp, weighted, directed)
-    elif mode == "SparseOTF":
-        g = node2vec.SparseOTF(p, q, workers, verbose, extend)
-        if fp.endswith(".npz"):
-            g.read_npz(fp, weighted, directed)
-        else:
-            g.read_edg(fp, weighted, directed)
-    elif mode == "DenseOTF":
-        g = node2vec.DenseOTF(p, q, workers, verbose, extend)
-        if fp.endswith(".npz"):
-            g.read_npz(fp, weighted, directed)
-        else:
-            g.read_edg(fp, weighted, directed)
-    else:
+    pecanpy_mode = getattr(node2vec, mode, None)
+    if pecanpy_mode is None:
         raise ValueError(f"Unkown mode: {repr(mode)}")
+
+    g = pecanpy_mode(p, q, workers, verbose, extend)
+    if fp.endswith(".npz"):
+        g.read_npz(fp, weighted, directed)
+    else:
+        g.read_edg(fp, weighted, directed)
 
     check_mode(g, mode)
     if extend and not weighted:
