@@ -232,12 +232,12 @@ def learn_embeddings(args, walks):
 
 
 @Timer("pre-compute transition probabilities")
-def preprocess(g):
+def _preprocess(g):
     g.preprocess_transition_probs()
 
 
 @Timer("generate walks")
-def simulate_walks(args, g):
+def _simulate_walks(args, g):
     return g.simulate_walks(args.num_walks, args.walk_length)
 
 
@@ -253,8 +253,8 @@ def main():
     numba.set_num_threads(args.workers)
 
     g = read_graph(args)
-    preprocess(g)
-    walks = simulate_walks(args, g)
+    _preprocess(g)
+    walks = _simulate_walks(args, g)
     learn_embeddings(args, walks)
 
 

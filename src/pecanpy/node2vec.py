@@ -1,12 +1,9 @@
 """Different strategies for generating node2vec walks."""
 
-from time import time
-
 import numpy as np
 from gensim.models import Word2Vec
 from numba import get_num_threads, jit, prange
 from numba.np.ufunc.parallel import _get_thread_id
-
 from pecanpy.graph import DenseGraph, SparseGraph
 from pecanpy.wrappers import Timer
 
