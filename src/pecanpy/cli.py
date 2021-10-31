@@ -195,6 +195,12 @@ def read_graph(args):
     mode = args.mode
     task = args.task
 
+    if directed and extend:
+        raise NotImplementedError("Node2vec+ not implemented for directed graph yet.")
+
+    if extend and not weighted:
+        print("NOTE: node2vec+ is equivalent to node2vec for unweighted graphs.")
+
     if task in ["tocsr", "todense"]:  # perform conversion then save and exit
         g = node2vec.SparseGraph() if task == "tocsr" else node2vec.DenseGraph()
         g.read_edg(fp, weighted, directed)
@@ -210,8 +216,6 @@ def read_graph(args):
         g.read_edg(fp, weighted, directed)
 
     check_mode(g, mode)
-    if extend and not weighted:
-        print("WARNING: node2vec+ is equivalent to node2vec for unweighted graphs.")
 
     return g
 
@@ -244,9 +248,6 @@ def _simulate_walks(args, g):
 def main():
     """Pipeline for representational learning for all nodes in a graph."""
     args = parse_args()
-
-    if args.directed and args.extend:
-        raise NotImplementedError("Node2vec+ not implemented for directed graph yet.")
 
     if args.workers == 0:
         args.workers = numba.config.NUMBA_DEFAULT_NUM_THREADS
