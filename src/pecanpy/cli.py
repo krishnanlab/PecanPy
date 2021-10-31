@@ -175,6 +175,7 @@ def check_mode(g, mode):
         )
 
 
+@Timer("load Graph")
 def read_graph(args):
     """Read input network to memory.
 
@@ -215,6 +216,7 @@ def read_graph(args):
     return g
 
 
+@Timer("train embeddings")
 def learn_embeddings(args, walks):
     """Learn embeddings by optimizing the Skipgram objective using SGD."""
     model = node2vec.Word2Vec(
@@ -229,6 +231,16 @@ def learn_embeddings(args, walks):
     model.wv.save_word2vec_format(args.output)
 
 
+@Timer("pre-compute transition probabilities")
+def preprocess(g):
+    g.preprocess_transition_probs()
+
+
+@Timer("generate walks")
+def simulate_walks(args, g):
+    return g.simulate_walks(args.num_walks, args.walk_length)
+
+
 def main():
     """Pipeline for representational learning for all nodes in a graph."""
     args = parse_args()
@@ -236,31 +248,14 @@ def main():
     if args.directed and args.extend:
         raise NotImplementedError("Node2vec+ not implemented for directed graph yet.")
 
-    @Timer("load graph", True)
-    def timed_read_graph():
-        return read_graph(args)
-
-    @Timer("pre-compute transition probabilities", True)
-    def timed_preprocess():
-        g.preprocess_transition_probs()
-
-    @Timer("generate walks", True)
-    def timed_walk():
-        return g.simulate_walks(args.num_walks, args.walk_length)
-
-    @Timer("train embeddings", True)
-    def timed_emb():
-        learn_embeddings(args=args, walks=walks)
-
     if args.workers == 0:
         args.workers = numba.config.NUMBA_DEFAULT_NUM_THREADS
     numba.set_num_threads(args.workers)
 
-    g = timed_read_graph()
-    timed_preprocess()
-    walks = timed_walk()
-    g = None
-    timed_emb()
+    g = read_graph(args)
+    preprocess(g)
+    walks = simulate_walks(args, g)
+    learn_embeddings(args, walks)
 
 
 if __name__ == "__main__":
