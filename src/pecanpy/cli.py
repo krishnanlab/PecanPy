@@ -208,12 +208,10 @@ def read_graph(args):
         exit()
 
     pecanpy_mode = getattr(node2vec, mode, None)
-
     g = pecanpy_mode(p, q, workers, verbose, extend)
-    if fp.endswith(".npz"):
-        g.read_npz(fp, weighted, directed)
-    else:
-        g.read_edg(fp, weighted, directed)
+
+    read_func = g.read_npz if fp.endswith(".npz") else g.read_edg
+    read_func(fp, weighted, directed)
 
     check_mode(g, mode)
 
