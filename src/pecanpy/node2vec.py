@@ -6,7 +6,9 @@ import numpy as np
 from gensim.models import Word2Vec
 from numba import get_num_threads, jit, prange
 from numba.np.ufunc.parallel import _get_thread_id
+
 from pecanpy.graph import DenseGraph, SparseGraph
+from pecanpy.wrappers import Timer
 
 
 class Base:
@@ -217,13 +219,11 @@ class Base:
                 vector. The index is the same as that for the graph.
 
         """
-        t = time()
-        walks = self.simulate_walks(num_walks=num_walks, walk_length=walk_length)
-        if verbose:
-            print(f"Took {time() - t:.2f} sec to generate walks")
+        timed_walk = Timer("generate walks", verbose)(self.simulate_walks)
+        timed_w2v = Timer("train embeddings", verbose)(Word2Vec)
 
-        t = time()
-        w2v = Word2Vec(
+        walks = timed_walk(num_walks, walk_length)
+        w2v = timed_w2v(
             walks,
             vector_size=dim,
             window=window_size,
@@ -232,8 +232,6 @@ class Base:
             workers=self.workers,
             epochs=epochs,
         )
-        if verbose:
-            print(f"Took {time() - t:.2f} sec to train")
 
         # index mapping back to node IDs
         idx_list = [w2v.wv.get_index(i) for i in self.IDlst]
