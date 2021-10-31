@@ -16,6 +16,7 @@ Examples:
 import argparse
 
 import numba
+import numpy as np
 from pecanpy import node2vec
 from pecanpy.wrappers import Timer
 
@@ -37,7 +38,9 @@ def parse_args():
     parser.add_argument(
         "--output",
         default="emb/karate.emb",
-        help="Output embeddings (.emd) file path.",
+        help="Output embeddings file path. Save as .npz file if the specified "
+        "file path ends with .npz, otherwise save as a text file using the "
+        "gensim save_word2vec_format method.",
     )
 
     parser.add_argument(
@@ -230,7 +233,12 @@ def learn_embeddings(args, walks):
         workers=args.workers,
         epochs=args.epochs,
     )
-    model.wv.save_word2vec_format(args.output)
+
+    output_fp = args.output
+    if output_fp.endswith(".npz"):
+        np.savez(output_fp, IDs=model.wv.index_to_key, data=model.wv.vectors)
+    else:
+        model.wv.save_word2vec_format(output_fp)
 
 
 @Timer("pre-compute transition probabilities")
