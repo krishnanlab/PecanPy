@@ -92,18 +92,19 @@ class Base:
         @jit(parallel=True, nogil=True, nopython=True)
         def node2vec_walks():
             """Simulate a random walk starting from start node."""
-            n = start_node_idx_ary.size
-            # use last entry of each walk index array to keep track of effective walk length
-            walk_idx_mat = np.zeros((n, walk_length + 2), dtype=np.uint32)
+            tot_num_jobs = start_node_idx_ary.size
+            # use the last entry of each walk index array to keep track of the
+            # effective walk length
+            walk_idx_mat = np.zeros((tot_num_jobs, walk_length + 2), dtype=np.uint32)
             walk_idx_mat[:, 0] = start_node_idx_ary  # initialize seeds
             walk_idx_mat[:, -1] = walk_length + 1  # set to full walk length by default
 
             # progress bar parameters
             num_threads = get_num_threads()
-            checkpoint = n / num_threads // n_ckpts
+            checkpoint = tot_num_jobs / num_threads // n_ckpts
             private_count = 0
 
-            for i in prange(n):
+            for i in prange(tot_num_jobs):
                 # initialize first step as normal random walk
                 start_node_idx = walk_idx_mat[i, 0]
                 if has_nbrs(start_node_idx):
@@ -126,7 +127,7 @@ class Base:
                     thread_id = _get_thread_id()
                     private_count += 1
                     progress_log(
-                        n,
+                        tot_num_jobs,
                         private_count,
                         checkpoint,
                         pb_len,
