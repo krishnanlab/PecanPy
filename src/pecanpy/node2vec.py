@@ -98,8 +98,9 @@ class Base:
 
             # progress bar parameters
             n_checkpoints = 10
-            checkpoint = n / get_num_threads() // n_checkpoints
             progress_bar_length = 25
+            num_threads = get_num_threads()
+            checkpoint = n / num_threads // n_checkpoints
             private_count = 0
 
             for i in prange(n):
@@ -122,27 +123,16 @@ class Base:
                         break
 
                 if verbose:
-                    # TODO: make monitoring less messy
+                    thread_id = _get_thread_id()
                     private_count += 1
-                    if private_count % checkpoint == 0:
-                        progress = (
-                            private_count / n * progress_bar_length * get_num_threads()
-                        )
-
-                        # manuual construct progress bar since string formatting not supported
-                        progress_bar = "|"
-                        for k in range(progress_bar_length):
-                            progress_bar += "#" if k < progress else " "
-                        progress_bar += "|"
-
-                        print(
-                            "Thread # " if _get_thread_id() < 10 else "Thread #",
-                            _get_thread_id(),
-                            "progress:",
-                            progress_bar,
-                            get_num_threads() * private_count * 10000 // n / 100,
-                            "%",
-                        )
+                    progress_log(
+                        n,
+                        private_count,
+                        checkpoint,
+                        progress_bar_length,
+                        num_threads,
+                        thread_id,
+                    )
 
             return walk_idx_mat
 
@@ -468,6 +458,50 @@ class DenseOTF(Base, DenseGraph):
             return nbrs[choice]
 
         return move_forward
+
+
+@jit(nopython=True, nogil=True)
+def progress_log(
+        tot_num_jobs,
+        count,
+        checkpoint,
+        progress_bar_length,
+        num_threads,
+        thread_id,
+    ):
+    """Monitor the progress of random walk generation.
+
+    Manually construct the progress bar for the current thread and print.
+
+    Args:
+        tot_num_jobs (int): total number of jobs
+        count (int): current iteration count.
+        checkpoint (int): intervals for reporting progress.
+        progress_bar_length (int): full length of the progress bar
+        num_threads (int): total number of threads
+        thread_id (int): id of the current thread
+
+    """
+    # TODO: make monitoring less messy, i.e. flush line
+    if count % checkpoint == 0:
+        progress = (
+            count / tot_num_jobs * progress_bar_length * num_threads
+        )
+
+        # manuually construct progress bar since fstring not supported
+        progress_bar = "|"
+        for k in range(progress_bar_length):
+            progress_bar += "#" if k < progress else " "
+        progress_bar += "|"
+
+        print(
+            "Thread # " if thread_id < 10 else "Thread #",
+            thread_id,
+            "progress:",
+            progress_bar,
+            num_threads * count * 10000 // tot_num_jobs / 100,
+            "%",
+        )
 
 
 @jit(nopython=True, nogil=True)
