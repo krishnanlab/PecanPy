@@ -463,7 +463,7 @@ class DenseOTF(Base, DenseGraph):
 @jit(nopython=True, nogil=True)
 def progress_log(
         tot_num_jobs,
-        count,
+        curr_iter,
         checkpoint,
         progress_bar_length,
         num_threads,
@@ -475,7 +475,7 @@ def progress_log(
 
     Args:
         tot_num_jobs (int): total number of jobs
-        count (int): current iteration count.
+        curr_iter (int): current iteration number.
         checkpoint (int): intervals for reporting progress.
         progress_bar_length (int): full length of the progress bar
         num_threads (int): total number of threads
@@ -483,9 +483,9 @@ def progress_log(
 
     """
     # TODO: make monitoring less messy, i.e. flush line
-    if count % checkpoint == 0:
+    if curr_iter % checkpoint == 0:
         progress = (
-            count / tot_num_jobs * progress_bar_length * num_threads
+            curr_iter / tot_num_jobs * progress_bar_length * num_threads
         )
 
         # manuually construct progress bar since fstring not supported
@@ -499,7 +499,7 @@ def progress_log(
             thread_id,
             "progress:",
             progress_bar,
-            num_threads * count * 10000 // tot_num_jobs / 100,
+            num_threads * curr_iter * 10000 // tot_num_jobs / 100,
             "%",
         )
 
