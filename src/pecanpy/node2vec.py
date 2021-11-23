@@ -393,7 +393,6 @@ class SparseOTF(Base, SparseGraph):
         def move_forward(cur_idx, prev_idx=None):
             """Move to next node."""
             normalized_probs = get_normalized_probs(
-                # data, indices, indptr, p, q, cur_idx, prev_idx)
                 data,
                 indices,
                 indptr,
