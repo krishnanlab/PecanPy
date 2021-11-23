@@ -127,19 +127,31 @@ def parse_args():
 
     parser.add_argument(
         "--verbose",
-        dest="verbose",
         action="store_true",
         help="Print out training details",
     )
-    parser.set_defaults(verbose=False)
+
+    parser.add_argument(
+        "--num-checkpoints",
+        dest="n_ckpt",
+        type=int,
+        default=10,
+        help="number of checkpoints for progress prining",
+    )
+
+    parser.add_argument(
+        "--progressbar-length",
+        dest="pb_len",
+        type=int,
+        default=25,
+        help="length of the progress bar",
+    )
 
     parser.add_argument(
         "--extend",
-        dest="extend",
         action="store_true",
         help="Use node2vec+ extension",
     )
-    parser.set_defaults(extend=False)
 
     return parser.parse_args()
 
@@ -250,7 +262,7 @@ def preprocess(g):
 @Timer("generate walks")
 def simulate_walks(args, g):
     """Simulate random walks with timer."""
-    return g.simulate_walks(args.num_walks, args.walk_length)
+    return g.simulate_walks(args.num_walks, args.walk_length, args.n_ckpt, args.pb_len)
 
 
 def main():

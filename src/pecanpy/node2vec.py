@@ -57,12 +57,6 @@ class Base:
                 whether or not to display walk generation progress.
             extend (bool): ``True`` if use node2vec+ extension, default is ``False``
 
-        TODO:
-            * Fix numba threads, now uses all possible threads instead of the
-                specified number of workers.
-            * Think of a way to implement progress monitoring (for ``verbose``)
-                during walk generation.
-
         """
         super(Base, self).__init__()
         self.p = p
@@ -71,7 +65,7 @@ class Base:
         self.verbose = verbose
         self.extend = extend
 
-    def simulate_walks(self, num_walks, walk_length):
+    def simulate_walks(self, num_walks, walk_length, n_ckpts, pb_len):
         """Generate walks starting from each nodes ``num_walks`` time.
 
         Note:
@@ -82,6 +76,8 @@ class Base:
         Args:
             num_walks (int): number of walks starting from each node.
             walks_length (int): length of walk.
+            n_ckpts (int): number of checkpoints for progress printing
+            pb_len (int): length of the progress bar
 
         """
         num_nodes = len(self.IDlst)
@@ -96,19 +92,19 @@ class Base:
         @jit(parallel=True, nogil=True, nopython=True)
         def node2vec_walks():
             """Simulate a random walk starting from start node."""
-            n = start_node_idx_ary.size
-            # use last entry of each walk index array to keep track of effective walk length
-            walk_idx_mat = np.zeros((n, walk_length + 2), dtype=np.uint32)
+            tot_num_jobs = start_node_idx_ary.size
+            # use the last entry of each walk index array to keep track of the
+            # effective walk length
+            walk_idx_mat = np.zeros((tot_num_jobs, walk_length + 2), dtype=np.uint32)
             walk_idx_mat[:, 0] = start_node_idx_ary  # initialize seeds
             walk_idx_mat[:, -1] = walk_length + 1  # set to full walk length by default
 
             # progress bar parameters
-            n_checkpoints = 10
-            checkpoint = n / get_num_threads() // n_checkpoints
-            progress_bar_length = 25
+            num_threads = get_num_threads()
+            checkpoint = tot_num_jobs / num_threads // n_ckpts
             private_count = 0
 
-            for i in prange(n):
+            for i in prange(tot_num_jobs):
                 # initialize first step as normal random walk
                 start_node_idx = walk_idx_mat[i, 0]
                 if has_nbrs(start_node_idx):
@@ -128,27 +124,16 @@ class Base:
                         break
 
                 if verbose:
-                    # TODO: make monitoring less messy
+                    thread_id = _get_thread_id()
                     private_count += 1
-                    if private_count % checkpoint == 0:
-                        progress = (
-                            private_count / n * progress_bar_length * get_num_threads()
-                        )
-
-                        # manuual construct progress bar since string formatting not supported
-                        progress_bar = "|"
-                        for k in range(progress_bar_length):
-                            progress_bar += "#" if k < progress else " "
-                        progress_bar += "|"
-
-                        print(
-                            "Thread # " if _get_thread_id() < 10 else "Thread #",
-                            _get_thread_id(),
-                            "progress:",
-                            progress_bar,
-                            get_num_threads() * private_count * 10000 // n / 100,
-                            "%",
-                        )
+                    progress_log(
+                        tot_num_jobs,
+                        private_count,
+                        checkpoint,
+                        pb_len,
+                        num_threads,
+                        thread_id,
+                    )
 
             return walk_idx_mat
 
@@ -189,6 +174,8 @@ class Base:
         window_size=10,
         epochs=1,
         verbose=False,
+        n_ckpt=10,
+        pb_len=25,
     ):
         """Generate embeddings.
 
@@ -210,6 +197,8 @@ class Base:
                 is 1
             verbose (bool): print time usage for random walk generation and
                 skip-gram training if set to True
+            n_ckpts (int): number of checkpoints for progress printing
+            pb_len (int): length of the progress bar
 
         Return:
             numpy.ndarray: The embedding matrix, each row is a node embedding
@@ -219,7 +208,7 @@ class Base:
         timed_walk = Timer("generate walks", verbose)(self.simulate_walks)
         timed_w2v = Timer("train embeddings", verbose)(Word2Vec)
 
-        walks = timed_walk(num_walks, walk_length)
+        walks = timed_walk(num_walks, walk_length, n_ckpt, pb_len)
         w2v = timed_w2v(
             walks,
             vector_size=dim,
@@ -474,6 +463,50 @@ class DenseOTF(Base, DenseGraph):
             return nbrs[choice]
 
         return move_forward
+
+
+@jit(nopython=True, nogil=True)
+def progress_log(
+    tot_num_jobs,
+    curr_iter,
+    checkpoint,
+    progress_bar_length,
+    num_threads,
+    thread_id,
+):
+    """Monitor the progress of random walk generation.
+
+    Manually construct the progress bar for the current thread and print.
+
+    Args:
+        tot_num_jobs (int): total number of jobs
+        curr_iter (int): current iteration number.
+        checkpoint (int): intervals for reporting progress.
+        progress_bar_length (int): full length of the progress bar
+        num_threads (int): total number of threads
+        thread_id (int): id of the current thread
+
+    """
+    # TODO: make monitoring less messy, i.e. flush line
+    if curr_iter % checkpoint == 0:
+        progress = (
+            curr_iter / tot_num_jobs * progress_bar_length * num_threads
+        )
+
+        # manuually construct progress bar since fstring not supported
+        progress_bar = "|"
+        for k in range(progress_bar_length):
+            progress_bar += "#" if k < progress else " "
+        progress_bar += "|"
+
+        print(
+            "Thread # " if thread_id < 10 else "Thread #",
+            thread_id,
+            "progress:",
+            progress_bar,
+            num_threads * curr_iter * 10000 // tot_num_jobs / 100,
+            "%",
+        )
 
 
 @jit(nopython=True, nogil=True)
