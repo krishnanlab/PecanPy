@@ -57,12 +57,6 @@ class Base:
                 whether or not to display walk generation progress.
             extend (bool): ``True`` if use node2vec+ extension, default is ``False``
 
-        TODO:
-            * Fix numba threads, now uses all possible threads instead of the
-                specified number of workers.
-            * Think of a way to implement progress monitoring (for ``verbose``)
-                during walk generation.
-
         """
         super(Base, self).__init__()
         self.p = p
