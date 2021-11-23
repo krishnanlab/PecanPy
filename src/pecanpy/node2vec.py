@@ -65,7 +65,7 @@ class Base:
         self.verbose = verbose
         self.extend = extend
 
-    def simulate_walks(self, num_walks, walk_length, n_ckpts=10, pb_len=25):
+    def simulate_walks(self, num_walks, walk_length, n_ckpts, pb_len):
         """Generate walks starting from each nodes ``num_walks`` time.
 
         Note:
@@ -174,6 +174,8 @@ class Base:
         window_size=10,
         epochs=1,
         verbose=False,
+        n_ckpt=10,
+        pb_len=25,
     ):
         """Generate embeddings.
 
@@ -195,6 +197,8 @@ class Base:
                 is 1
             verbose (bool): print time usage for random walk generation and
                 skip-gram training if set to True
+            n_ckpts (int): number of checkpoints for progress printing
+            pb_len (int): length of the progress bar
 
         Return:
             numpy.ndarray: The embedding matrix, each row is a node embedding
@@ -204,7 +208,7 @@ class Base:
         timed_walk = Timer("generate walks", verbose)(self.simulate_walks)
         timed_w2v = Timer("train embeddings", verbose)(Word2Vec)
 
-        walks = timed_walk(num_walks, walk_length)
+        walks = timed_walk(num_walks, walk_length, n_ckpt, pb_len)
         w2v = timed_w2v(
             walks,
             vector_size=dim,
@@ -463,13 +467,13 @@ class DenseOTF(Base, DenseGraph):
 
 @jit(nopython=True, nogil=True)
 def progress_log(
-        tot_num_jobs,
-        curr_iter,
-        checkpoint,
-        progress_bar_length,
-        num_threads,
-        thread_id,
-    ):
+    tot_num_jobs,
+    curr_iter,
+    checkpoint,
+    progress_bar_length,
+    num_threads,
+    thread_id,
+):
     """Monitor the progress of random walk generation.
 
     Manually construct the progress bar for the current thread and print.
