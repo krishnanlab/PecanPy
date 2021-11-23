@@ -65,7 +65,7 @@ class Base:
         self.verbose = verbose
         self.extend = extend
 
-    def simulate_walks(self, num_walks, walk_length):
+    def simulate_walks(self, num_walks, walk_length, n_ckpts=10, pb_len=25):
         """Generate walks starting from each nodes ``num_walks`` time.
 
         Note:
@@ -76,6 +76,8 @@ class Base:
         Args:
             num_walks (int): number of walks starting from each node.
             walks_length (int): length of walk.
+            n_ckpts (int): number of checkpoints for progress printing
+            pb_len (int): length of the progress bar
 
         """
         num_nodes = len(self.IDlst)
@@ -97,10 +99,8 @@ class Base:
             walk_idx_mat[:, -1] = walk_length + 1  # set to full walk length by default
 
             # progress bar parameters
-            n_checkpoints = 10
-            progress_bar_length = 25
             num_threads = get_num_threads()
-            checkpoint = n / num_threads // n_checkpoints
+            checkpoint = n / num_threads // n_ckpts
             private_count = 0
 
             for i in prange(n):
@@ -129,7 +129,7 @@ class Base:
                         n,
                         private_count,
                         checkpoint,
-                        progress_bar_length,
+                        pb_len,
                         num_threads,
                         thread_id,
                     )
