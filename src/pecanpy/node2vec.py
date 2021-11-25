@@ -2,8 +2,8 @@
 
 import numpy as np
 from gensim.models import Word2Vec
-from numba import get_num_threads, jit, prange
-from numba.np.ufunc.parallel import _get_thread_id
+from numba import jit, prange
+from numba_progress import ProgressBar
 from pecanpy.graph import DenseGraph, SparseGraph
 from pecanpy.wrappers import Timer
 
@@ -53,8 +53,7 @@ class Base:
                 a localized neighborhood.
             workers (int):  number of threads to be spawned for runing node2vec
                 including walk generation and word2vec embedding.
-            verbose (bool): (not implemented yet due to issue with numba jit)
-                whether or not to display walk generation progress.
+            verbose (bool): show progress bar for walk generation.
             extend (bool): ``True`` if use node2vec+ extension, default is ``False``
 
         """
@@ -64,6 +63,19 @@ class Base:
         self.workers = workers
         self.verbose = verbose
         self.extend = extend
+
+    def _map_walk(self, walk_idx_ary):
+        """Map walk from node index to node ID.
+
+        Note:
+            The last element in the ``walk_idx_ary`` encodes the effective walk
+            length. Only walk indices up to the effective walk length are
+            translated (mapped to node IDs).
+
+        """
+        end_idx = walk_idx_ary[-1]
+        walk = [self.IDlst[i] for i in walk_idx_ary[:end_idx]]
+        return walk
 
     def simulate_walks(self, num_walks, walk_length, n_ckpts, pb_len):
         """Generate walks starting from each nodes ``num_walks`` time.
@@ -84,27 +96,22 @@ class Base:
         nodes = np.array(range(num_nodes), dtype=np.uint32)
         start_node_idx_ary = np.concatenate([nodes] * num_walks)
         np.random.shuffle(start_node_idx_ary)
+        tot_num_jobs = start_node_idx_ary.size
 
         move_forward = self.get_move_forward()
         has_nbrs = self.get_has_nbrs()
         verbose = self.verbose
 
         @jit(parallel=True, nogil=True, nopython=True)
-        def node2vec_walks():
+        def node2vec_walks(num_iter, progress_proxy):
             """Simulate a random walk starting from start node."""
-            tot_num_jobs = start_node_idx_ary.size
             # use the last entry of each walk index array to keep track of the
             # effective walk length
-            walk_idx_mat = np.zeros((tot_num_jobs, walk_length + 2), dtype=np.uint32)
+            walk_idx_mat = np.zeros((num_iter, walk_length + 2), dtype=np.uint32)
             walk_idx_mat[:, 0] = start_node_idx_ary  # initialize seeds
             walk_idx_mat[:, -1] = walk_length + 1  # set to full walk length by default
 
-            # progress bar parameters
-            num_threads = get_num_threads()
-            checkpoint = tot_num_jobs / num_threads // n_ckpts
-            private_count = 0
-
-            for i in prange(tot_num_jobs):
+            for i in prange(num_iter):
                 # initialize first step as normal random walk
                 start_node_idx = walk_idx_mat[i, 0]
                 if has_nbrs(start_node_idx):
@@ -123,23 +130,16 @@ class Base:
                         walk_idx_mat[i, -1] = j
                         break
 
-                if verbose:
-                    thread_id = _get_thread_id()
-                    private_count += 1
-                    progress_log(
-                        tot_num_jobs,
-                        private_count,
-                        checkpoint,
-                        pb_len,
-                        num_threads,
-                        thread_id,
-                    )
+                progress_proxy.update(1)
 
             return walk_idx_mat
 
-        walks = [
-            [self.IDlst[idx] for idx in walk[: walk[-1]]] for walk in node2vec_walks()
-        ]
+        # Acquire numba progress proxy for displaying the progress bar
+        with ProgressBar(total=tot_num_jobs, disable=not verbose) as progress:
+            walk_idx_mat = node2vec_walks(tot_num_jobs, progress)
+
+        # Map node index back to node ID
+        walks = [self._map_walk(walk_idx_ary) for walk_idx_ary in walk_idx_mat]
 
         return walks
 
@@ -462,50 +462,6 @@ class DenseOTF(Base, DenseGraph):
             return nbrs[choice]
 
         return move_forward
-
-
-@jit(nopython=True, nogil=True)
-def progress_log(
-    tot_num_jobs,
-    curr_iter,
-    checkpoint,
-    progress_bar_length,
-    num_threads,
-    thread_id,
-):
-    """Monitor the progress of random walk generation.
-
-    Manually construct the progress bar for the current thread and print.
-
-    Args:
-        tot_num_jobs (int): total number of jobs
-        curr_iter (int): current iteration number.
-        checkpoint (int): intervals for reporting progress.
-        progress_bar_length (int): full length of the progress bar
-        num_threads (int): total number of threads
-        thread_id (int): id of the current thread
-
-    """
-    # TODO: make monitoring less messy, i.e. flush line
-    if curr_iter % checkpoint == 0:
-        progress = (
-            curr_iter / tot_num_jobs * progress_bar_length * num_threads
-        )
-
-        # manuually construct progress bar since fstring not supported
-        progress_bar = "|"
-        for k in range(progress_bar_length):
-            progress_bar += "#" if k < progress else " "
-        progress_bar += "|"
-
-        print(
-            "Thread # " if thread_id < 10 else "Thread #",
-            thread_id,
-            "progress:",
-            progress_bar,
-            num_threads * curr_iter * 10000 // tot_num_jobs / 100,
-            "%",
-        )
 
 
 @jit(nopython=True, nogil=True)
