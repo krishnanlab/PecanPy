@@ -64,6 +64,19 @@ class Base:
         self.verbose = verbose
         self.extend = extend
 
+    def _map_walk(self, walk_idx_ary):
+        """Map walk from node index to node ID.
+
+        Note:
+            The last element in the ``walk_idx_ary`` encodes the effective walk
+            length. Only walk indices up to the effective walk length are
+            translated (mapped to node IDs).
+
+        """
+        end_idx = walk_idx_ary[-1]
+        walk = [self.IDlst[i] for i in walk_idx_ary[:end_idx]]
+        return walk
+
     def simulate_walks(self, num_walks, walk_length, n_ckpts, pb_len):
         """Generate walks starting from each nodes ``num_walks`` time.
 
@@ -121,11 +134,12 @@ class Base:
 
             return walk_idx_mat
 
+        # Acquire numba progress proxy for displaying the progress bar
         with ProgressBar(total=tot_num_jobs, disable=not verbose) as progress:
-            walks = [
-                [self.IDlst[idx] for idx in walk[:walk[-1]]]
-                for walk in node2vec_walks(tot_num_jobs, progress)
-            ]
+            walk_idx_mat = node2vec_walks(tot_num_jobs, progress)
+
+        # Map node index back to node ID
+        walks = [self._map_walk(walk_idx_ary) for walk_idx_ary in walk_idx_mat]
 
         return walks
 
