@@ -17,7 +17,7 @@ import argparse
 
 import numba
 import numpy as np
-from pecanpy import node2vec
+from pecanpy import pecanpy
 from pecanpy.wrappers import Timer
 
 
@@ -217,12 +217,12 @@ def read_graph(args):
         print("NOTE: node2vec+ is equivalent to node2vec for unweighted graphs.")
 
     if task in ["tocsr", "todense"]:  # perform conversion then save and exit
-        g = node2vec.SparseGraph() if task == "tocsr" else node2vec.DenseGraph()
+        g = pecanpy.SparseGraph() if task == "tocsr" else pecanpy.DenseGraph()
         g.read_edg(fp, weighted, directed)
         g.save(output)
         exit()
 
-    pecanpy_mode = getattr(node2vec, mode, None)
+    pecanpy_mode = getattr(pecanpy, mode, None)
     g = pecanpy_mode(p, q, workers, verbose, extend)
 
     read_func = g.read_npz if fp.endswith(".npz") else g.read_edg
@@ -236,7 +236,7 @@ def read_graph(args):
 @Timer("train embeddings")
 def learn_embeddings(args, walks):
     """Learn embeddings by optimizing the Skipgram objective using SGD."""
-    model = node2vec.Word2Vec(
+    model = pecanpy.Word2Vec(
         walks,
         vector_size=args.dimensions,
         window=args.window_size,
