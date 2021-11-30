@@ -52,7 +52,7 @@ class AdjlstGraph(IDHandle):
     def __init__(self):
         """Initialize AdjlstGraph object."""
         super(AdjlstGraph, self).__init__()
-        self._data = []
+        self._data = []  # list of dict of node_indexx -> edge_weight
 
     @property
     def num_nodes(self):
@@ -183,16 +183,11 @@ class AdjlstGraph(IDHandle):
         indices = np.zeros(indptr[-1], dtype=np.uint32)
         data = np.zeros(indptr[-1], dtype=np.float64)
 
-        for i in reversed(range(len(self._data))):
-            start = indptr[i]
-            end = indptr[i + 1]
-
-            # TODO: clean up
-            tmp = self._data.pop()
-            sorted_keys = sorted(tmp)
-
-            indices[start:end] = np.fromiter(sorted_keys, dtype=np.uint32)
-            data[start:end] = np.fromiter(map(tmp.get, sorted_keys), dtype=np.float64)
+        for i, nbrs in enumerate(self._data):
+            new_indices, new_data = zip(*[(j, nbrs[j]) for j in sorted(nbrs)])
+            chunk = slice(indptr[i], indptr[i + 1])
+            indices[chunk] = np.array(new_indices, dtype=np.uint32)
+            data[chunk] = np.array(new_data, dtype=np.float64)
 
         return indptr, indices, data
 
