@@ -65,19 +65,19 @@ class AdjlstGraph(IDHandle):
         terms = edge_line.strip().split(delimiter)
         id1, id2 = terms[0].strip(), terms[1].strip()
 
-        weight = 1.0 
+        weight = 1.0
         if weighted:
             if len(terms) != 3:
                 raise ValueError(
                     f"Expecting three columns in the edge list file for a "
-                    f"weighted graph, got {len(terms)} instead: {edge_line!r}"
+                    f"weighted graph, got {len(terms)} instead: {edge_line!r}",
                 )
             weight = float(terms[-1])
 
         return id1, id2, weight
 
     @staticmethod
-    def _is_valid_edge_weight(weight):
+    def _is_valid_edge_weight(id1, id2, weight):
         """Check if the edge weight is non-negative."""
         if weight <= 0:
             edg_str = f"w({id1},{id2}) = {weight}"
@@ -121,7 +121,7 @@ class AdjlstGraph(IDHandle):
             self.IDmap[node_id] = self.num_nodes
             self._data.append({})
 
-    def add_edge(self, id1, id2, weight=1., directed=False):
+    def add_edge(self, id1, id2, weight=1.0, directed=False):
         """Add an edge to the graph.
 
         Note:
@@ -134,7 +134,7 @@ class AdjlstGraph(IDHandle):
             directed (bool): whether the edge is directed or not.
 
         """
-        if self._is_valid_edge_weight(weight):
+        if self._is_valid_edge_weight(id1, id2, weight):
             idx1, idx2 = map(self.get_node_idx, (id1, id2))
             self._check_edge_existence(id1, id2, idx1, idx2, weight)
 
