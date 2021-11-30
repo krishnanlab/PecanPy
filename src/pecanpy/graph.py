@@ -60,10 +60,9 @@ class AdjlstGraph(IDHandle):
         return len(self._data)
 
     @staticmethod
-    def _read_edge_line(edge_line, weighted):
-        """Read a line from the edge list tsv file."""
-        # TODO: add option to choose delimiter
-        terms = edge_line.strip().split("\t")
+    def _read_edge_line(edge_line, weighted, delimiter):
+        """Read a line from the edge list file."""
+        terms = edge_line.strip().split(delimiter)
         id1, id2 = terms[0].strip(), terms[1].strip()
 
         weight = 1.0 
@@ -143,7 +142,7 @@ class AdjlstGraph(IDHandle):
             if not directed:
                 self._data[idx2][idx1] = weight
 
-    def read(self, edg_fp, weighted, directed):
+    def read(self, edg_fp, weighted, directed, delimiter="\t"):
         """Read an edgelist file and create sparse graph.
 
         Note:
@@ -166,12 +165,13 @@ class AdjlstGraph(IDHandle):
             directed (bool): whether the graph is directed, if undirected, the
                 edge connecting from destination node to source node is created
                 with same edge weight from source node to destination node.
+            delimiter (str): delimiter of the edge list file, default is tab.
 
         """
         with open(edg_fp, "r") as f:
             for edge_line in f:
-                id1, id2, weight = self._read_edge_line(edge_line, weighted)
-                self.add_edge(id1, id2, weight, directed)
+                edge = self._read_edge_line(edge_line, weighted, delimiter)
+                self.add_edge(*edge, directed)
 
     def to_csr(self):
         """Construct compressed sparse row matrix."""
