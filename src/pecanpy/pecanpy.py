@@ -4,7 +4,7 @@ import numpy as np
 from gensim.models import Word2Vec
 from numba import jit, prange
 from numba_progress import ProgressBar
-from pecanpy.graph import DenseGraph, SparseGraph
+from pecanpy.rw import DenseRWGraph, SparseRWGraph
 from pecanpy.wrappers import Timer
 
 
@@ -225,12 +225,12 @@ class Base:
         return w2v.wv.vectors[idx_list]
 
 
-class PreComp(Base, SparseGraph):
+class PreComp(Base, SparseRWGraph):
     """Precompute transition probabilites.
 
     This implementation precomputes and store 2nd order transition probabilites
     first and uses read off transition probabilities during the process of
-    random walk. The graph type used is ``SparseGraph``.
+    random walk. The graph type used is ``SparseRWGraph``.
 
     Note:
         Need to call ``preprocess_transition_probs()`` first before generating
@@ -355,12 +355,12 @@ class PreComp(Base, SparseGraph):
         self.alias_j, self.alias_q = compute_all_transition_probs()
 
 
-class SparseOTF(Base, SparseGraph):
+class SparseOTF(Base, SparseRWGraph):
     """Sparse graph transition on the fly.
 
     This implementation do *NOT* precompute transition probabilities in advance
     but instead calculate them on-the-fly during the process of random walk.
-    The graph type used is ``SparseGraph``.
+    The graph type used is ``SparseRWGraph``.
 
     """
 
@@ -410,12 +410,12 @@ class SparseOTF(Base, SparseGraph):
         return move_forward
 
 
-class DenseOTF(Base, DenseGraph):
+class DenseOTF(Base, DenseRWGraph):
     """Dense graph transition on the fly.
 
     This implementation do *NOT* precompute transition probabilities in advance
     but instead calculate them on-the-fly during the process of random walk.
-    The graph type used is ``DenseGraph``.
+    The graph type used is ``DenseRWGraph``.
 
     """
 
