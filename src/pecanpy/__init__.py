@@ -1,3 +1,6 @@
 """PecanPy: parallelized, efficient, and accelerated node2vec."""
 
-__all__ = ["graph", "node2vec", "wrappers"]
+from . import graph
+from . import pecanpy
+
+__all__ = ["graph", "pecanpy"]
