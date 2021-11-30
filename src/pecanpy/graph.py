@@ -191,25 +191,6 @@ class AdjlstGraph(IDHandle):
 
         return indptr, indices, data
 
-    def from_mat(self, adj_mat, ids):
-        """Construct graph using adjacency matrix and node ids.
-
-        Args:
-            adj_mat(:obj:`numpy.ndarray`): 2D numpy array of adjacency matrix
-            ids(:obj:`list` of str): node ID list
-
-        """
-        data = []  # construct edge list
-        for row in adj_mat:
-            data.append({})
-            for j, weight in enumerate(row):
-                if weight != 0:
-                    data[-1][j] = weight
-
-        # save edgelist and id data and convert to csr format
-        self.data = data
-        self.set_ids(ids)
-
     def to_dense(self):
         """Construct dense adjacency matrix.
 
@@ -231,6 +212,24 @@ class AdjlstGraph(IDHandle):
                 mat[src_node, dst_node] = src_nbrs[dst_node]
 
         return mat
+
+    @classmethod
+    def from_mat(cls, adj_mat, node_ids):
+        """Construct graph using adjacency matrix and node ids.
+
+        Args:
+            adj_mat(:obj:`numpy.ndarray`): 2D numpy array of adjacency matrix
+            node_ids(:obj:`list` of str): node ID list
+
+        Return:
+            An adjacency graph object representing the adjacency matrix.
+
+        """
+        g = cls()
+        for idx1, idx2 in zip(*np.where(adj_mat != 0)):
+            id1, id2 = node_ids[idx1], node_ids[idx2]
+            g.add_edge(id1, id2, adj_mat[idx1, idx2], directed=False)
+        return g
 
 
 class SparseGraph(IDHandle):
