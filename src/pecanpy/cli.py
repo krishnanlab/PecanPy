@@ -17,6 +17,7 @@ import argparse
 
 import numba
 import numpy as np
+from gensim.models import Word2Vec
 from pecanpy import pecanpy
 from pecanpy.wrappers import Timer
 
@@ -236,7 +237,7 @@ def read_graph(args):
 @Timer("train embeddings")
 def learn_embeddings(args, walks):
     """Learn embeddings by optimizing the Skipgram objective using SGD."""
-    model = pecanpy.Word2Vec(
+    model = Word2Vec(
         walks,
         vector_size=args.dimensions,
         window=args.window_size,
