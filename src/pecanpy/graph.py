@@ -207,7 +207,6 @@ class AdjlstGraph(IDHandle):
         mat = np.zeros((n_nodes, n_nodes))
 
         for src_node, src_nbrs in enumerate(self._data):
-
             for dst_node in src_nbrs:
                 mat[src_node, dst_node] = src_nbrs[dst_node]
 
@@ -418,18 +417,35 @@ class DenseGraph(IDHandle):
         self.data = g.to_dense()
         self.nonzero = self.data != 0
 
-    def from_mat(self, adj_mat, ids):
-        """Construct graph using adjacency matrix and node ids.
+    def save(self, fp):
+        """Save dense graph  as ``.dense.npz`` file."""
+        np.savez(fp, data=self.data, IDs=self.IDlst)
+
+    @classmethod
+    def from_adjlst_graph(cls, adjlst_graph):
+        """Construct dense graph from adjacency list graph.
+
+        Args:
+            adjlst_graph (:obj:`pecanpy.graph.AdjlstGraph`): Adjacency list
+                graph to be converted.
+
+        """
+        g = cls()
+        g.set_ids(adjlst_graph.IDlst)
+        g.data = adjlst_graph.to_dense()
+        return g
+
+    @classmethod
+    def from_mat(cls, adj_mat, node_ids):
+        """Construct dense graph using adjacency matrix and node ids.
 
         Args:
             adj_mat(:obj:`numpy.ndarray`): 2D numpy array of adjacency matrix
             ids(:obj:`list` of str): node ID list
 
         """
-        self.data = adj_mat
-        self.nonzero = adj_mat != 0
-        self.set_ids(ids)
-
-    def save(self, fp):
-        """Save dense graph  as ``.dense.npz`` file."""
-        np.savez(fp, data=self.data, IDs=self.IDlst)
+        g = cls()
+        g.data = adj_mat
+        g.nonzero = adj_mat != 0
+        g.set_ids(node_ids)
+        return g
