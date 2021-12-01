@@ -8,11 +8,10 @@ INDPTR = np.array([0, 2, 3, 4], dtype=np.uint32)
 INDICES = np.array([1, 2, 0, 0], dtype=np.uint32)
 DATA = np.array([1.0, 1.0, 1.0, 1.0], dtype=np.float64)
 ADJLST = [{1: 1.0, 2: 1.0}, {0: 1}, {0: 1}]
-IDS = ['a', 'b', 'c']
+IDS = ["a", "b", "c"]
 
 
 class TestAdjlstGraph(unittest.TestCase):
-
     def test_from_mat(self):
         g = AdjlstGraph.from_mat(MAT, IDS)
         self.assertEqual(g._data, ADJLST)
@@ -20,7 +19,6 @@ class TestAdjlstGraph(unittest.TestCase):
 
 
 class TestSparseGraph(unittest.TestCase):
-
     def tearDown(self):
         del self.g
 
@@ -40,7 +38,6 @@ class TestSparseGraph(unittest.TestCase):
 
 
 class TestDenseGraph(unittest.TestCase):
-
     def tearDown(self):
         del self.g
 
@@ -57,5 +54,5 @@ class TestDenseGraph(unittest.TestCase):
         self.validate()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

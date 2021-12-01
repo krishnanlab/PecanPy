@@ -11,7 +11,6 @@ set_num_threads(1)
 
 
 class TestCli(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         com = ["pecanpy", "--input", "../demo/karate.edg", "--output"]
