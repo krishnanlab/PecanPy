@@ -28,11 +28,23 @@ class TestSparseGraph(unittest.TestCase):
         self.assertTrue(np.all(g.data == DATA))
         self.assertEqual(g.IDlst, IDS)
 
+    def test_from_adjlst_graph(self):
+        g = SparseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT, IDS))
+        self.assertTrue(np.all(g.indptr == INDPTR))
+        self.assertTrue(np.all(g.indices == INDICES))
+        self.assertTrue(np.all(g.data == DATA))
+        self.assertEqual(g.IDlst, IDS)
+
 
 class TestDenseGraph(unittest.TestCase):
 
     def test_from_mat(self):
         g = DenseGraph.from_mat(MAT, IDS)
+        self.assertTrue(np.all(g.data == MAT))
+        self.assertEqual(g.IDlst, IDS)
+
+    def test_from_adjlst_graph(self):
+        g = DenseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT, IDS))
         self.assertTrue(np.all(g.data == MAT))
         self.assertEqual(g.IDlst, IDS)
 
