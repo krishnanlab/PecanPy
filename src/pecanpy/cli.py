@@ -18,7 +18,7 @@ import argparse
 import numba
 import numpy as np
 from gensim.models import Word2Vec
-from pecanpy import pecanpy
+from pecanpy import graph, pecanpy
 from pecanpy.wrappers import Timer
 
 
@@ -202,7 +202,7 @@ def read_graph(args):
         print("NOTE: node2vec+ is equivalent to node2vec for unweighted graphs.")
 
     if task in ["tocsr", "todense"]:  # perform conversion then save and exit
-        g = pecanpy.SparseGraph() if task == "tocsr" else pecanpy.DenseGraph()
+        g = graph.SparseGraph() if task == "tocsr" else graph.DenseGraph()
         g.read_edg(fp, weighted, directed)
         g.save(output)
         exit()
