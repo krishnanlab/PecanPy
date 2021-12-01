@@ -42,7 +42,7 @@ class Base:
 
     """
 
-    def __init__(self, p, q, workers, verbose, extend=False):
+    def __init__(self, p, q, workers, verbose=False, extend=False):
         """Initializ node2vec base class.
 
         Args:
@@ -238,7 +238,7 @@ class PreComp(Base, SparseRWGraph):
 
     """
 
-    def __init__(self, p, q, workers, verbose, extend=False):
+    def __init__(self, p, q, workers, verbose=False, extend=False):
         """Initialize PreComp mode node2vec."""
         Base.__init__(self, p, q, workers, verbose, extend)
 
@@ -364,7 +364,7 @@ class SparseOTF(Base, SparseRWGraph):
 
     """
 
-    def __init__(self, p, q, workers, verbose, extend=False):
+    def __init__(self, p, q, workers, verbose=False, extend=False):
         """Initialize PreComp mode node2vec."""
         Base.__init__(self, p, q, workers, verbose, extend)
 
@@ -419,7 +419,7 @@ class DenseOTF(Base, DenseRWGraph):
 
     """
 
-    def __init__(self, p, q, workers, verbose, extend=False):
+    def __init__(self, p, q, workers, verbose=False, extend=False):
         """Initialize DenseOTF mode node2vec."""
         Base.__init__(self, p, q, workers, verbose, extend)
 

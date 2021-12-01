@@ -191,25 +191,6 @@ class AdjlstGraph(IDHandle):
 
         return indptr, indices, data
 
-    def from_mat(self, adj_mat, ids):
-        """Construct graph using adjacency matrix and node ids.
-
-        Args:
-            adj_mat(:obj:`numpy.ndarray`): 2D numpy array of adjacency matrix
-            ids(:obj:`list` of str): node ID list
-
-        """
-        data = []  # construct edge list
-        for row in adj_mat:
-            data.append({})
-            for j, weight in enumerate(row):
-                if weight != 0:
-                    data[-1][j] = weight
-
-        # save edgelist and id data and convert to csr format
-        self.data = data
-        self.set_ids(ids)
-
     def to_dense(self):
         """Construct dense adjacency matrix.
 
@@ -226,11 +207,28 @@ class AdjlstGraph(IDHandle):
         mat = np.zeros((n_nodes, n_nodes))
 
         for src_node, src_nbrs in enumerate(self._data):
-
             for dst_node in src_nbrs:
                 mat[src_node, dst_node] = src_nbrs[dst_node]
 
         return mat
+
+    @classmethod
+    def from_mat(cls, adj_mat, node_ids, **kwargs):
+        """Construct graph using adjacency matrix and node ids.
+
+        Args:
+            adj_mat(:obj:`numpy.ndarray`): 2D numpy array of adjacency matrix
+            node_ids(:obj:`list` of str): node ID list
+
+        Return:
+            An adjacency graph object representing the adjacency matrix.
+
+        """
+        g = cls(**kwargs)
+        for idx1, idx2 in zip(*np.where(adj_mat != 0)):
+            id1, id2 = node_ids[idx1], node_ids[idx2]
+            g.add_edge(id1, id2, adj_mat[idx1, idx2], directed=False)
+        return g
 
 
 class SparseGraph(IDHandle):
@@ -315,18 +313,49 @@ class SparseGraph(IDHandle):
             indices=self.indices,
         )
 
-    def from_mat(self, adj_mat, ids):
-        """Construct graph using adjacency matrix and node ids.
+    @classmethod
+    def from_adjlst_graph(cls, adjlst_graph, **kwargs):
+        """Construct csr graph from adjacency list graph.
+
+        Args:
+            adjlst_graph (:obj:`pecanpy.graph.AdjlstGraph`): Adjacency list
+                graph to be converted.
+
+        """
+        g = cls(**kwargs)
+        g.set_ids(adjlst_graph.IDlst)
+        g.indptr, g.indices, g.data = adjlst_graph.to_csr()
+        return g
+
+    @classmethod
+    def from_mat(cls, adj_mat, node_ids, **kwargs):
+        """Construct csr graph using adjacency matrix and node ids.
+
+        Note:
+            Only consider positive valued edges.
 
         Args:
             adj_mat(:obj:`numpy.ndarray`): 2D numpy array of adjacency matrix
-            ids(:obj:`list` of str): node ID list
+            node_ids(:obj:`list` of str): node ID list
 
         """
-        g = AdjlstGraph()
-        g.from_mat(adj_mat, ids)
-        self.set_ids(g.IDlst)
-        self.indptr, self.indices, self.data = g.to_csr()
+        g = cls(**kwargs)
+        g.set_ids(node_ids)
+
+        tot_num_edges = (adj_mat > 0).sum()
+        g.indptr = np.zeros(adj_mat.shape[0] + 1, dtype=np.uint32)
+        g.indices = np.zeros(tot_num_edges, dtype=np.uint32)
+        g.data = np.zeros(tot_num_edges, dtype=np.float64)
+
+        for i, row_data in enumerate(adj_mat):
+            nonzero_idx = np.where(row_data > 0)[0]
+            g.indptr[i + 1] = g.indptr[i] + nonzero_idx.size
+
+            chunk = slice(g.indptr[i], g.indptr[i + 1])
+            g.indices[chunk] = np.array(nonzero_idx, dtype=np.uint32)
+            g.data[chunk] = np.array(row_data[nonzero_idx], dtype=np.float64)
+
+        return g
 
 
 class DenseGraph(IDHandle):
@@ -388,18 +417,35 @@ class DenseGraph(IDHandle):
         self.data = g.to_dense()
         self.nonzero = self.data != 0
 
-    def from_mat(self, adj_mat, ids):
-        """Construct graph using adjacency matrix and node ids.
+    def save(self, fp):
+        """Save dense graph  as ``.dense.npz`` file."""
+        np.savez(fp, data=self.data, IDs=self.IDlst)
+
+    @classmethod
+    def from_adjlst_graph(cls, adjlst_graph, **kwargs):
+        """Construct dense graph from adjacency list graph.
+
+        Args:
+            adjlst_graph (:obj:`pecanpy.graph.AdjlstGraph`): Adjacency list
+                graph to be converted.
+
+        """
+        g = cls(**kwargs)
+        g.set_ids(adjlst_graph.IDlst)
+        g.data = adjlst_graph.to_dense()
+        return g
+
+    @classmethod
+    def from_mat(cls, adj_mat, node_ids, **kwargs):
+        """Construct dense graph using adjacency matrix and node ids.
 
         Args:
             adj_mat(:obj:`numpy.ndarray`): 2D numpy array of adjacency matrix
             ids(:obj:`list` of str): node ID list
 
         """
-        self.data = adj_mat
-        self.nonzero = adj_mat != 0
-        self.set_ids(ids)
-
-    def save(self, fp):
-        """Save dense graph  as ``.dense.npz`` file."""
-        np.savez(fp, data=self.data, IDs=self.IDlst)
+        g = cls(**kwargs)
+        g.data = adj_mat
+        g.nonzero = adj_mat != 0
+        g.set_ids(node_ids)
+        return g
