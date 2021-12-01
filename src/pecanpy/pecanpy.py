@@ -77,7 +77,7 @@ class Base:
         walk = [self.IDlst[i] for i in walk_idx_ary[:end_idx]]
         return walk
 
-    def simulate_walks(self, num_walks, walk_length, n_ckpts, pb_len):
+    def simulate_walks(self, num_walks, walk_length):
         """Generate walks starting from each nodes ``num_walks`` time.
 
         Note:
@@ -88,8 +88,6 @@ class Base:
         Args:
             num_walks (int): number of walks starting from each node.
             walks_length (int): length of walk.
-            n_ckpts (int): number of checkpoints for progress printing
-            pb_len (int): length of the progress bar
 
         """
         num_nodes = len(self.IDlst)
@@ -174,8 +172,6 @@ class Base:
         window_size=10,
         epochs=1,
         verbose=False,
-        n_ckpt=10,
-        pb_len=25,
     ):
         """Generate embeddings.
 
@@ -197,8 +193,6 @@ class Base:
                 is 1
             verbose (bool): print time usage for random walk generation and
                 skip-gram training if set to True
-            n_ckpts (int): number of checkpoints for progress printing
-            pb_len (int): length of the progress bar
 
         Return:
             numpy.ndarray: The embedding matrix, each row is a node embedding
@@ -208,7 +202,7 @@ class Base:
         timed_walk = Timer("generate walks", verbose)(self.simulate_walks)
         timed_w2v = Timer("train embeddings", verbose)(Word2Vec)
 
-        walks = timed_walk(num_walks, walk_length, n_ckpt, pb_len)
+        walks = timed_walk(num_walks, walk_length)
         w2v = timed_w2v(
             walks,
             vector_size=dim,
