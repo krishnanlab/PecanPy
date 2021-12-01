@@ -21,32 +21,40 @@ class TestAdjlstGraph(unittest.TestCase):
 
 class TestSparseGraph(unittest.TestCase):
 
+    def tearDown(self):
+        del self.g
+
+    def validate(self):
+        self.assertTrue(np.all(self.g.indptr == INDPTR))
+        self.assertTrue(np.all(self.g.indices == INDICES))
+        self.assertTrue(np.all(self.g.data == DATA))
+        self.assertEqual(self.g.IDlst, IDS)
+
     def test_from_mat(self):
-        g = SparseGraph.from_mat(MAT, IDS)
-        self.assertTrue(np.all(g.indptr == INDPTR))
-        self.assertTrue(np.all(g.indices == INDICES))
-        self.assertTrue(np.all(g.data == DATA))
-        self.assertEqual(g.IDlst, IDS)
+        self.g = SparseGraph.from_mat(MAT, IDS)
+        self.validate()
 
     def test_from_adjlst_graph(self):
-        g = SparseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT, IDS))
-        self.assertTrue(np.all(g.indptr == INDPTR))
-        self.assertTrue(np.all(g.indices == INDICES))
-        self.assertTrue(np.all(g.data == DATA))
-        self.assertEqual(g.IDlst, IDS)
+        self.g = SparseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT, IDS))
+        self.validate()
 
 
 class TestDenseGraph(unittest.TestCase):
 
+    def tearDown(self):
+        del self.g
+
+    def validate(self):
+        self.assertTrue(np.all(self.g.data == MAT))
+        self.assertEqual(self.g.IDlst, IDS)
+
     def test_from_mat(self):
-        g = DenseGraph.from_mat(MAT, IDS)
-        self.assertTrue(np.all(g.data == MAT))
-        self.assertEqual(g.IDlst, IDS)
+        self.g = DenseGraph.from_mat(MAT, IDS)
+        self.validate()
 
     def test_from_adjlst_graph(self):
-        g = DenseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT, IDS))
-        self.assertTrue(np.all(g.data == MAT))
-        self.assertEqual(g.IDlst, IDS)
+        self.g = DenseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT, IDS))
+        self.validate()
 
 
 if __name__ == '__main__':
