@@ -213,7 +213,7 @@ class AdjlstGraph(IDHandle):
         return mat
 
     @classmethod
-    def from_mat(cls, adj_mat, node_ids):
+    def from_mat(cls, adj_mat, node_ids, **kwargs):
         """Construct graph using adjacency matrix and node ids.
 
         Args:
@@ -224,7 +224,7 @@ class AdjlstGraph(IDHandle):
             An adjacency graph object representing the adjacency matrix.
 
         """
-        g = cls()
+        g = cls(**kwargs)
         for idx1, idx2 in zip(*np.where(adj_mat != 0)):
             id1, id2 = node_ids[idx1], node_ids[idx2]
             g.add_edge(id1, id2, adj_mat[idx1, idx2], directed=False)
@@ -314,7 +314,7 @@ class SparseGraph(IDHandle):
         )
 
     @classmethod
-    def from_adjlst_graph(cls, adjlst_graph):
+    def from_adjlst_graph(cls, adjlst_graph, **kwargs):
         """Construct csr graph from adjacency list graph.
 
         Args:
@@ -322,13 +322,13 @@ class SparseGraph(IDHandle):
                 graph to be converted.
 
         """
-        g = cls()
+        g = cls(**kwargs)
         g.set_ids(adjlst_graph.IDlst)
         g.indptr, g.indices, g.data = adjlst_graph.to_csr()
         return g
 
     @classmethod
-    def from_mat(cls, adj_mat, node_ids):
+    def from_mat(cls, adj_mat, node_ids, **kwargs):
         """Construct csr graph using adjacency matrix and node ids.
 
         Note:
@@ -339,7 +339,7 @@ class SparseGraph(IDHandle):
             node_ids(:obj:`list` of str): node ID list
 
         """
-        g = cls()
+        g = cls(**kwargs)
         g.set_ids(node_ids)
 
         tot_num_edges = (adj_mat > 0).sum()
@@ -422,7 +422,7 @@ class DenseGraph(IDHandle):
         np.savez(fp, data=self.data, IDs=self.IDlst)
 
     @classmethod
-    def from_adjlst_graph(cls, adjlst_graph):
+    def from_adjlst_graph(cls, adjlst_graph, **kwargs):
         """Construct dense graph from adjacency list graph.
 
         Args:
@@ -430,13 +430,13 @@ class DenseGraph(IDHandle):
                 graph to be converted.
 
         """
-        g = cls()
+        g = cls(**kwargs)
         g.set_ids(adjlst_graph.IDlst)
         g.data = adjlst_graph.to_dense()
         return g
 
     @classmethod
-    def from_mat(cls, adj_mat, node_ids):
+    def from_mat(cls, adj_mat, node_ids, **kwargs):
         """Construct dense graph using adjacency matrix and node ids.
 
         Args:
@@ -444,7 +444,7 @@ class DenseGraph(IDHandle):
             ids(:obj:`list` of str): node ID list
 
         """
-        g = cls()
+        g = cls(**kwargs)
         g.data = adj_mat
         g.nonzero = adj_mat != 0
         g.set_ids(node_ids)
