@@ -1,4 +1,5 @@
 import os
+import os.path as op
 import unittest
 from unittest.mock import patch
 import subprocess
@@ -9,18 +10,23 @@ from pecanpy import cli
 
 set_num_threads(1)
 
+DATA_DIR = op.abspath(op.join(__file__, op.pardir, op.pardir, 'demo'))
+EDG_FP = op.join(DATA_DIR, "karate.edg")
+CSR_FP = op.join(DATA_DIR, "karate.csr.npz")
+DENSE_FP = op.join(DATA_DIR, "karate.dense.npz")
+COM = ["pecanpy", "--input", EDG_FP, "--output"]
+
 
 class TestCli(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        com = ["pecanpy", "--input", "../demo/karate.edg", "--output"]
-        subprocess.run(com + ["../demo/karate.csr.npz", "--task", "tocsr"])
-        subprocess.run(com + ["../demo/karate.dense.npz", "--task", "todense"])
+        subprocess.run(COM + [CSR_FP, "--task", "tocsr"])
+        subprocess.run(COM + [DENSE_FP, "--task", "todense"])
 
     @classmethod
     def tearDownClass(cls):
-        os.remove("../demo/karate.csr.npz")
-        os.remove("../demo/karate.dense.npz")
+        os.remove(CSR_FP)
+        os.remove(DENSE_FP)
 
     @patch(
         "argparse._sys.argv",
@@ -47,22 +53,22 @@ class TestCli(unittest.TestCase):
         cli.learn_embeddings(self.args, self.walks)
 
     def test_precomp_from_edg(self):
-        self.execute("PreComp", "../demo/karate.edg")
+        self.execute("PreComp", EDG_FP)
 
     def test_sparseotf_from_edg(self):
-        self.execute("SparseOTF", "../demo/karate.edg")
+        self.execute("SparseOTF", EDG_FP)
 
     def test_denseotf_from_edg(self):
-        self.execute("DenseOTF", "../demo/karate.edg")
+        self.execute("DenseOTF", EDG_FP)
 
     def test_precomp_from_npz(self):
-        self.execute("PreComp", "../demo/karate.csr.npz")
+        self.execute("PreComp", CSR_FP)
 
     def test_sparseotf_from_npz(self):
-        self.execute("SparseOTF", "../demo/karate.csr.npz")
+        self.execute("SparseOTF", CSR_FP)
 
     def test_denseotf_from_npz(self):
-        self.execute("DenseOTF", "../demo/karate.dense.npz")
+        self.execute("DenseOTF", DENSE_FP)
 
 
 if __name__ == "__main__":
