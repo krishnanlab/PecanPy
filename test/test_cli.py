@@ -22,7 +22,10 @@ class TestCli(unittest.TestCase):
         os.remove("../demo/karate.csr.npz")
         os.remove("../demo/karate.dense.npz")
 
-    @patch("argparse._sys.argv", ["pecanpy", "--input", ""])
+    @patch(
+        "argparse._sys.argv",
+        ["pecanpy", "--input", "", "--output", "/dev/null"]
+    )
     def setUp(self):
         self.args = cli.parse_args()
         self.args.workers = 1

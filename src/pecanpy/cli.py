@@ -38,7 +38,7 @@ def parse_args():
 
     parser.add_argument(
         "--output",
-        default="/dev/null",
+        required=True,
         help="Output embeddings file path. Save as .npz file if the specified "
         "file path ends with .npz, otherwise save as a text file using the "
         "gensim save_word2vec_format method.",
