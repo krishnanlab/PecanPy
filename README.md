@@ -55,6 +55,8 @@ pecanpy --input demo/karate.edge --output demo/karate_n2vplus.emb --mode SparseO
 
 ### Demo
 
+<p align="center"><img src="/img/karate_demo.gif?raw=true"/></p>
+
 Execute the following command for full demonstration:
 
 ```bash
