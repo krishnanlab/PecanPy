@@ -18,7 +18,7 @@ import argparse
 import numba
 import numpy as np
 from gensim.models import Word2Vec
-from pecanpy import pecanpy
+from pecanpy import graph, pecanpy
 from pecanpy.wrappers import Timer
 
 
@@ -32,13 +32,13 @@ def parse_args():
 
     parser.add_argument(
         "--input",
-        default="graph/karate.edg",
+        required=True,
         help="Input graph (.edg or .npz) file path.",
     )
 
     parser.add_argument(
         "--output",
-        default="emb/karate.emb",
+        required=True,
         help="Output embeddings file path. Save as .npz file if the specified "
         "file path ends with .npz, otherwise save as a text file using the "
         "gensim save_word2vec_format method.",
@@ -133,22 +133,6 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--num-checkpoints",
-        dest="n_ckpt",
-        type=int,
-        default=10,
-        help="number of checkpoints for progress prining",
-    )
-
-    parser.add_argument(
-        "--progressbar-length",
-        dest="pb_len",
-        type=int,
-        default=25,
-        help="length of the progress bar",
-    )
-
-    parser.add_argument(
         "--extend",
         action="store_true",
         help="Use node2vec+ extension",
@@ -218,7 +202,7 @@ def read_graph(args):
         print("NOTE: node2vec+ is equivalent to node2vec for unweighted graphs.")
 
     if task in ["tocsr", "todense"]:  # perform conversion then save and exit
-        g = pecanpy.SparseGraph() if task == "tocsr" else pecanpy.DenseGraph()
+        g = graph.SparseGraph() if task == "tocsr" else graph.DenseGraph()
         g.read_edg(fp, weighted, directed)
         g.save(output)
         exit()
@@ -263,7 +247,7 @@ def preprocess(g):
 @Timer("generate walks")
 def simulate_walks(args, g):
     """Simulate random walks with timer."""
-    return g.simulate_walks(args.num_walks, args.walk_length, args.n_ckpt, args.pb_len)
+    return g.simulate_walks(args.num_walks, args.walk_length)
 
 
 def main():
