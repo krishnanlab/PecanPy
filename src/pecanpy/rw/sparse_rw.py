@@ -1,4 +1,4 @@
-"""Lite graph objects used by pecanpy."""
+"""Sparse Graph equipped with random walk computation."""
 
 import numpy as np
 from numba import boolean, njit
@@ -6,31 +6,7 @@ from pecanpy.graph import SparseGraph
 
 
 class SparseRWGraph(SparseGraph):
-    """Sparse Graph object that stores graph as adjacency list.
-
-    Note:
-        By default the ``SparseGraph`` object converts the data to Compact
-        Sparse Row (csr) format after reading data from an edge list file
-        (``.edg``). This format enables more cache optimized computation.
-
-    Examples:
-        Read ``.edg`` file and create ``SparseGraph`` object using ``.read_edg``
-        method.
-
-        >>> from pecanpy.graph import SparseGraph
-        >>>
-        >>> # initialize SparseGraph object
-        >>> g = SparseGraph()
-        >>>
-        >>> # read graph from edgelist
-        >>> g.read_edg(path_to_edg_file, weighted=True, directed=False)
-        >>>
-        >>> dense_mat = g.to_dense() # convert to dense adjacency matrix
-        >>>
-        >>> # save the csr graph as npz file to be used later
-        >>> g.save(npz_outpath)
-
-    """
+    """Sparse Graph equipped with random walk computation."""
 
     def get_has_nbrs(self):
         """Wrap ``has_nbrs``."""

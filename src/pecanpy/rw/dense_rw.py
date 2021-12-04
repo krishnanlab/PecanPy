@@ -1,4 +1,4 @@
-"""Lite graph objects used by pecanpy."""
+"""Dense Graph object equipped with random walk computation."""
 
 import numpy as np
 from numba import njit
@@ -6,29 +6,7 @@ from pecanpy.graph import DenseGraph
 
 
 class DenseRWGraph(DenseGraph):
-    """Dense Graph object that stores graph as array.
-
-    Examples:
-        Read ``.npz`` files and create ``DenseGraph`` object using ``read_npz``.
-
-        >>> from pecanpy.graph import DenseGraph
-        >>> g = DenseGraph() # initialize DenseGraph object
-        >>> g.read_npz(paht_to_npz_file, weighted=True, directed=False)
-
-        Read ``.edg`` files and create ``DenseGraph`` object using ``read_edg``.
-
-        >>> from pecanpy.graph import DenseGraph
-        >>>
-        >>> # initialize DenseGraph object
-        >>> g = DenseGraph()
-        >>>
-        >>> # read graph from edgelist
-        >>> g.read_edg(path_to_edg_file, weighted=True, directed=False)
-        >>>
-        >>> # save the dense graph as npz file to be used later
-        >>> g.save(npz_outpath)
-
-    """
+    """Dense Graph object equipped with random walk computation."""
 
     def get_average_weights(self):
         """Compute average edge weights."""
