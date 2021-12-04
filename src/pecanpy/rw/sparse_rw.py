@@ -1,7 +1,7 @@
 """Lite graph objects used by pecanpy."""
 
 import numpy as np
-from numba import boolean, jit
+from numba import boolean, njit
 from pecanpy.graph import SparseGraph
 
 
@@ -43,7 +43,7 @@ class SparseRWGraph(SparseGraph):
         """Wrap ``has_nbrs``."""
         indptr = self.indptr
 
-        @jit(nopython=True, nogil=True)
+        @njit(nogil=True)
         def has_nbrs(idx):
             return indptr[idx] != indptr[idx + 1]
 
@@ -62,7 +62,7 @@ class SparseRWGraph(SparseGraph):
         return average_weight_ary
 
     @staticmethod
-    @jit(nopython=True, nogil=True)
+    @njit(nogil=True)
     def get_normalized_probs(
         data,
         indices,
@@ -91,10 +91,9 @@ class SparseRWGraph(SparseGraph):
         if prev_idx is not None:  # 2nd order biased walk
             prev_ptr = np.where(nbrs_idx == prev_idx)[0]
             src_nbrs_idx, src_nbrs_wts = get_nbrs(indptr, indices, data, prev_idx)
-            non_com_nbr = isnotin(
-                nbrs_idx,
-                src_nbrs_idx,
-            )  # neighbors of current but not previous
+
+            # Neighbors of current but not previous
+            non_com_nbr = isnotin(nbrs_idx, src_nbrs_idx)
             non_com_nbr[prev_ptr] = False  # exclude prev state from out biases
 
             unnormalized_probs[non_com_nbr] /= q  # apply out biases
@@ -105,7 +104,7 @@ class SparseRWGraph(SparseGraph):
         return normalized_probs
 
     @staticmethod
-    @jit(nopython=True, nogil=True)
+    @njit(nogil=True)
     def get_extended_normalized_probs(
         data,
         indices,
@@ -144,7 +143,7 @@ class SparseRWGraph(SparseGraph):
         return normalized_probs
 
 
-@jit(nopython=True, nogil=True)
+@njit(nogil=True)
 def get_nbrs(indptr, indices, data, idx):
     """Return neighbor indices and weights of a specific node index."""
     start_idx, end_idx = indptr[idx], indptr[idx + 1]
@@ -153,7 +152,7 @@ def get_nbrs(indptr, indices, data, idx):
     return nbrs_idx, nbrs_wts
 
 
-@jit(nopython=True, nogil=True)
+@njit(nogil=True)
 def isnotin(ptr_ary1, ptr_ary2):
     """Find node2vec out edges.
 
@@ -244,7 +243,7 @@ def isnotin(ptr_ary1, ptr_ary2):
     return indicator
 
 
-@jit(nopython=True, nogil=True)
+@njit(nogil=True)
 def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, avg_wts):
     """Find node2vec+ out edges.
 

@@ -2,7 +2,7 @@
 
 import numpy as np
 from gensim.models import Word2Vec
-from numba import jit, prange
+from numba import njit, prange
 from numba_progress import ProgressBar
 from pecanpy.rw import DenseRWGraph, SparseRWGraph
 from pecanpy.wrappers import Timer
@@ -100,7 +100,7 @@ class Base:
         has_nbrs = self.get_has_nbrs()
         verbose = self.verbose
 
-        @jit(parallel=True, nogil=True, nopython=True)
+        @njit(parallel=True, nogil=True)
         def node2vec_walks(num_iter, progress_proxy):
             """Simulate a random walk starting from start node."""
             # use the last entry of each walk index array to keep track of the
@@ -239,7 +239,7 @@ class PreComp(Base, SparseRWGraph):
     def get_move_forward(self):
         """Wrap ``move_forward``.
 
-        This function returns a ``numba.jit`` compiled function that takes
+        This function returns a ``numba.njit`` compiled function that takes
         current vertex index (and the previous vertex index if available) and
         return the next vertex index by sampling from a discrete random
         distribution based on the transition probabilities that are read off
@@ -261,7 +261,7 @@ class PreComp(Base, SparseRWGraph):
         alias_indptr = self.alias_indptr
         alias_dim = self.alias_dim
 
-        @jit(nopython=True, nogil=True)
+        @njit(nogil=True)
         def move_forward(cur_idx, prev_idx=None):
             """Move to next node based on transition probabilities."""
             if prev_idx is None:
@@ -314,7 +314,7 @@ class PreComp(Base, SparseRWGraph):
         alias_indptr[1:] = np.cumsum(n2)
         n_probs = alias_indptr[-1]  # total number of 2nd order transition probs
 
-        @jit(parallel=True, nopython=True, nogil=True)
+        @njit(parallel=True, nogil=True)
         def compute_all_transition_probs():
             alias_j = np.zeros(n_probs, dtype=np.uint32)
             alias_q = np.zeros(n_probs, dtype=np.float64)
@@ -365,7 +365,7 @@ class SparseOTF(Base, SparseRWGraph):
     def get_move_forward(self):
         """Wrap ``move_forward``.
 
-        This function returns a ``numba.jit`` compiled function that takes
+        This function returns a ``numba.njit`` compiled function that takes
         current vertex index (and the previous vertex index if available) and
         return the next vertex index by sampling from a discrete random
         distribution based on the transition probabilities that are calculated
@@ -383,7 +383,7 @@ class SparseOTF(Base, SparseRWGraph):
 
         get_normalized_probs, avg_wts = self.setup_get_normalized_probs()
 
-        @jit(nopython=True, nogil=True)
+        @njit(nogil=True)
         def move_forward(cur_idx, prev_idx=None):
             """Move to next node."""
             normalized_probs = get_normalized_probs(
@@ -420,7 +420,7 @@ class DenseOTF(Base, DenseRWGraph):
     def get_move_forward(self):
         """Wrap ``move_forward``.
 
-        This function returns a ``numba.jit`` compiled function that takes
+        This function returns a ``numba.njit`` compiled function that takes
         current vertex index (and the previous vertex index if available) and
         return the next vertex index by sampling from a discrete random
         distribution based on the transition probabilities that are calculated
@@ -437,7 +437,7 @@ class DenseOTF(Base, DenseRWGraph):
 
         get_normalized_probs, avg_wts = self.setup_get_normalized_probs()
 
-        @jit(nopython=True, nogil=True)
+        @njit(nogil=True)
         def move_forward(cur_idx, prev_idx=None):
             """Move to next node."""
             normalized_probs = get_normalized_probs(
@@ -458,7 +458,7 @@ class DenseOTF(Base, DenseRWGraph):
         return move_forward
 
 
-@jit(nopython=True, nogil=True)
+@njit(nogil=True)
 def alias_setup(probs):
     """Construct alias lookup table.
 
@@ -509,7 +509,7 @@ def alias_setup(probs):
     return j, q
 
 
-@jit(nopython=True, nogil=True)
+@njit(nogil=True)
 def alias_draw(j, q):
     """Draw sample from a non-uniform discrete distribution using alias sampling."""
     k = j.size

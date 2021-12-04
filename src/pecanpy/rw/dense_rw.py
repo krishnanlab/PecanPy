@@ -1,7 +1,7 @@
 """Lite graph objects used by pecanpy."""
 
 import numpy as np
-from numba import jit
+from numba import njit
 from pecanpy.graph import DenseGraph
 
 
@@ -40,7 +40,7 @@ class DenseRWGraph(DenseGraph):
         """Wrap ``has_nbrs``."""
         nonzero = self.nonzero
 
-        @jit(nopython=True, nogil=True)
+        @njit(nogil=True)
         def has_nbrs(idx):
             for j in range(nonzero.shape[1]):
                 if nonzero[idx, j]:
@@ -50,7 +50,7 @@ class DenseRWGraph(DenseGraph):
         return has_nbrs
 
     @staticmethod
-    @jit(nopython=True, nogil=True)
+    @njit(nogil=True)
     def get_normalized_probs(
         data,
         nonzero,
@@ -93,7 +93,7 @@ class DenseRWGraph(DenseGraph):
         return normalized_probs
 
     @staticmethod
-    @jit(nopython=True, nogil=True)
+    @njit(nogil=True)
     def get_extended_normalized_probs(
         data,
         nonzero,
