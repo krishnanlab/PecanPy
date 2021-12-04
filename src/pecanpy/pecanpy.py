@@ -57,7 +57,7 @@ class Base:
             extend (bool): ``True`` if use node2vec+ extension, default is ``False``
 
         """
-        super(Base, self).__init__()
+        super().__init__()
         self.p = p
         self.q = q
         self.workers = workers

@@ -51,7 +51,7 @@ class AdjlstGraph(IDHandle):
 
     def __init__(self):
         """Initialize AdjlstGraph object."""
-        super(AdjlstGraph, self).__init__()
+        super().__init__()
         self._data = []  # list of dict of node_indexx -> edge_weight
 
     @property
@@ -253,7 +253,7 @@ class SparseGraph(IDHandle):
 
     def __init__(self):
         """Initialize SparseGraph object."""
-        super(SparseGraph, self).__init__()
+        super().__init__()
         self.data = []
         self.indptr = None
         self.indices = None
@@ -387,7 +387,7 @@ class DenseGraph(IDHandle):
 
     def __init__(self):
         """Initialize DenseGraph object."""
-        super(DenseGraph, self).__init__()
+        super().__init__()
         self.data = None
         self.nonzero = None
 

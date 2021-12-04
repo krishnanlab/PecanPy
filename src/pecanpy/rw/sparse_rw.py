@@ -34,7 +34,7 @@ class SparseRWGraph(SparseGraph):
 
     def __init__(self):
         """Initialize SparseGraph object."""
-        super(SparseGraph, self).__init__()
+        super().__init__()
         self.data = []
         self.indptr = None
         self.indices = None
