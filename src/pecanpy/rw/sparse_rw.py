@@ -32,13 +32,6 @@ class SparseRWGraph(SparseGraph):
 
     """
 
-    def __init__(self):
-        """Initialize SparseGraph object."""
-        super().__init__()
-        self.data = []
-        self.indptr = None
-        self.indices = None
-
     def get_has_nbrs(self):
         """Wrap ``has_nbrs``."""
         indptr = self.indptr
