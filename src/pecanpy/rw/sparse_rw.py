@@ -87,24 +87,17 @@ class SparseRWGraph(SparseGraph):
         otherwise calculate 1st order transition.
 
         """
-
-        def get_nbrs_idx(idx):
-            return indices[indptr[idx] : indptr[idx + 1]]
-
-        def get_nbrs_weight(idx):
-            return data[indptr[idx] : indptr[idx + 1]].copy()
-
-        nbrs_idx = get_nbrs_idx(cur_idx)
-        unnormalized_probs = get_nbrs_weight(cur_idx)
+        nbrs_idx = get_nbrs_idx(indptr, indices, cur_idx)
+        unnormalized_probs = get_nbrs_weight(indptr, data, cur_idx)
 
         if prev_idx is not None:  # 2nd order biased walk
-            prev_ptr = np.where(nbrs_idx == prev_idx)[0]  # find previous state index
-            src_nbrs_idx = get_nbrs_idx(prev_idx)  # neighbors of previous state
+            prev_ptr = np.where(nbrs_idx == prev_idx)[0]
+            src_nbrs_idx = get_nbrs_idx(indptr, indices, prev_idx)
             non_com_nbr = isnotin(
                 nbrs_idx,
                 src_nbrs_idx,
             )  # neighbors of current but not previous
-            non_com_nbr[prev_ptr] = False  # exclude previous state from out biases
+            non_com_nbr[prev_ptr] = False  # exclude prev state from out biases
 
             unnormalized_probs[non_com_nbr] /= q  # apply out biases
             unnormalized_probs[prev_ptr] /= p  # apply the return bias
@@ -126,26 +119,19 @@ class SparseRWGraph(SparseGraph):
         average_weight_ary,
     ):
         """Calculate node2vec+ transition probabilities."""
-
-        def get_nbrs_idx(idx):
-            return indices[indptr[idx] : indptr[idx + 1]]
-
-        def get_nbrs_weight(idx):
-            return data[indptr[idx] : indptr[idx + 1]].copy()
-
-        nbrs_idx = get_nbrs_idx(cur_idx)
-        unnormalized_probs = get_nbrs_weight(cur_idx)
+        nbrs_idx = get_nbrs_idx(indptr, indices, cur_idx)
+        unnormalized_probs = get_nbrs_weight(indptr, data, cur_idx)
 
         if prev_idx is not None:  # 2nd order biased walk
-            prev_ptr = np.where(nbrs_idx == prev_idx)[0]  # find previous state index
-            src_nbrs_idx = get_nbrs_idx(prev_idx)  # neighbors of previous state
+            prev_ptr = np.where(nbrs_idx == prev_idx)[0]
+            src_nbrs_idx = get_nbrs_idx(indptr, indices, prev_idx)
             out_ind, t = isnotin_extended(
                 nbrs_idx,
                 src_nbrs_idx,
-                get_nbrs_weight(prev_idx),
+                get_nbrs_weight(indptr, data, prev_idx),
                 average_weight_ary,
             )  # determine out edges
-            out_ind[prev_ptr] = False  # exclude previous state from out biases
+            out_ind[prev_ptr] = False  # exclude prevstate from out biases
 
             # compute out biases
             alpha = 1 / q + (1 - 1 / q) * t[out_ind]
@@ -160,6 +146,16 @@ class SparseRWGraph(SparseGraph):
         normalized_probs = unnormalized_probs / unnormalized_probs.sum()
 
         return normalized_probs
+
+
+@jit(nopython=True, nogil=True)
+def get_nbrs_idx(indptr, indices, idx):
+    return indices[indptr[idx] : indptr[idx + 1]]
+
+
+@jit(nopython=True, nogil=True)
+def get_nbrs_weight(indptr, data, idx):
+    return data[indptr[idx] : indptr[idx + 1]].copy()
 
 
 @jit(nopython=True, nogil=True)
