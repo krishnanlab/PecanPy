@@ -87,12 +87,10 @@ class SparseRWGraph(SparseGraph):
         otherwise calculate 1st order transition.
 
         """
-        nbrs_idx = get_nbrs_idx(indptr, indices, cur_idx)
-        unnormalized_probs = get_nbrs_weight(indptr, data, cur_idx)
-
+        nbrs_idx, unnormalized_probs = get_nbrs(indptr, indices, data, cur_idx)
         if prev_idx is not None:  # 2nd order biased walk
             prev_ptr = np.where(nbrs_idx == prev_idx)[0]
-            src_nbrs_idx = get_nbrs_idx(indptr, indices, prev_idx)
+            src_nbrs_idx, src_nbrs_wts = get_nbrs(indptr, indices, data, prev_idx)
             non_com_nbr = isnotin(
                 nbrs_idx,
                 src_nbrs_idx,
@@ -119,16 +117,14 @@ class SparseRWGraph(SparseGraph):
         average_weight_ary,
     ):
         """Calculate node2vec+ transition probabilities."""
-        nbrs_idx = get_nbrs_idx(indptr, indices, cur_idx)
-        unnormalized_probs = get_nbrs_weight(indptr, data, cur_idx)
-
+        nbrs_idx, unnormalized_probs = get_nbrs(indptr, indices, data, cur_idx)
         if prev_idx is not None:  # 2nd order biased walk
             prev_ptr = np.where(nbrs_idx == prev_idx)[0]
-            src_nbrs_idx = get_nbrs_idx(indptr, indices, prev_idx)
+            src_nbrs_idx, src_nbrs_wts = get_nbrs(indptr, indices, data, prev_idx)
             out_ind, t = isnotin_extended(
                 nbrs_idx,
                 src_nbrs_idx,
-                get_nbrs_weight(indptr, data, prev_idx),
+                src_nbrs_wts,
                 average_weight_ary,
             )  # determine out edges
             out_ind[prev_ptr] = False  # exclude prevstate from out biases
@@ -149,13 +145,12 @@ class SparseRWGraph(SparseGraph):
 
 
 @jit(nopython=True, nogil=True)
-def get_nbrs_idx(indptr, indices, idx):
-    return indices[indptr[idx] : indptr[idx + 1]]
-
-
-@jit(nopython=True, nogil=True)
-def get_nbrs_weight(indptr, data, idx):
-    return data[indptr[idx] : indptr[idx + 1]].copy()
+def get_nbrs(indptr, indices, data, idx):
+    """Return neighbor indices and weights of a specific node index."""
+    start_idx, end_idx = indptr[idx], indptr[idx + 1]
+    nbrs_idx = indices[start_idx:end_idx]
+    nbrs_wts = data[start_idx:end_idx].copy()
+    return nbrs_idx, nbrs_wts
 
 
 @jit(nopython=True, nogil=True)
