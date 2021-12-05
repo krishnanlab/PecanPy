@@ -295,21 +295,37 @@ class PreComp(Base, SparseRWGraph):
         return move_forward
 
     def preprocess_transition_probs(self):
-        """Precompute and store 2nd order transition probabilities."""
+        """Precompute and store 2nd order transition probabilities.
+
+        Each node contains n ** 2 number of 2nd order transition probabilities,
+        where n is the number of neigbors of that specific nodes, since one can
+        pick any one of its neighbors as the previous node and / or the next
+        node. For each second order transition probability of a node, set up
+        the alias draw table to be used during random walk.
+
+        Note:
+            Uses uint64 instaed of uint32 for tracking alias_indptr to prevent
+            overflowing since the 2nd order transition probs grows much faster
+            than the first order transition probs, which is the same as the
+            total number of edges in the graph.
+
+        """
         data = self.data
         indices = self.indices
         indptr = self.indptr
         p = self.p
         q = self.q
 
+        # Retrieve transition probability computation callback function
         get_normalized_probs, avg_wts = self.setup_get_normalized_probs()
 
+        # Determine the dimensionality of the 2nd order transition probs
         n_nodes = self.indptr.size - 1  # number of nodes
         n = self.indptr[1:] - self.indptr[:-1]  # number of nbrs per node
         n2 = np.power(n, 2)  # number of 2nd order trans probs per node
 
+        # Set the dimensionality of alias probability table
         self.alias_dim = alias_dim = n
-        # use 64 bit unsigned int to prevent overfloating of alias_indptr
         self.alias_indptr = alias_indptr = np.zeros(self.indptr.size, dtype=np.uint64)
         alias_indptr[1:] = np.cumsum(n2)
         n_probs = alias_indptr[-1]  # total number of 2nd order transition probs
@@ -338,11 +354,8 @@ class PreComp(Base, SparseRWGraph):
                     )
 
                     start = offset + dim * nbr_idx
-                    j_tmp, q_tmp = alias_setup(probs)
-
-                    for i in range(dim):
-                        alias_j[start + i] = j_tmp[i]
-                        alias_q[start + i] = q_tmp[i]
+                    end = start + dim
+                    alias_j[start:end], alias_q[start:end] = alias_setup(probs)
 
             return alias_j, alias_q
 
