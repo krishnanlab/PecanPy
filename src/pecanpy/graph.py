@@ -181,13 +181,13 @@ class AdjlstGraph(IDHandle):
 
         # last element of indptr indicates the total number of nonzero entries
         indices = np.zeros(indptr[-1], dtype=np.uint32)
-        data = np.zeros(indptr[-1], dtype=np.float64)
+        data = np.zeros(indptr[-1], dtype=np.float32)
 
         for i, nbrs in enumerate(self._data):
             new_indices, new_data = zip(*[(j, nbrs[j]) for j in sorted(nbrs)])
             chunk = slice(indptr[i], indptr[i + 1])
             indices[chunk] = np.array(new_indices, dtype=np.uint32)
-            data[chunk] = np.array(new_data, dtype=np.float64)
+            data[chunk] = np.array(new_data, dtype=np.float32)
 
         return indptr, indices, data
 
@@ -345,7 +345,7 @@ class SparseGraph(IDHandle):
         tot_num_edges = (adj_mat > 0).sum()
         g.indptr = np.zeros(adj_mat.shape[0] + 1, dtype=np.uint32)
         g.indices = np.zeros(tot_num_edges, dtype=np.uint32)
-        g.data = np.zeros(tot_num_edges, dtype=np.float64)
+        g.data = np.zeros(tot_num_edges, dtype=np.float32)
 
         for i, row_data in enumerate(adj_mat):
             nonzero_idx = np.where(row_data > 0)[0]
@@ -353,7 +353,7 @@ class SparseGraph(IDHandle):
 
             chunk = slice(g.indptr[i], g.indptr[i + 1])
             g.indices[chunk] = np.array(nonzero_idx, dtype=np.uint32)
-            g.data[chunk] = np.array(row_data[nonzero_idx], dtype=np.float64)
+            g.data[chunk] = np.array(row_data[nonzero_idx], dtype=np.float32)
 
         return g
 

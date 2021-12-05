@@ -6,7 +6,7 @@ from pecanpy.graph import AdjlstGraph, SparseGraph, DenseGraph
 MAT = np.array([[0, 1, 1], [1, 0, 0], [1, 0, 0]], dtype=float)
 INDPTR = np.array([0, 2, 3, 4], dtype=np.uint32)
 INDICES = np.array([1, 2, 0, 0], dtype=np.uint32)
-DATA = np.array([1.0, 1.0, 1.0, 1.0], dtype=np.float64)
+DATA = np.array([1.0, 1.0, 1.0, 1.0], dtype=np.float32)
 ADJLST = [{1: 1.0, 2: 1.0}, {0: 1}, {0: 1}]
 IDS = ["a", "b", "c"]
 

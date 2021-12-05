@@ -24,7 +24,7 @@ class SparseRWGraph(SparseGraph):
         indptr = self.indptr
 
         num_nodes = len(self.IDlst)
-        average_weight_ary = np.zeros(num_nodes, dtype=np.float64)
+        average_weight_ary = np.zeros(num_nodes, dtype=np.float32)
         for idx in range(num_nodes):
             average_weight_ary[idx] = data[indptr[idx] : indptr[idx + 1]].mean()
 
@@ -227,9 +227,9 @@ def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, avg_wts):
             the neighbors of the current state
         ptr_ary2 (:obj:`numpy.ndarray` of :obj:`uint32`): array of pointers to
             the neighbors of the previous state
-        wts_ary2 (:obj: `numpy.ndarray` of :obj:`float64`): array of edge
+        wts_ary2 (:obj: `numpy.ndarray` of :obj:`float32`): array of edge
             weights of the previous state
-        avg_wts (:obj: `numpy.ndarray` of :obj:`float64`): array of average
+        avg_wts (:obj: `numpy.ndarray` of :obj:`float32`): array of average
             edge weights of each node
 
     Return:
@@ -239,7 +239,7 @@ def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, avg_wts):
 
     """
     indicator = np.ones(ptr_ary1.size, dtype=boolean)
-    t = np.zeros(ptr_ary1.size, dtype=np.float64)
+    t = np.zeros(ptr_ary1.size, dtype=np.float32)
     idx2 = 0
     for idx1 in range(ptr_ary1.size):
         if idx2 == ptr_ary2.size:  # end of ary2

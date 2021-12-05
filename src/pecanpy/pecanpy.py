@@ -317,7 +317,7 @@ class PreComp(Base, SparseRWGraph):
         @njit(parallel=True, nogil=True)
         def compute_all_transition_probs():
             alias_j = np.zeros(n_probs, dtype=np.uint32)
-            alias_q = np.zeros(n_probs, dtype=np.float64)
+            alias_q = np.zeros(n_probs, dtype=np.float32)
 
             for idx in range(n_nodes):
                 offset = alias_indptr[idx]
@@ -469,12 +469,12 @@ def alias_setup(probs):
     random distribution to O(1) if the alias table is setup in advance.
 
     Args:
-        probs (list(float64)): normalized transition probabilities array, could
-            be in either list or numpy.ndarray, of float64 values.
+        probs (list(float32)): normalized transition probabilities array, could
+            be in either list or numpy.ndarray, of float32 values.
 
     """
     k = probs.size
-    q = np.zeros(k, dtype=np.float64)
+    q = np.zeros(k, dtype=np.float32)
     j = np.zeros(k, dtype=np.uint32)
 
     smaller = np.zeros(k, dtype=np.uint32)
