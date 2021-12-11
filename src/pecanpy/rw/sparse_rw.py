@@ -1,49 +1,18 @@
-"""Lite graph objects used by pecanpy."""
+"""Sparse Graph equipped with random walk computation."""
 
 import numpy as np
-from numba import boolean, jit
+from numba import boolean, njit
 from pecanpy.graph import SparseGraph
 
 
 class SparseRWGraph(SparseGraph):
-    """Sparse Graph object that stores graph as adjacency list.
-
-    Note:
-        By default the ``SparseGraph`` object converts the data to Compact
-        Sparse Row (csr) format after reading data from an edge list file
-        (``.edg``). This format enables more cache optimized computation.
-
-    Examples:
-        Read ``.edg`` file and create ``SparseGraph`` object using ``.read_edg``
-        method.
-
-        >>> from pecanpy.graph import SparseGraph
-        >>>
-        >>> # initialize SparseGraph object
-        >>> g = SparseGraph()
-        >>>
-        >>> # read graph from edgelist
-        >>> g.read_edg(path_to_edg_file, weighted=True, directed=False)
-        >>>
-        >>> dense_mat = g.to_dense() # convert to dense adjacency matrix
-        >>>
-        >>> # save the csr graph as npz file to be used later
-        >>> g.save(npz_outpath)
-
-    """
-
-    def __init__(self):
-        """Initialize SparseGraph object."""
-        super(SparseGraph, self).__init__()
-        self.data = []
-        self.indptr = None
-        self.indices = None
+    """Sparse Graph equipped with random walk computation."""
 
     def get_has_nbrs(self):
         """Wrap ``has_nbrs``."""
         indptr = self.indptr
 
-        @jit(nopython=True, nogil=True)
+        @njit(nogil=True)
         def has_nbrs(idx):
             return indptr[idx] != indptr[idx + 1]
 
@@ -55,14 +24,14 @@ class SparseRWGraph(SparseGraph):
         indptr = self.indptr
 
         num_nodes = len(self.IDlst)
-        average_weight_ary = np.zeros(num_nodes, dtype=np.float64)
+        average_weight_ary = np.zeros(num_nodes, dtype=np.float32)
         for idx in range(num_nodes):
             average_weight_ary[idx] = data[indptr[idx] : indptr[idx + 1]].mean()
 
         return average_weight_ary
 
     @staticmethod
-    @jit(nopython=True, nogil=True)
+    @njit(nogil=True)
     def get_normalized_probs(
         data,
         indices,
@@ -87,24 +56,14 @@ class SparseRWGraph(SparseGraph):
         otherwise calculate 1st order transition.
 
         """
-
-        def get_nbrs_idx(idx):
-            return indices[indptr[idx] : indptr[idx + 1]]
-
-        def get_nbrs_weight(idx):
-            return data[indptr[idx] : indptr[idx + 1]].copy()
-
-        nbrs_idx = get_nbrs_idx(cur_idx)
-        unnormalized_probs = get_nbrs_weight(cur_idx)
-
+        nbrs_idx, unnormalized_probs = get_nbrs(indptr, indices, data, cur_idx)
         if prev_idx is not None:  # 2nd order biased walk
-            prev_ptr = np.where(nbrs_idx == prev_idx)[0]  # find previous state index
-            src_nbrs_idx = get_nbrs_idx(prev_idx)  # neighbors of previous state
-            non_com_nbr = isnotin(
-                nbrs_idx,
-                src_nbrs_idx,
-            )  # neighbors of current but not previous
-            non_com_nbr[prev_ptr] = False  # exclude previous state from out biases
+            prev_ptr = np.where(nbrs_idx == prev_idx)[0]
+            src_nbrs_idx, src_nbrs_wts = get_nbrs(indptr, indices, data, prev_idx)
+
+            # Neighbors of current but not previous
+            non_com_nbr = isnotin(nbrs_idx, src_nbrs_idx)
+            non_com_nbr[prev_ptr] = False  # exclude prev state from out biases
 
             unnormalized_probs[non_com_nbr] /= q  # apply out biases
             unnormalized_probs[prev_ptr] /= p  # apply the return bias
@@ -114,7 +73,7 @@ class SparseRWGraph(SparseGraph):
         return normalized_probs
 
     @staticmethod
-    @jit(nopython=True, nogil=True)
+    @njit(nogil=True)
     def get_extended_normalized_probs(
         data,
         indices,
@@ -126,26 +85,17 @@ class SparseRWGraph(SparseGraph):
         average_weight_ary,
     ):
         """Calculate node2vec+ transition probabilities."""
-
-        def get_nbrs_idx(idx):
-            return indices[indptr[idx] : indptr[idx + 1]]
-
-        def get_nbrs_weight(idx):
-            return data[indptr[idx] : indptr[idx + 1]].copy()
-
-        nbrs_idx = get_nbrs_idx(cur_idx)
-        unnormalized_probs = get_nbrs_weight(cur_idx)
-
+        nbrs_idx, unnormalized_probs = get_nbrs(indptr, indices, data, cur_idx)
         if prev_idx is not None:  # 2nd order biased walk
-            prev_ptr = np.where(nbrs_idx == prev_idx)[0]  # find previous state index
-            src_nbrs_idx = get_nbrs_idx(prev_idx)  # neighbors of previous state
+            prev_ptr = np.where(nbrs_idx == prev_idx)[0]
+            src_nbrs_idx, src_nbrs_wts = get_nbrs(indptr, indices, data, prev_idx)
             out_ind, t = isnotin_extended(
                 nbrs_idx,
                 src_nbrs_idx,
-                get_nbrs_weight(prev_idx),
+                src_nbrs_wts,
                 average_weight_ary,
             )  # determine out edges
-            out_ind[prev_ptr] = False  # exclude previous state from out biases
+            out_ind[prev_ptr] = False  # exclude prevstate from out biases
 
             # compute out biases
             alpha = 1 / q + (1 - 1 / q) * t[out_ind]
@@ -162,7 +112,16 @@ class SparseRWGraph(SparseGraph):
         return normalized_probs
 
 
-@jit(nopython=True, nogil=True)
+@njit(nogil=True)
+def get_nbrs(indptr, indices, data, idx):
+    """Return neighbor indices and weights of a specific node index."""
+    start_idx, end_idx = indptr[idx], indptr[idx + 1]
+    nbrs_idx = indices[start_idx:end_idx]
+    nbrs_wts = data[start_idx:end_idx].copy()
+    return nbrs_idx, nbrs_wts
+
+
+@njit(nogil=True)
 def isnotin(ptr_ary1, ptr_ary2):
     """Find node2vec out edges.
 
@@ -253,7 +212,7 @@ def isnotin(ptr_ary1, ptr_ary2):
     return indicator
 
 
-@jit(nopython=True, nogil=True)
+@njit(nogil=True)
 def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, avg_wts):
     """Find node2vec+ out edges.
 
@@ -268,9 +227,9 @@ def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, avg_wts):
             the neighbors of the current state
         ptr_ary2 (:obj:`numpy.ndarray` of :obj:`uint32`): array of pointers to
             the neighbors of the previous state
-        wts_ary2 (:obj: `numpy.ndarray` of :obj:`float64`): array of edge
+        wts_ary2 (:obj: `numpy.ndarray` of :obj:`float32`): array of edge
             weights of the previous state
-        avg_wts (:obj: `numpy.ndarray` of :obj:`float64`): array of average
+        avg_wts (:obj: `numpy.ndarray` of :obj:`float32`): array of average
             edge weights of each node
 
     Return:
@@ -280,7 +239,7 @@ def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, avg_wts):
 
     """
     indicator = np.ones(ptr_ary1.size, dtype=boolean)
-    t = np.zeros(ptr_ary1.size, dtype=np.float64)
+    t = np.zeros(ptr_ary1.size, dtype=np.float32)
     idx2 = 0
     for idx1 in range(ptr_ary1.size):
         if idx2 == ptr_ary2.size:  # end of ary2

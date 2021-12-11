@@ -1,34 +1,12 @@
-"""Lite graph objects used by pecanpy."""
+"""Dense Graph object equipped with random walk computation."""
 
 import numpy as np
-from numba import jit
+from numba import njit
 from pecanpy.graph import DenseGraph
 
 
 class DenseRWGraph(DenseGraph):
-    """Dense Graph object that stores graph as array.
-
-    Examples:
-        Read ``.npz`` files and create ``DenseGraph`` object using ``read_npz``.
-
-        >>> from pecanpy.graph import DenseGraph
-        >>> g = DenseGraph() # initialize DenseGraph object
-        >>> g.read_npz(paht_to_npz_file, weighted=True, directed=False)
-
-        Read ``.edg`` files and create ``DenseGraph`` object using ``read_edg``.
-
-        >>> from pecanpy.graph import DenseGraph
-        >>>
-        >>> # initialize DenseGraph object
-        >>> g = DenseGraph()
-        >>>
-        >>> # read graph from edgelist
-        >>> g.read_edg(path_to_edg_file, weighted=True, directed=False)
-        >>>
-        >>> # save the dense graph as npz file to be used later
-        >>> g.save(npz_outpath)
-
-    """
+    """Dense Graph object equipped with random walk computation."""
 
     def get_average_weights(self):
         """Compute average edge weights."""
@@ -40,7 +18,7 @@ class DenseRWGraph(DenseGraph):
         """Wrap ``has_nbrs``."""
         nonzero = self.nonzero
 
-        @jit(nopython=True, nogil=True)
+        @njit(nogil=True)
         def has_nbrs(idx):
             for j in range(nonzero.shape[1]):
                 if nonzero[idx, j]:
@@ -50,7 +28,7 @@ class DenseRWGraph(DenseGraph):
         return has_nbrs
 
     @staticmethod
-    @jit(nopython=True, nogil=True)
+    @njit(nogil=True)
     def get_normalized_probs(
         data,
         nonzero,
@@ -93,7 +71,7 @@ class DenseRWGraph(DenseGraph):
         return normalized_probs
 
     @staticmethod
-    @jit(nopython=True, nogil=True)
+    @njit(nogil=True)
     def get_extended_normalized_probs(
         data,
         nonzero,
