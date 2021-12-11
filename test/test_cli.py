@@ -38,19 +38,31 @@ class TestCli(unittest.TestCase):
         self.args.dimensions = 8
         self.args.walk_length = 10
         self.args.num_walks = 2
+        self.g = self.walks = None
 
     def tearDown(self):
         del self.args
         del self.g
         del self.walks
 
-    def execute(self, mode, input_file):
+    def execute(self, mode, input_file, p=1, q=1):
         self.args.mode = mode
         self.args.input = input_file
+        self.args.p = p
+        self.args.q = q
         self.g = cli.read_graph(self.args)
         cli.preprocess(self.g)
         self.walks = cli.simulate_walks(self.args, self.g)
         cli.learn_embeddings(self.args, self.walks)
+
+    def test_precompfirstorder_catch(self):
+        for p, q in (2, 1), (1, 0.1), (0.1, 0.1):
+            with self.subTest(p=p, q=q):
+                with self.assertRaises(ValueError):
+                    self.execute("PreCompFirstOrder", EDG_FP, p, q)
+
+    def test_precompfirstorder_from_edg(self):
+        self.execute("PreCompFirstOrder", EDG_FP)
 
     def test_precomp_from_edg(self):
         self.execute("PreComp", EDG_FP)
@@ -60,6 +72,9 @@ class TestCli(unittest.TestCase):
 
     def test_denseotf_from_edg(self):
         self.execute("DenseOTF", EDG_FP)
+
+    def test_precompfirstorder_from_npz(self):
+        self.execute("PreCompFirstOrder", CSR_FP)
 
     def test_precomp_from_npz(self):
         self.execute("PreComp", CSR_FP)
