@@ -54,7 +54,7 @@ def parse_args():
     parser.add_argument(
         "--mode",
         default="SparseOTF",
-        choices=["PreComp", "SparseOTF", "DenseOTF"],
+        choices=["PreComp", "PreCompFirstOrder", "SparseOTF", "DenseOTF"],
         help="PecanPy execution mode.",
     )
 
@@ -147,8 +147,25 @@ def check_mode(g, mode):
     Give recommendation to user for pecanpy mode based on graph size and density.
 
     """
+    # Check first order random walk usage
+    p, q = g.p, g.q
+    if mode == "PreCompFirstOrder":
+        if not p == q == 1:
+            raise ValueError(
+                f"PreCompFirstOrder only works when p = q =1, got {p=}, {q=}"
+            )
+        return  # no need to check network density if set to PreCompFirstOrder
+
+    if mode != "PreCompFirstOrder" and g.p == 1 == g.q:
+        print(
+            f"WARNING: when p = 1 and q = 1, highly recommend using the "
+            f"PreCompFirstOrder over {mode}. The runtime can be improved "
+            f"significantly with low memory usage."
+        )
+
+    # Check network density and recommend appropriate mode
     g_size = len(g.IDlst)  # number of nodes in graph
-    if mode in ["PreComp", "SparseOTF"]:
+    if mode in ["PreComp", "PreCompFirstOrder", "SparseOTF"]:
         edge_num = sum(len(i) for i in g.data) if type(g.data) == list else g.data.size
     else:
         edge_num = g.nonzero.sum()

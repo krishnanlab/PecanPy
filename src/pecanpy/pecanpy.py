@@ -141,7 +141,7 @@ class Base:
 
         return walks
 
-    def setup_get_normalized_probs(self, first_order=False):
+    def setup_get_normalized_probs(self):
         """Transition probability computation setup.
 
         This is function performs necessary preprocessing of computing the
@@ -152,10 +152,7 @@ class Base:
         weights array ``avg_wts``.
 
         """
-        if first_order:
-            get_normalized_probs = self.get_normalized_probs_first_order
-            avg_wts = None
-        elif self.extend:  # use n2v+
+        if self.extend:  # use n2v+
             get_normalized_probs = self.get_extended_normalized_probs
             avg_wts = self.get_average_weights()
         else:  # use normal n2v
@@ -222,6 +219,58 @@ class Base:
         return w2v.wv.vectors[idx_list]
 
 
+class PreCompFirstOrder(Base, SparseRWGraph):
+    """Precompute transition probabilities for first order random walks."""
+
+    def __init__(self, p, q, workers, verbose=False, extend=False):
+        Base.__init__(self, p, q, workers, verbose, extend)
+        self.alias_j = self.alias_q = self.alias_indptr = self.alias_dim = None
+
+    def get_move_forward(self):
+        data = self.data
+        indices = self.indices
+        indptr = self.indptr
+
+        alias_j = self.alias_j
+        alias_q = self.alias_q
+
+        @njit(nogil=True)
+        def move_forward(cur_idx, prev_idx=None):
+            start, end = indptr[cur_idx], indptr[cur_idx + 1]
+            choice = alias_draw(alias_j[start:end], alias_q[start:end])
+
+            return indices[indptr[cur_idx] + choice]
+
+        return move_forward
+
+    def preprocess_transition_probs(self):
+        """Precompute and store first order transition probabilities."""
+        data = self.data
+        indices = self.indices
+        indptr = self.indptr
+
+        # Retrieve transition probability computation callback function
+        get_normalized_probs = self.get_normalized_probs_first_order
+
+        # Determine the dimensionality of the 1st order transition probs
+        n_nodes = indptr.size - 1  # number of nodes
+        n_probs = indptr[-1]  # total number of 1st order transition probs
+
+        @njit(parallel=True, nogil=True)
+        def compute_all_transition_probs():
+            alias_j = np.zeros(n_probs, dtype=np.uint32)
+            alias_q = np.zeros(n_probs, dtype=np.float32)
+
+            for idx in range(n_nodes):
+                start, end = indptr[idx], indptr[idx + 1]
+                probs = get_normalized_probs(data, indices, indptr, idx)
+                alias_j[start:end], alias_q[start:end] = alias_setup(probs)
+
+            return alias_j, alias_q
+
+        self.alias_j, self.alias_q = compute_all_transition_probs()
+
+
 class PreComp(Base, SparseRWGraph):
     """Precompute transition probabilites.
 
@@ -258,7 +307,7 @@ class PreComp(Base, SparseRWGraph):
         indptr = self.indptr
         p = self.p
         q = self.q
-        get_normalized_probs, _ = self.setup_get_normalized_probs(True)
+        get_normalized_probs, _ = self.setup_get_normalized_probs()
 
         alias_j = self.alias_j
         alias_q = self.alias_q
@@ -296,41 +345,7 @@ class PreComp(Base, SparseRWGraph):
 
             return indices[indptr[cur_idx] + choice]
 
-        @njit(nogil=True)
-        def move_forward_first_order(cur_idx, prev_idx=None):
-            start, end = indptr[cur_idx], indptr[cur_idx + 1]
-            choice = alias_draw(alias_j[start:end], alias_q[start:end])
-
-            return indices[indptr[cur_idx] + choice]
-
-        return move_forward_first_order if p == 1 == q else move_forward
-
-    def preprocess_transition_probs_first_order(self):
-        """Precompute and store first order transition probabilities."""
-        data = self.data
-        indices = self.indices
-        indptr = self.indptr
-
-        # Retrieve transition probability computation callback function
-        get_normalized_probs, _ = self.setup_get_normalized_probs(True)
-
-        # Determine the dimensionality of the 1st order transition probs
-        n_nodes = indptr.size - 1  # number of nodes
-        n_probs = indptr[-1]  # total number of 1st order transition probs
-
-        @njit(parallel=True, nogil=True)
-        def compute_all_transition_probs():
-            alias_j = np.zeros(n_probs, dtype=np.uint32)
-            alias_q = np.zeros(n_probs, dtype=np.float32)
-
-            for idx in range(n_nodes):
-                start, end = indptr[idx], indptr[idx + 1]
-                probs = get_normalized_probs(data, indices, indptr, idx)
-                alias_j[start:end], alias_q[start:end] = alias_setup(probs)
-
-            return alias_j, alias_q
-
-        self.alias_j, self.alias_q = compute_all_transition_probs()
+        return move_forward
 
     def preprocess_transition_probs(self):
         """Precompute and store 2nd order transition probabilities.
@@ -353,9 +368,6 @@ class PreComp(Base, SparseRWGraph):
         indptr = self.indptr
         p = self.p
         q = self.q
-        if p == 1 == q:
-            self.preprocess_transition_probs_first_order()
-            return
 
         # Retrieve transition probability computation callback function
         get_normalized_probs, avg_wts = self.setup_get_normalized_probs()
