@@ -170,7 +170,7 @@ def check_mode(g, args):
     if mode != "FirstOrderUnweighted" and p == q == 1 and not weighted:
         print(
             f"WARNING: when p = 1 and q = 1 with unweighted graph, highly "
-            f"recommend using the FirstOrderUnweighted over {mode}. The"
+            f"recommend using the FirstOrderUnweighted over {mode}. The "
             f"runtime could be improved greatly with improved  memory usage."
         )
         return
@@ -192,17 +192,12 @@ def check_mode(g, args):
         return
 
     # Check network density and recommend appropriate mode
-    g_size = len(g.IDlst)  # number of nodes in graph
-    if mode in ["PreComp",  "SparseOTF"]:
-        edge_num = sum(len(i) for i in g.data) if type(g.data) == list else g.data.size
-    else:
-        edge_num = g.nonzero.sum()
-    g_dens = edge_num / g_size / (g_size - 1)
-
+    g_size = g.num_nodes
+    g_dens = g.density
     if (g_dens >= 0.2) & (mode != "DenseOTF"):
         print(
-            f"WARNING: network density = {g_dens:.3f} (> 0.2), recommend "
-            f"DenseOTF over {mode}",
+            f"WARNING: network density = {g_dens:.3f} (> 0.2), "
+            f"recommend DenseOTF over {mode}",
         )
     if (g_dens < 0.001) & (g_size < 10000) & (mode != "PreComp"):
         print(
@@ -211,7 +206,8 @@ def check_mode(g, args):
         )
     if (g_dens >= 0.001) & (g_dens < 0.2) & (mode != "SparseOTF"):
         print(
-            f"WARNING: network density = {g_dens:.3f}, recommend SparseOTF over {mode}",
+            f"WARNING: network density = {g_dens:.3f}, "
+            f"recommend SparseOTF over {mode}",
         )
     if (g_dens < 0.001) & (g_size >= 10000) & (mode != "SparseOTF"):
         print(
