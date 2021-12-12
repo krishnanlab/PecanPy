@@ -3,8 +3,14 @@
 import numpy as np
 
 
-class IDHandle:
-    """Node ID handler."""
+class BaseGraph:
+    """Base Graph object.
+
+    Handles node id and provides general properties including num_nodes,
+    and density. The num_edges property is to be specified by the derived
+    graph objects.
+
+    """
 
     def __init__(self):
         """Initialize ID list and ID map."""
@@ -20,7 +26,7 @@ class IDHandle:
     def num_edges(self):
         """Return the number of edges in the graph."""
         raise NotImplementedError(
-            f"IDHandle does not have num_edges, use the derived classes "
+            f"BaseGraph does not have num_edges, use the derived classes "
             f"like SparseGraph and DenseGraph instead."
         )
 
@@ -39,7 +45,7 @@ class IDHandle:
         self.IDmap = {j: i for i, j in enumerate(ids)}
 
 
-class AdjlstGraph(IDHandle):
+class AdjlstGraph(BaseGraph):
     """Adjacency list Graph object used for reading/writing edge list files.
 
     Sparse Graph object that stores graph as adjacency list.
@@ -244,7 +250,7 @@ class AdjlstGraph(IDHandle):
         return g
 
 
-class SparseGraph(IDHandle):
+class SparseGraph(BaseGraph):
     """Sparse Graph object that stores graph as adjacency list.
 
     Examples:
@@ -374,7 +380,7 @@ class SparseGraph(IDHandle):
         return g
 
 
-class DenseGraph(IDHandle):
+class DenseGraph(BaseGraph):
     """Dense Graph object that stores graph as array.
 
     Examples:
