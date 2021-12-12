@@ -55,11 +55,20 @@ class TestCli(unittest.TestCase):
         self.walks = cli.simulate_walks(self.args, self.g)
         cli.learn_embeddings(self.args, self.walks)
 
+    def test_firstorderunweighted_catch(self):
+        for p, q in (2, 1), (1, 0.1), (0.1, 0.1):
+            with self.subTest(p=p, q=q):
+                with self.assertRaises(ValueError):
+                    self.execute("FirstOrderUnweighted", EDG_FP, p, q)
+
     def test_precompfirstorder_catch(self):
         for p, q in (2, 1), (1, 0.1), (0.1, 0.1):
             with self.subTest(p=p, q=q):
                 with self.assertRaises(ValueError):
                     self.execute("PreCompFirstOrder", EDG_FP, p, q)
+
+    def test_precompfirstorder_from_edg(self):
+        self.execute("FirstOrderUnweighted", EDG_FP)
 
     def test_precompfirstorder_from_edg(self):
         self.execute("PreCompFirstOrder", EDG_FP)
@@ -72,6 +81,9 @@ class TestCli(unittest.TestCase):
 
     def test_denseotf_from_edg(self):
         self.execute("DenseOTF", EDG_FP)
+
+    def test_precompfirstorder_from_edg(self):
+        self.execute("FirstOrderUnweighted", CSR_FP)
 
     def test_precompfirstorder_from_npz(self):
         self.execute("PreCompFirstOrder", CSR_FP)
