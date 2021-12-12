@@ -219,12 +219,30 @@ class Base:
         return w2v.wv.vectors[idx_list]
 
 
+class FirstOrderUnweighted(Base, SparseRWGraph):
+    """Directly sample edges for first order random walks."""
+
+    def __init__(self, p, q, workers, verbose=False, extend=False):
+        Base.__init__(self, p, q, workers, verbose, extend)
+
+    def get_move_forward(self):
+        indices = self.indices
+        indptr = self.indptr
+
+        @njit(nogil=True)
+        def move_forward(cur_idx, prev_idx=None):
+            start, end = indptr[cur_idx], indptr[cur_idx + 1]
+            return indices[np.random.randint(start, end)]
+
+        return move_forward
+
+
 class PreCompFirstOrder(Base, SparseRWGraph):
     """Precompute transition probabilities for first order random walks."""
 
     def __init__(self, p, q, workers, verbose=False, extend=False):
         Base.__init__(self, p, q, workers, verbose, extend)
-        self.alias_j = self.alias_q = self.alias_indptr = self.alias_dim = None
+        self.alias_j = self.alias_q = None
 
     def get_move_forward(self):
         data = self.data

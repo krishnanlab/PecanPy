@@ -54,7 +54,13 @@ def parse_args():
     parser.add_argument(
         "--mode",
         default="SparseOTF",
-        choices=["PreComp", "PreCompFirstOrder", "SparseOTF", "DenseOTF"],
+        choices=[
+            "DenseOTF",
+            "FirstOrderUnweighted",
+            "PreComp",
+            "PreCompFirstOrder",
+            "SparseOTF",
+        ],
         help="PecanPy execution mode.",
     )
 
@@ -141,31 +147,53 @@ def parse_args():
     return parser.parse_args()
 
 
-def check_mode(g, mode):
+def check_mode(g, args):
     """Check mode selection.
 
     Give recommendation to user for pecanpy mode based on graph size and density.
 
     """
+    mode = args.mode
+    weighted = args.weighted
+    p = args.p
+    q = args.q
+
+    # Check unweighted first order random walk usage
+    if mode == "FirstOrderUnweighted":
+        if not p == q == 1 or weighted:
+            raise ValueError(
+                f"FirstOrderUnweighted only works when weighted = False and "
+                f"p = q = 1, got {weighted=}, {p=}, {q=}"
+            )
+        return
+
+    if mode != "FirstOrderUnweighted" and p == q == 1 and not weighted:
+        print(
+            f"WARNING: when p = 1 and q = 1 with unweighted graph, highly "
+            f"recommend using the FirstOrderUnweighted over {mode}. The"
+            f"runtime could be improved greatly with improved  memory usage."
+        )
+        return
+
     # Check first order random walk usage
-    p, q = g.p, g.q
     if mode == "PreCompFirstOrder":
         if not p == q == 1:
             raise ValueError(
-                f"PreCompFirstOrder only works when p = q =1, got {p=}, {q=}"
+                f"PreCompFirstOrder only works when p = q = 1, got {p=}, {q=}"
             )
-        return  # no need to check network density if set to PreCompFirstOrder
+        return
 
-    if mode != "PreCompFirstOrder" and g.p == 1 == g.q:
+    if mode != "PreCompFirstOrder" and p == 1 == q:
         print(
             f"WARNING: when p = 1 and q = 1, highly recommend using the "
-            f"PreCompFirstOrder over {mode}. The runtime can be improved "
-            f"significantly with low memory usage."
+            f"PreCompFirstOrder over {mode}. The runtime could be improved "
+            f"greatly with low memory usage."
         )
+        return
 
     # Check network density and recommend appropriate mode
     g_size = len(g.IDlst)  # number of nodes in graph
-    if mode in ["PreComp", "PreCompFirstOrder", "SparseOTF"]:
+    if mode in ["PreComp",  "SparseOTF"]:
         edge_num = sum(len(i) for i in g.data) if type(g.data) == list else g.data.size
     else:
         edge_num = g.nonzero.sum()
@@ -230,7 +258,7 @@ def read_graph(args):
     read_func = g.read_npz if fp.endswith(".npz") else g.read_edg
     read_func(fp, weighted, directed)
 
-    check_mode(g, mode)
+    check_mode(g, args)
 
     return g
 
