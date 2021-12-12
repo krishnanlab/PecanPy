@@ -36,6 +36,11 @@ class TestSparseGraph(unittest.TestCase):
         self.g = SparseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT, IDS))
         self.validate()
 
+    def test_properties(self):
+        self.g = SparseGraph.from_mat(MAT, IDS)
+        self.assertEqual(self.g.num_nodes, 3)
+        self.assertEqual(self.g.num_edges, 4)
+        self.assertEqual(self.g.density, 2/3)
 
 class TestDenseGraph(unittest.TestCase):
     def tearDown(self):
@@ -52,6 +57,12 @@ class TestDenseGraph(unittest.TestCase):
     def test_from_adjlst_graph(self):
         self.g = DenseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT, IDS))
         self.validate()
+
+    def test_properties(self):
+        self.g = DenseGraph.from_mat(MAT, IDS)
+        self.assertEqual(self.g.num_nodes, 3)
+        self.assertEqual(self.g.num_edges, 4)
+        self.assertEqual(self.g.density, 2/3)
 
 
 if __name__ == "__main__":
