@@ -11,6 +11,24 @@ class IDHandle:
         self.IDlst = []
         self.IDmap = {}  # id -> index
 
+    @property
+    def num_nodes(self):
+        """Return the number of nodes in the graph."""
+        return len(self.IDlst)
+
+    @property
+    def num_edges(self):
+        """Return the number of edges in the graph."""
+        raise NotImplementedError(
+            f"IDHandle does not have num_edges, use the derived classes "
+            f"like SparseGraph and DenseGraph instead."
+        )
+
+    @property
+    def density(self):
+        """Return the edge density of the graph."""
+        return self.num_edges / self.num_nodes / (self.num_nodes - 1)
+
     def set_ids(self, ids):
         """Update ID list and mapping.
 
@@ -53,11 +71,6 @@ class AdjlstGraph(IDHandle):
         """Initialize AdjlstGraph object."""
         super().__init__()
         self._data = []  # list of dict of node_indexx -> edge_weight
-
-    @property
-    def num_nodes(self):
-        """Return the number of nodes in the graph."""
-        return len(self._data)
 
     @staticmethod
     def _read_edge_line(edge_line, weighted, delimiter):
@@ -117,8 +130,8 @@ class AdjlstGraph(IDHandle):
 
         """
         if node_id not in self.IDmap:
-            self.IDlst.append(node_id)
             self.IDmap[node_id] = self.num_nodes
+            self.IDlst.append(node_id)
             self._data.append({})
 
     def add_edge(self, id1, id2, weight=1.0, directed=False):
@@ -254,9 +267,12 @@ class SparseGraph(IDHandle):
     def __init__(self):
         """Initialize SparseGraph object."""
         super().__init__()
-        self.data = []
-        self.indptr = None
-        self.indices = None
+        self.data = self.indptr =  self.indices = None
+
+    @property
+    def num_edges(self):
+        """Return the number of edges in the graph."""
+        return self.indptr.size
 
     def read_edg(self, edg_fp, weighted, directed):
         """Create CSR sparse graph from edge list.
@@ -390,6 +406,11 @@ class DenseGraph(IDHandle):
         super().__init__()
         self.data = None
         self.nonzero = None
+
+    @property
+    def num_edges(self):
+        """Return the number of edges in the graph."""
+        return self.nonzero.sum()
 
     def read_npz(self, fp, weighted, directed):
         """Read ``.npz`` file and create dense graph.
