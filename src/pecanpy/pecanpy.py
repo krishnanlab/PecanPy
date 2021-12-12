@@ -223,9 +223,11 @@ class FirstOrderUnweighted(Base, SparseRWGraph):
     """Directly sample edges for first order random walks."""
 
     def __init__(self, p, q, workers, verbose=False, extend=False):
+        """Initialize FirstOrderUnweighted mode."""
         Base.__init__(self, p, q, workers, verbose, extend)
 
     def get_move_forward(self):
+        """Wrap ``move_forward``."""
         indices = self.indices
         indptr = self.indptr
 
@@ -241,11 +243,12 @@ class PreCompFirstOrder(Base, SparseRWGraph):
     """Precompute transition probabilities for first order random walks."""
 
     def __init__(self, p, q, workers, verbose=False, extend=False):
+        """Initialize PreCompFirstOrder mode."""
         Base.__init__(self, p, q, workers, verbose, extend)
         self.alias_j = self.alias_q = None
 
     def get_move_forward(self):
-        data = self.data
+        """Wrap ``move_forward``."""
         indices = self.indices
         indptr = self.indptr
 

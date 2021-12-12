@@ -163,7 +163,7 @@ def check_mode(g, args):
         if not p == q == 1 or weighted:
             raise ValueError(
                 f"FirstOrderUnweighted only works when weighted = False and "
-                f"p = q = 1, got {weighted=}, {p=}, {q=}"
+                f"p = q = 1, got {weighted=}, {p=}, {q=}",
             )
         return
 
@@ -171,7 +171,7 @@ def check_mode(g, args):
         print(
             f"WARNING: when p = 1 and q = 1 with unweighted graph, highly "
             f"recommend using the FirstOrderUnweighted over {mode}. The "
-            f"runtime could be improved greatly with improved  memory usage."
+            f"runtime could be improved greatly with improved  memory usage.",
         )
         return
 
@@ -179,7 +179,7 @@ def check_mode(g, args):
     if mode == "PreCompFirstOrder":
         if not p == q == 1:
             raise ValueError(
-                f"PreCompFirstOrder only works when p = q = 1, got {p=}, {q=}"
+                f"PreCompFirstOrder only works when p = q = 1, got {p=}, {q=}",
             )
         return
 
@@ -187,7 +187,7 @@ def check_mode(g, args):
         print(
             f"WARNING: when p = 1 and q = 1, highly recommend using the "
             f"PreCompFirstOrder over {mode}. The runtime could be improved "
-            f"greatly with low memory usage."
+            f"greatly with low memory usage.",
         )
         return
 
@@ -220,8 +220,9 @@ def check_mode(g, args):
 def read_graph(args):
     """Read input network to memory.
 
-    Depending on the mode selected, reads the network either in CSR representation
-    (``PreComp`` and ``SparseOTF``) or 2d numpy array (``DenseOTF``).
+    Depending on the mode selected, reads the network either in CSR
+    representation (``PreComp`` and ``SparseOTF``) or 2d numpy array
+    (``DenseOTF``).
 
     """
     fp = args.input
