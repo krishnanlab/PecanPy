@@ -328,7 +328,7 @@ class PreComp(Base, SparseRWGraph):
         indptr = self.indptr
         p = self.p
         q = self.q
-        get_normalized_probs, _ = self.setup_get_normalized_probs()
+        get_normalized_probs = self.get_normalized_probs
 
         alias_j = self.alias_j
         alias_q = self.alias_q
