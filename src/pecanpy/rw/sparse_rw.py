@@ -32,6 +32,20 @@ class SparseRWGraph(SparseGraph):
 
     @staticmethod
     @njit(nogil=True)
+    def get_normalized_probs_first_order(data, indices, indptr, cur_idx):
+        """Clculate first order transition probabilities.
+
+        Note:
+            This function does NOT check whether p = q = 1, which is the
+            requried setup for first order random walk. Need to check before
+            calling this function.
+
+        """
+        _, unnormalized_probs = get_nbrs(indptr, indices, data, cur_idx)
+        return unnormalized_probs / unnormalized_probs.sum()
+
+    @staticmethod
+    @njit(nogil=True)
     def get_normalized_probs(
         data,
         indices,
