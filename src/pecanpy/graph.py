@@ -26,8 +26,8 @@ class BaseGraph:
     def num_edges(self):
         """Return the number of edges in the graph."""
         raise NotImplementedError(
-            f"{self.__name__} does not have num_edges, use the derived "
-            f"classes like SparseGraph and DenseGraph instead.",
+            f"{self.__class__.__name__} does not have num_edges, use the "
+            f"derived classes like SparseGraph and DenseGraph instead.",
         )
 
     @property
