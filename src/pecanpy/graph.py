@@ -81,6 +81,7 @@ class AdjlstGraph(BaseGraph):
 
     @property
     def num_edges(self):
+        """Return the number of edges in the graph."""
         return self._num_edges
 
     @staticmethod
