@@ -36,6 +36,12 @@ class TestAdjlstGraph(unittest.TestCase):
         self.assertEqual(g._data, ADJLST)
         self.assertEqual(g.IDlst, IDS)
 
+    def test_properties(self):
+        self.g = AdjlstGraph.from_mat(MAT, IDS)
+        self.assertEqual(self.g.num_nodes, 3)
+        self.assertEqual(self.g.num_edges, 4)
+        self.assertEqual(self.g.density, 2/3)
+
 
 class TestSparseGraph(unittest.TestCase):
     def tearDown(self):

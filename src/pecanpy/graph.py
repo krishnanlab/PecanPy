@@ -77,6 +77,11 @@ class AdjlstGraph(BaseGraph):
         """Initialize AdjlstGraph object."""
         super().__init__()
         self._data = []  # list of dict of node_indexx -> edge_weight
+        self._num_edges = 0
+
+    @property
+    def num_edges(self):
+        return self._num_edges
 
     @staticmethod
     def _read_edge_line(edge_line, weighted, delimiter):
@@ -158,8 +163,10 @@ class AdjlstGraph(BaseGraph):
             self._check_edge_existence(id1, id2, idx1, idx2, weight)
 
             self._data[idx1][idx2] = weight
+            self._num_edges += 1
             if not directed:
                 self._data[idx2][idx1] = weight
+                self._num_edges += 1
 
     def read(self, edg_fp, weighted, directed, delimiter="\t"):
         """Read an edgelist file and create sparse graph.
@@ -246,7 +253,7 @@ class AdjlstGraph(BaseGraph):
         g = cls(**kwargs)
         for idx1, idx2 in zip(*np.where(adj_mat != 0)):
             id1, id2 = node_ids[idx1], node_ids[idx2]
-            g.add_edge(id1, id2, adj_mat[idx1, idx2], directed=False)
+            g.add_edge(id1, id2, adj_mat[idx1, idx2], directed=True)
         return g
 
 
