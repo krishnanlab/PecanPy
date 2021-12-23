@@ -1,11 +1,9 @@
 """Different strategies for generating node2vec walks."""
 import numpy as np
 from gensim.models import Word2Vec
-from numba import njit
-from numba import prange
+from numba import njit, prange
 from numba_progress import ProgressBar
-from pecanpy.rw import DenseRWGraph
-from pecanpy.rw import SparseRWGraph
+from pecanpy.rw import DenseRWGraph, SparseRWGraph
 from pecanpy.wrappers import Timer
 
 
