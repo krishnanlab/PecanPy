@@ -73,7 +73,7 @@ each of which is better optimized for different network sizes/densities:
 
 #### Compatibility and recommendations
 
-| Mode | Weighted graph | ``p, q != 1`` | Node2vec+ | Use this if |
+| Mode | Weighted graph | ``p,q!=1`` | Node2vec+ | Use this if |
 |:-----|----------------|---------------|-----------|:------------|
 |``PreComp``|:white_check_mark:|:white_check_mark:|:white_check_mark:|The graph is small and sparse|
 |``SparseOTF``|:white_check_mark:|:white_check_mark:|:white_check_mark:|The graph is sparse but not necessarily small|
