@@ -1,5 +1,4 @@
 """Dense Graph object equipped with random walk computation."""
-
 import numpy as np
 from numba import njit
 from pecanpy.graph import DenseGraph
@@ -96,7 +95,8 @@ class DenseRWGraph(DenseGraph):
             # print("NUM INOUT: ", inout_ind.sum(), "\n")
 
             t = prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]
-            # b = 1; t = b * t / (1 - (b - 1) * t)  # optional nonlinear parameterization
+            # optional nonlinear parameterization
+            # b = 1; t = b * t / (1 - (b - 1) * t)
 
             # compute out biases
             alpha = 1 / q + (1 - 1 / q) * t

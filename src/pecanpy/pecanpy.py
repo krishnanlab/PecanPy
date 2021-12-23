@@ -1,5 +1,4 @@
 """Different strategies for generating node2vec walks."""
-
 import numpy as np
 from gensim.models import Word2Vec
 from numba import njit, prange
