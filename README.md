@@ -1,6 +1,7 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5727847.svg)](https://doi.org/10.5281/zenodo.5727847)
-[![Documentation Status](https://readthedocs.org/projects/pecanpy/badge/?version=latest)](https://pecanpy.readthedocs.io/en/latest/?badge=latest)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5727847.svg)
+![Documentation Status](https://readthedocs.org/projects/pecanpy/badge/?version=latest)
+![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)
+![Tests](https://github.com/krishnanlab/PecanPy/actions/workflows/tests.yml/badge.svg)
 
 # PecanPy: A parallelized, efficient, and accelerated _node2vec(+)_ in Python
 
