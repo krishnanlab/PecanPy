@@ -63,12 +63,23 @@ sh demo/run_pecanpy
 
 ### Mode
 
-As mentioned above, PecanPy contains three different modes, each of which is better optimized for different network sizes/densities:
+As mentioned above, PecanPy contains three main modes for generating node2vec random walks,
+each of which is better optimized for different network sizes/densities:
 | Mode | Network size/density | Optimization |
 |:-----|:---------------------|:-------------|
 | `PreComp` | <10k nodes, <0.1% edges | Precompute second order transition probabilities, using CSR graph |
 | `SparseOTF` (default) | (≥10k nodes, ≥0.1% and <20% of edges) or (<10k nodes, ≥0.1% edges) | Transition probabilites computed on-the-fly, using CSR graph |
 | `DenseOTF` | >20% of edges | Transition probabilities computed on-the-fly, using dense matrix |
+
+#### Compatibility and recommendations
+
+| Mode | Weighted graph | ``p, q != 1`` | Node2vec+ | Use this if |
+|:-----|----------------|---------------|-----------|:------------|
+|``PreComp``|:white_check_mark:|:white_check_mark:|:white_check_mark:|The graph is small and sparse|
+|``SparseOTF``|:white_check_mark:|:white_check_mark:|:white_check_mark:|The graph is sparse but not necessarily small|
+|``DenseOTF``|:white_check_mark:|:white_check_mark:|:white_check_mark:|The graph is extremely dense|
+|``PreCompFirstOrder``|:white_check_mark:|:x:|:x:|Run with ``p = q = 1`` on weighted graph|
+|``FirstOrderUnweighted``|:x:|:x:|:x:|Run with ``p = q = 1`` on unweighted graph|
 
 ### Options
 
