@@ -1,5 +1,6 @@
 tox==3.24.4
-black==21.9b0
+black==21.12b0
 pytest==6.2.5
 pytest-cov==3.0.0
 twine==3.4.1
+pre-commit==2.16.0
