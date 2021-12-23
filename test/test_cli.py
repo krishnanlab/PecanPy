@@ -1,8 +1,10 @@
 import os
 import os.path as op
+import shutil
+import subprocess
+import tempfile
 import unittest
 from unittest.mock import patch
-import subprocess
 
 import numpy as np
 from numba import set_num_threads
@@ -12,8 +14,10 @@ set_num_threads(1)
 
 DATA_DIR = op.abspath(op.join(__file__, op.pardir, op.pardir, "demo"))
 EDG_FP = op.join(DATA_DIR, "karate.edg")
-CSR_FP = op.join(DATA_DIR, "karate.csr.npz")
-DENSE_FP = op.join(DATA_DIR, "karate.dense.npz")
+
+TMP_DATA_DIR = tempfile.mkdtemp()
+CSR_FP = op.join(TMP_DATA_DIR, "karate.csr.npz")
+DENSE_FP = op.join(TMP_DATA_DIR, "karate.dense.npz")
 COM = ["pecanpy", "--input", EDG_FP, "--output"]
 
 
@@ -25,12 +29,11 @@ class TestCli(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        os.remove(CSR_FP)
-        os.remove(DENSE_FP)
+        shutil.rmtree(TMP_DATA_DIR)
 
     @patch(
         "argparse._sys.argv",
-        ["pecanpy", "--input", "", "--output", "/dev/null"],
+        ["pecanpy", "--input", "", "--output", os.devnull],
     )
     def setUp(self):
         self.args = cli.parse_args()
