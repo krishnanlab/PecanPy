@@ -9,9 +9,13 @@ class DenseRWGraph(DenseGraph):
 
     def get_average_weights(self):
         """Compute average edge weights."""
-        deg_ary = self.data.sum(axis=1)
-        n_nbrs_ary = self.nonzero.sum(axis=1)
-        return deg_ary / n_nbrs_ary
+        num_nodes = len(self.IDlst)
+        average_weight_ary = np.zeros(num_nodes, dtype=np.float32)
+        for i in range(num_nodes):
+            weights = self.data[i, self.nonzero[i]]
+            average_weight_ary[i] = weights.mean() + self.gamma * weights.std()
+
+        return average_weight_ary
 
     def get_has_nbrs(self):
         """Wrap ``has_nbrs``."""

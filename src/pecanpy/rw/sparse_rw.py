@@ -24,8 +24,11 @@ class SparseRWGraph(SparseGraph):
 
         num_nodes = len(self.IDlst)
         average_weight_ary = np.zeros(num_nodes, dtype=np.float32)
-        for idx in range(num_nodes):
-            average_weight_ary[idx] = data[indptr[idx] : indptr[idx + 1]].mean()
+        for i in range(num_nodes):
+            average_weight_ary[i] = (
+                data[indptr[i] : indptr[i + 1]].mean()
+                + self.gamma * data[indptr[i] : indptr[i + 1]].std()
+            )
 
         return average_weight_ary
 
