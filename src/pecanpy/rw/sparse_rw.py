@@ -29,6 +29,7 @@ class SparseRWGraph(SparseGraph):
                 data[indptr[i] : indptr[i + 1]].mean()
                 + self.gamma * data[indptr[i] : indptr[i + 1]].std()
             )
+        average_weight_ary = np.maximum(average_weight_ary, 0)
 
         return average_weight_ary
 
@@ -258,7 +259,7 @@ def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, avg_wts):
     t = np.zeros(ptr_ary1.size, dtype=np.float32)
     idx2 = 0
     for idx1 in range(ptr_ary1.size):
-        if idx2 == ptr_ary2.size:  # end of ary2
+        if idx2 >= ptr_ary2.size:  # end of ary2
             break
 
         ptr1 = ptr_ary1[idx1]
@@ -268,15 +269,16 @@ def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, avg_wts):
             continue
 
         elif ptr1 == ptr2:  # found a matching value
-            if wts_ary2[idx2] >= avg_wts[ptr2]:  # check if loose
+            # If connection is not loose, identify as an in-edge
+            if wts_ary2[idx2] >= avg_wts[ptr2]:
                 indicator[idx1] = False
             else:
                 t[idx1] = wts_ary2[idx2] / avg_wts[ptr2]
             idx2 += 1
 
         elif ptr1 > ptr2:
-            # sweep through ptr_ary2 until ptr2 catch up on ptr1
-            for j in range(idx2, ptr_ary2.size):
+            # Sweep through ptr_ary2 until ptr2 catch up on ptr1
+            for j in range(idx2 + 1, ptr_ary2.size):
                 ptr2 = ptr_ary2[j]
                 if ptr2 == ptr1:
                     if wts_ary2[j] >= avg_wts[ptr2]:
