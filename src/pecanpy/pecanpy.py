@@ -41,7 +41,7 @@ class Base:
 
     """
 
-    def __init__(self, p, q, workers, verbose=False, extend=False):
+    def __init__(self, p, q, workers, verbose=False, extend=False, gamma=0):
         """Initializ node2vec base class.
 
         Args:
@@ -53,7 +53,11 @@ class Base:
             workers (int):  number of threads to be spawned for runing node2vec
                 including walk generation and word2vec embedding.
             verbose (bool): show progress bar for walk generation.
-            extend (bool): ``True`` if use node2vec+ extension, default is ``False``
+            extend (bool): use node2vec+ extension if set to :obj:`True`
+                (default: :obj:`False`).
+            gamma (float): Multiplication factor for the std term of edge
+                weights added to the average edge weights as the noisy edge
+                threashold, only used by node2vec+ (default: 0)
 
         """
         super().__init__()
@@ -62,6 +66,7 @@ class Base:
         self.workers = workers
         self.verbose = verbose
         self.extend = extend
+        self.gamma = gamma
 
     def _map_walk(self, walk_idx_ary):
         """Map walk from node index to node ID.
@@ -221,9 +226,9 @@ class Base:
 class FirstOrderUnweighted(Base, SparseRWGraph):
     """Directly sample edges for first order random walks."""
 
-    def __init__(self, p, q, workers, verbose=False, extend=False):
+    def __init__(self, *args, **kwargs):
         """Initialize FirstOrderUnweighted mode."""
-        Base.__init__(self, p, q, workers, verbose, extend)
+        Base.__init__(self, *args, **kwargs)
 
     def get_move_forward(self):
         """Wrap ``move_forward``."""
@@ -241,9 +246,9 @@ class FirstOrderUnweighted(Base, SparseRWGraph):
 class PreCompFirstOrder(Base, SparseRWGraph):
     """Precompute transition probabilities for first order random walks."""
 
-    def __init__(self, p, q, workers, verbose=False, extend=False):
+    def __init__(self, *args, **kwargs):
         """Initialize PreCompFirstOrder mode."""
-        Base.__init__(self, p, q, workers, verbose, extend)
+        Base.__init__(self, *args, **kwargs)
         self.alias_j = self.alias_q = None
 
     def get_move_forward(self):
@@ -304,9 +309,9 @@ class PreComp(Base, SparseRWGraph):
 
     """
 
-    def __init__(self, p, q, workers, verbose=False, extend=False):
+    def __init__(self, *args, **kwargs):
         """Initialize PreComp mode node2vec."""
-        Base.__init__(self, p, q, workers, verbose, extend)
+        Base.__init__(self, *args, **kwargs)
         self.alias_j = self.alias_q = self.alias_indptr = self.alias_dim = None
 
     def get_move_forward(self):
@@ -444,9 +449,9 @@ class SparseOTF(Base, SparseRWGraph):
 
     """
 
-    def __init__(self, p, q, workers, verbose=False, extend=False):
+    def __init__(self, *args, **kwargs):
         """Initialize PreComp mode node2vec."""
-        Base.__init__(self, p, q, workers, verbose, extend)
+        Base.__init__(self, *args, **kwargs)
 
     def get_move_forward(self):
         """Wrap ``move_forward``.
@@ -499,9 +504,9 @@ class DenseOTF(Base, DenseRWGraph):
 
     """
 
-    def __init__(self, p, q, workers, verbose=False, extend=False):
+    def __init__(self, *args, **kwargs):
         """Initialize DenseOTF mode node2vec."""
-        Base.__init__(self, p, q, workers, verbose, extend)
+        Base.__init__(self, *args, **kwargs)
 
     def get_move_forward(self):
         """Wrap ``move_forward``.
