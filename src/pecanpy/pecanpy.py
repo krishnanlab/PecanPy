@@ -153,16 +153,16 @@ class Base:
         probability computation function ``get_extended_normalized_probs``,
         if node2vec+ is used. Otherwise, return the normal transition function
         ``get_noramlized_probs`` with a trivial placeholder for average edge
-        weights array ``avg_wts``.
+        weights array ``noise_thresholds``.
 
         """
         if self.extend:  # use n2v+
             get_normalized_probs = self.get_extended_normalized_probs
-            avg_wts = self.get_average_weights()
+            noise_thresholds = self.get_noise_thresholds()
         else:  # use normal n2v
             get_normalized_probs = self.get_normalized_probs
-            avg_wts = None
-        return get_normalized_probs, avg_wts
+            noise_thresholds = None
+        return get_normalized_probs, noise_thresholds
 
     def preprocess_transition_probs(self):
         """Null default preprocess method."""
@@ -395,7 +395,7 @@ class PreComp(Base, SparseRWGraph):
         q = self.q
 
         # Retrieve transition probability computation callback function
-        get_normalized_probs, avg_wts = self.setup_get_normalized_probs()
+        get_normalized_probs, noise_thresholds = self.setup_get_normalized_probs()
 
         # Determine the dimensionality of the 2nd order transition probs
         n_nodes = self.indptr.size - 1  # number of nodes
@@ -428,7 +428,7 @@ class PreComp(Base, SparseRWGraph):
                         q,
                         idx,
                         nbr,
-                        avg_wts,
+                        noise_thresholds,
                     )
 
                     start = offset + dim * nbr_idx
@@ -472,7 +472,7 @@ class SparseOTF(Base, SparseRWGraph):
         p = self.p
         q = self.q
 
-        get_normalized_probs, avg_wts = self.setup_get_normalized_probs()
+        get_normalized_probs, noise_thresholds = self.setup_get_normalized_probs()
 
         @njit(nogil=True)
         def move_forward(cur_idx, prev_idx=None):
@@ -485,7 +485,7 @@ class SparseOTF(Base, SparseRWGraph):
                 q,
                 cur_idx,
                 prev_idx,
-                avg_wts,
+                noise_thresholds,
             )
             cdf = np.cumsum(normalized_probs)
             choice = np.searchsorted(cdf, np.random.random())
@@ -526,7 +526,7 @@ class DenseOTF(Base, DenseRWGraph):
         p = self.p
         q = self.q
 
-        get_normalized_probs, avg_wts = self.setup_get_normalized_probs()
+        get_normalized_probs, noise_thresholds = self.setup_get_normalized_probs()
 
         @njit(nogil=True)
         def move_forward(cur_idx, prev_idx=None):
@@ -538,7 +538,7 @@ class DenseOTF(Base, DenseRWGraph):
                 q,
                 cur_idx,
                 prev_idx,
-                avg_wts,
+                noise_thresholds,
             )
             cdf = np.cumsum(normalized_probs)
             choice = np.searchsorted(cdf, np.random.random())

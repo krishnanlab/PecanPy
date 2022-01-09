@@ -7,7 +7,7 @@ from pecanpy.graph import DenseGraph
 class DenseRWGraph(DenseGraph):
     """Dense Graph object equipped with random walk computation."""
 
-    def get_average_weights(self):
+    def get_noise_thresholds(self):
         """Compute average edge weights."""
         num_nodes = len(self.IDlst)
         average_weight_ary = np.zeros(num_nodes, dtype=np.float32)
