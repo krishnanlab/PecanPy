@@ -144,6 +144,13 @@ def parse_args():
         help="Use node2vec+ extension",
     )
 
+    parser.add_argument(
+        "--gamma",
+        type=float,
+        default=0,
+        help="Noisy edge threshold parameter.",
+    )
+
     return parser.parse_args()
 
 
@@ -234,6 +241,7 @@ def read_graph(args):
     weighted = args.weighted
     directed = args.directed
     extend = args.extend
+    gamma = args.gamma
     mode = args.mode
     task = args.task
 
@@ -250,7 +258,7 @@ def read_graph(args):
         exit()
 
     pecanpy_mode = getattr(pecanpy, mode, None)
-    g = pecanpy_mode(p, q, workers, verbose, extend)
+    g = pecanpy_mode(p, q, workers, verbose, extend, gamma)
 
     read_func = g.read_npz if fp.endswith(".npz") else g.read_edg
     read_func(fp, weighted, directed)

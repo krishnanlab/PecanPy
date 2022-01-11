@@ -17,15 +17,19 @@ class SparseRWGraph(SparseGraph):
 
         return has_nbrs
 
-    def get_average_weights(self):
+    def get_noise_thresholds(self):
         """Compute average edge weights."""
         data = self.data
         indptr = self.indptr
 
         num_nodes = len(self.IDlst)
         average_weight_ary = np.zeros(num_nodes, dtype=np.float32)
-        for idx in range(num_nodes):
-            average_weight_ary[idx] = data[indptr[idx] : indptr[idx + 1]].mean()
+        for i in range(num_nodes):
+            average_weight_ary[i] = (
+                data[indptr[i] : indptr[i + 1]].mean()
+                + self.gamma * data[indptr[i] : indptr[i + 1]].std()
+            )
+        average_weight_ary = np.maximum(average_weight_ary, 0)
 
         return average_weight_ary
 
@@ -226,7 +230,7 @@ def isnotin(ptr_ary1, ptr_ary2):
 
 
 @njit(nogil=True)
-def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, avg_wts):
+def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, noise_thresholds):
     """Find node2vec+ out edges.
 
     The node2vec+ out edges is determined by considering the edge weights
@@ -242,8 +246,9 @@ def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, avg_wts):
             the neighbors of the previous state
         wts_ary2 (:obj: `numpy.ndarray` of :obj:`float32`): array of edge
             weights of the previous state
-        avg_wts (:obj: `numpy.ndarray` of :obj:`float32`): array of average
-            edge weights of each node
+        noise_thresholds (:obj: `numpy.ndarray` of :obj:`float32`): array of
+            noisy edge threshold computed based on the average and the std of
+            the edge weights of each node
 
     Return:
         Indicator of whether a neighbor of the current state is considered as
@@ -255,7 +260,7 @@ def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, avg_wts):
     t = np.zeros(ptr_ary1.size, dtype=np.float32)
     idx2 = 0
     for idx1 in range(ptr_ary1.size):
-        if idx2 == ptr_ary2.size:  # end of ary2
+        if idx2 >= ptr_ary2.size:  # end of ary2
             break
 
         ptr1 = ptr_ary1[idx1]
@@ -265,21 +270,22 @@ def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, avg_wts):
             continue
 
         elif ptr1 == ptr2:  # found a matching value
-            if wts_ary2[idx2] >= avg_wts[ptr2]:  # check if loose
+            # If connection is not loose, identify as an in-edge
+            if wts_ary2[idx2] >= noise_thresholds[ptr2]:
                 indicator[idx1] = False
             else:
-                t[idx1] = wts_ary2[idx2] / avg_wts[ptr2]
+                t[idx1] = wts_ary2[idx2] / noise_thresholds[ptr2]
             idx2 += 1
 
         elif ptr1 > ptr2:
-            # sweep through ptr_ary2 until ptr2 catch up on ptr1
-            for j in range(idx2, ptr_ary2.size):
+            # Sweep through ptr_ary2 until ptr2 catch up on ptr1
+            for j in range(idx2 + 1, ptr_ary2.size):
                 ptr2 = ptr_ary2[j]
                 if ptr2 == ptr1:
-                    if wts_ary2[j] >= avg_wts[ptr2]:
+                    if wts_ary2[j] >= noise_thresholds[ptr2]:
                         indicator[idx1] = False
                     else:
-                        t[idx1] = wts_ary2[j] / avg_wts[ptr2]
+                        t[idx1] = wts_ary2[j] / noise_thresholds[ptr2]
                     idx2 = j + 1
                     break
 

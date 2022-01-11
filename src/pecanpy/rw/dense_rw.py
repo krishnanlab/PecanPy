@@ -7,11 +7,16 @@ from pecanpy.graph import DenseGraph
 class DenseRWGraph(DenseGraph):
     """Dense Graph object equipped with random walk computation."""
 
-    def get_average_weights(self):
+    def get_noise_thresholds(self):
         """Compute average edge weights."""
-        deg_ary = self.data.sum(axis=1)
-        n_nbrs_ary = self.nonzero.sum(axis=1)
-        return deg_ary / n_nbrs_ary
+        num_nodes = len(self.IDlst)
+        average_weight_ary = np.zeros(num_nodes, dtype=np.float32)
+        for i in range(num_nodes):
+            weights = self.data[i, self.nonzero[i]]
+            average_weight_ary[i] = weights.mean() + self.gamma * weights.std()
+        average_weight_ary = np.maximum(average_weight_ary, 0)
+
+        return average_weight_ary
 
     def get_has_nbrs(self):
         """Wrap ``has_nbrs``."""
@@ -87,14 +92,16 @@ class DenseRWGraph(DenseGraph):
         if prev_idx is not None:  # 2nd order biased walks
             prev_nbrs_weight = data[prev_idx].copy()
 
-            inout_ind = cur_nbrs_ind & (prev_nbrs_weight < average_weight_ary)
-            inout_ind[prev_idx] = False  # exclude previous state from out biases
+            # Note: we assume here the network is undirectly, hence the edge
+            # weight connecting the next to prev is the same as the reverse.
+            out_ind = cur_nbrs_ind & (prev_nbrs_weight < average_weight_ary)
+            out_ind[prev_idx] = False  # exclude previous state from out biases
 
             # print("CURRENT: ", cur_idx)
-            # print("INOUT: ", np.where(inout_ind)[0])
-            # print("NUM INOUT: ", inout_ind.sum(), "\n")
+            # print("INOUT: ", np.where(out_ind)[0])
+            # print("NUM INOUT: ", out_ind.sum(), "\n")
 
-            t = prev_nbrs_weight[inout_ind] / average_weight_ary[inout_ind]
+            t = prev_nbrs_weight[out_ind] / average_weight_ary[out_ind]
             # optional nonlinear parameterization
             # b = 1; t = b * t / (1 - (b - 1) * t)
 
@@ -103,10 +110,10 @@ class DenseRWGraph(DenseGraph):
 
             # suppress noisy edges
             alpha[
-                unnormalized_probs[inout_ind] < average_weight_ary[cur_idx]
+                unnormalized_probs[out_ind] < average_weight_ary[cur_idx]
             ] = np.minimum(1, 1 / q)
-            unnormalized_probs[inout_ind] *= alpha  # apply out biases
-            unnormalized_probs[prev_idx] /= p  # apply  the return bias
+            unnormalized_probs[out_ind] *= alpha  # apply out biases
+            unnormalized_probs[prev_idx] /= p  # apply the return bias
 
         unnormalized_probs = unnormalized_probs[cur_nbrs_ind]
         normalized_probs = unnormalized_probs / unnormalized_probs.sum()
