@@ -294,7 +294,7 @@ class SparseGraph(BaseGraph):
     @property
     def num_edges(self):
         """Return the number of edges in the graph."""
-        return self.indptr.size
+        return self.indptr[-1]
 
     def read_edg(self, edg_fp, weighted, directed):
         """Create CSR sparse graph from edge list.
