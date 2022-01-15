@@ -27,7 +27,7 @@ class TestBaseGraph(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             self.assertEqual(self.g.num_edges, 4)
         with self.assertRaises(NotImplementedError):
-            self.assertEqual(self.g.density, 2/3)
+            self.assertEqual(self.g.density, 2 / 3)
 
 
 class TestAdjlstGraph(unittest.TestCase):
@@ -40,7 +40,7 @@ class TestAdjlstGraph(unittest.TestCase):
         self.g = AdjlstGraph.from_mat(MAT, IDS)
         self.assertEqual(self.g.num_nodes, 3)
         self.assertEqual(self.g.num_edges, 4)
-        self.assertEqual(self.g.density, 2/3)
+        self.assertEqual(self.g.density, 2 / 3)
 
 
 class TestSparseGraph(unittest.TestCase):
@@ -65,7 +65,8 @@ class TestSparseGraph(unittest.TestCase):
         self.g = SparseGraph.from_mat(MAT, IDS)
         self.assertEqual(self.g.num_nodes, 3)
         self.assertEqual(self.g.num_edges, 4)
-        self.assertEqual(self.g.density, 2/3)
+        self.assertEqual(self.g.density, 2 / 3)
+
 
 class TestDenseGraph(unittest.TestCase):
     def tearDown(self):
@@ -87,7 +88,7 @@ class TestDenseGraph(unittest.TestCase):
         self.g = DenseGraph.from_mat(MAT, IDS)
         self.assertEqual(self.g.num_nodes, 3)
         self.assertEqual(self.g.num_edges, 4)
-        self.assertEqual(self.g.density, 2/3)
+        self.assertEqual(self.g.density, 2 / 3)
 
 
 if __name__ == "__main__":
