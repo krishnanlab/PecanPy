@@ -145,6 +145,11 @@ class AdjlstGraph(BaseGraph):
             self.IDlst.append(node_id)
             self._data.append({})
 
+    def _add_edge_from_idx(self, idx1: int, idx2: int, weight: float):
+        """Add an edge based on the head and tail node index with weight."""
+        self._data[idx1][idx2] = weight
+        self._num_edges += 1
+
     def add_edge(self, id1, id2, weight=1.0, directed=False):
         """Add an edge to the graph.
 
@@ -162,11 +167,9 @@ class AdjlstGraph(BaseGraph):
             idx1, idx2 = map(self.get_node_idx, (id1, id2))
             self._check_edge_existence(id1, id2, idx1, idx2, weight)
 
-            self._data[idx1][idx2] = weight
-            self._num_edges += 1
+            self._add_edge_from_idx(idx1, idx2, weight)
             if not directed:
-                self._data[idx2][idx1] = weight
-                self._num_edges += 1
+                self._add_edge_from_idx(idx2, idx1, weight)
 
     def read(self, edg_fp, weighted, directed, delimiter="\t"):
         """Read an edgelist file and create sparse graph.
@@ -251,9 +254,15 @@ class AdjlstGraph(BaseGraph):
 
         """
         g = cls(**kwargs)
+
+        # Setup node idmap in the order of node_ids
+        for node_id in node_ids:
+            g.add_node(node_id)
+
+        # Fill in edge data
         for idx1, idx2 in zip(*np.where(adj_mat != 0)):
-            id1, id2 = node_ids[idx1], node_ids[idx2]
-            g.add_edge(id1, id2, adj_mat[idx1, idx2], directed=True)
+            g._add_edge_from_idx(idx1, idx2, adj_mat[idx1, idx2])
+
         return g
 
 
