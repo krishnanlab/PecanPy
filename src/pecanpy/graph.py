@@ -90,14 +90,14 @@ class AdjlstGraph(BaseGraph):
         self._num_edges = 0
 
     @property
-    def edges_iter(self) -> Iterator[Tuple[str, str, float]]:
+    def edges_iter(self) -> Iterator[Tuple[int, int, float]]:
         """Return an iterator that iterates over all edges."""
         for head, head_nbrs in enumerate(self._data):
             for tail in sorted(head_nbrs):
                 yield head, tail, head_nbrs[tail]
 
     @property
-    def edges(self) -> List[Tuple[str, str, float]]:
+    def edges(self) -> List[Tuple[int, int, float]]:
         """Return a list of triples (head, tail, weight) representing edges."""
         return list(self.edges_iter)
 
@@ -237,10 +237,9 @@ class AdjlstGraph(BaseGraph):
         """
         with open(fp, "w") as f:
             for h, t, w in self.edges_iter:
-                h, t = self.nodes[h], self.nodes[t]  # convert index to node id
-                line = delimiter.join((h, t) if unweighted else (h, t, str(w)))
-                f.write(line)
-                f.write("\n")
+                h_id, t_id = self.nodes[h], self.nodes[t]
+                terms = (h_id, t_id) if unweighted else (h_id, t_id, str(w))
+                f.write(f"{delimiter.join(terms)}\n")
 
     def to_csr(self):
         """Construct compressed sparse row matrix."""
