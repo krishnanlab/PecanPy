@@ -10,13 +10,13 @@ class DenseRWGraph(DenseGraph):
     def get_noise_thresholds(self):
         """Compute average edge weights."""
         num_nodes = len(self.IDlst)
-        average_weight_ary = np.zeros(num_nodes, dtype=np.float32)
+        noise_threshold_ary = np.zeros(num_nodes, dtype=np.float32)
         for i in range(num_nodes):
             weights = self.data[i, self.nonzero[i]]
-            average_weight_ary[i] = weights.mean() + self.gamma * weights.std()
-        average_weight_ary = np.maximum(average_weight_ary, 0)
+            noise_threshold_ary[i] = weights.mean() + self.gamma * weights.std()
+        noise_threshold_ary = np.maximum(noise_threshold_ary, 0)
 
-        return average_weight_ary
+        return noise_threshold_ary
 
     def get_has_nbrs(self):
         """Wrap ``has_nbrs``."""
@@ -40,7 +40,7 @@ class DenseRWGraph(DenseGraph):
         q,
         cur_idx,
         prev_idx,
-        average_weight_ary,
+        noise_threshold_ary,
     ):
         """Calculate node2vec transition probabilities.
 
@@ -60,10 +60,7 @@ class DenseRWGraph(DenseGraph):
         unnormalized_probs = data[cur_idx].copy()
 
         if prev_idx is not None:  # 2nd order biased walks
-            non_com_nbr = np.logical_and(
-                nbrs_ind,
-                ~nonzero[prev_idx],
-            )  # nbrs of cur but not prev
+            non_com_nbr = np.logical_and(nbrs_ind, ~nonzero[prev_idx])
             non_com_nbr[prev_idx] = False  # exclude previous state from out biases
 
             unnormalized_probs[non_com_nbr] /= q  # apply out biases
@@ -83,7 +80,7 @@ class DenseRWGraph(DenseGraph):
         q,
         cur_idx,
         prev_idx,
-        average_weight_ary,
+        noise_threshold_ary,
     ):
         """Calculate node2vec+ transition probabilities."""
         cur_nbrs_ind = nonzero[cur_idx]
@@ -94,14 +91,14 @@ class DenseRWGraph(DenseGraph):
 
             # Note: we assume here the network is undirectly, hence the edge
             # weight connecting the next to prev is the same as the reverse.
-            out_ind = cur_nbrs_ind & (prev_nbrs_weight < average_weight_ary)
+            out_ind = cur_nbrs_ind & (prev_nbrs_weight < noise_threshold_ary)
             out_ind[prev_idx] = False  # exclude previous state from out biases
 
             # print("CURRENT: ", cur_idx)
             # print("INOUT: ", np.where(out_ind)[0])
             # print("NUM INOUT: ", out_ind.sum(), "\n")
 
-            t = prev_nbrs_weight[out_ind] / average_weight_ary[out_ind]
+            t = prev_nbrs_weight[out_ind] / noise_threshold_ary[out_ind]
             # optional nonlinear parameterization
             # b = 1; t = b * t / (1 - (b - 1) * t)
 
@@ -110,7 +107,7 @@ class DenseRWGraph(DenseGraph):
 
             # suppress noisy edges
             alpha[
-                unnormalized_probs[out_ind] < average_weight_ary[cur_idx]
+                unnormalized_probs[out_ind] < noise_threshold_ary[cur_idx]
             ] = np.minimum(1, 1 / q)
             unnormalized_probs[out_ind] *= alpha  # apply out biases
             unnormalized_probs[prev_idx] /= p  # apply the return bias

@@ -23,15 +23,15 @@ class SparseRWGraph(SparseGraph):
         indptr = self.indptr
 
         num_nodes = len(self.IDlst)
-        average_weight_ary = np.zeros(num_nodes, dtype=np.float32)
+        noise_threshold_ary = np.zeros(num_nodes, dtype=np.float32)
         for i in range(num_nodes):
-            average_weight_ary[i] = (
+            noise_threshold_ary[i] = (
                 data[indptr[i] : indptr[i + 1]].mean()
                 + self.gamma * data[indptr[i] : indptr[i + 1]].std()
             )
-        average_weight_ary = np.maximum(average_weight_ary, 0)
+        noise_threshold_ary = np.maximum(noise_threshold_ary, 0)
 
-        return average_weight_ary
+        return noise_threshold_ary
 
     @staticmethod
     @njit(nogil=True)
@@ -57,7 +57,7 @@ class SparseRWGraph(SparseGraph):
         q,
         cur_idx,
         prev_idx,
-        average_weight_ary,
+        noise_threshold_ary,
     ):
         """Calculate node2vec transition probabilities.
 
@@ -99,7 +99,7 @@ class SparseRWGraph(SparseGraph):
         q,
         cur_idx,
         prev_idx,
-        average_weight_ary,
+        noise_threshold_ary,
     ):
         """Calculate node2vec+ transition probabilities."""
         nbrs_idx, unnormalized_probs = get_nbrs(indptr, indices, data, cur_idx)
@@ -110,7 +110,7 @@ class SparseRWGraph(SparseGraph):
                 nbrs_idx,
                 src_nbrs_idx,
                 src_nbrs_wts,
-                average_weight_ary,
+                noise_threshold_ary,
             )  # determine out edges
             out_ind[prev_ptr] = False  # exclude prevstate from out biases
 
@@ -119,7 +119,7 @@ class SparseRWGraph(SparseGraph):
 
             # surpress noisy edges
             alpha[
-                unnormalized_probs[out_ind] < average_weight_ary[cur_idx]
+                unnormalized_probs[out_ind] < noise_threshold_ary[cur_idx]
             ] = np.minimum(1, 1 / q)
             unnormalized_probs[out_ind] *= alpha  # apply out biases
             unnormalized_probs[prev_ptr] /= p  # apply the return bias
