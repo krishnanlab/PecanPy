@@ -1,9 +1,9 @@
 """Lite graph objects used by pecanpy."""
-import itertools
-import numpy as np
 from typing import Iterator
 from typing import List
 from typing import Tuple
+
+import numpy as np
 
 
 class BaseGraph:
@@ -22,6 +22,7 @@ class BaseGraph:
 
     @property
     def nodes(self):
+        """Return the list of node IDs."""
         return self.IDlst
 
     @property
