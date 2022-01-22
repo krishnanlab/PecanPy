@@ -461,6 +461,11 @@ class DenseGraph(BaseGraph):
         """Return the number of edges in the graph."""
         return self.nonzero.sum()
 
+    def _set_data(self, data):
+        """Set data and update nonzero."""
+        self.data = data
+        self.nonzero = data != 0
+
     def read_npz(self, fp, weighted, directed):
         """Read ``.npz`` file and create dense graph.
 
@@ -472,8 +477,7 @@ class DenseGraph(BaseGraph):
 
         """
         raw = np.load(fp)
-        self.data = raw["data"]
-        self.nonzero = self.data != 0
+        self._set_data(raw["data"])
         if not weighted:  # overwrite edge weights with constant
             self.data = self.nonzero * 1.0
         self.set_ids(raw["IDs"].tolist())
@@ -484,8 +488,7 @@ class DenseGraph(BaseGraph):
         g.read(edg_fp, weighted, directed)
 
         self.set_ids(g.IDlst)
-        self.data = g.to_dense()
-        self.nonzero = self.data != 0
+        self._set_data(g.to_dense())
 
     def save(self, fp):
         """Save dense graph  as ``.dense.npz`` file."""
@@ -502,8 +505,7 @@ class DenseGraph(BaseGraph):
         """
         g = cls(**kwargs)
         g.set_ids(adjlst_graph.IDlst)
-        g.data = adjlst_graph.to_dense()
-        g.nonzero = g.data != 0
+        g._set_data(adjlst_graph.to_dense())
         return g
 
     @classmethod
