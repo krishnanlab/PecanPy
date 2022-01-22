@@ -1,5 +1,9 @@
 """Lite graph objects used by pecanpy."""
+import itertools
 import numpy as np
+from typing import Iterator
+from typing import List
+from typing import Tuple
 
 
 class BaseGraph:
@@ -15,6 +19,10 @@ class BaseGraph:
         """Initialize ID list and ID map."""
         self.IDlst = []
         self.IDmap = {}  # id -> index
+
+    @property
+    def nodes(self):
+        return self.IDlst
 
     @property
     def num_nodes(self):
@@ -77,6 +85,18 @@ class AdjlstGraph(BaseGraph):
         super().__init__()
         self._data = []  # list of dict of node_indexx -> edge_weight
         self._num_edges = 0
+
+    @property
+    def edges_iter(self) -> Iterator[Tuple[str, str, float]]:
+        """Return an iterator that iterates over all edges."""
+        for head, head_nbrs in enumerate(self._data):
+            for tail in sorted(head_nbrs):
+                yield head, tail, head_nbrs[tail]
+
+    @property
+    def edges(self) -> List[Tuple[str, str, float]]:
+        """Return a list of triples (head, tail, weight) representing edges."""
+        return list(self.edges_iter)
 
     @property
     def num_edges(self):
