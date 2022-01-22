@@ -6,7 +6,6 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-import numpy as np
 from numba import set_num_threads
 from pecanpy import cli
 
@@ -70,7 +69,7 @@ class TestCli(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     self.execute("PreCompFirstOrder", EDG_FP, p, q)
 
-    def test_precompfirstorder_from_edg(self):
+    def test_firstorderunweighted_from_edg(self):
         self.execute("FirstOrderUnweighted", EDG_FP)
 
     def test_precompfirstorder_from_edg(self):
@@ -85,7 +84,7 @@ class TestCli(unittest.TestCase):
     def test_denseotf_from_edg(self):
         self.execute("DenseOTF", EDG_FP)
 
-    def test_precompfirstorder_from_edg(self):
+    def test_firstorderunweighted_from_csr(self):
         self.execute("FirstOrderUnweighted", CSR_FP)
 
     def test_precompfirstorder_from_npz(self):

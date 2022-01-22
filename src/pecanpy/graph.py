@@ -145,6 +145,11 @@ class AdjlstGraph(BaseGraph):
             self.IDlst.append(node_id)
             self._data.append({})
 
+    def _add_edge_from_idx(self, idx1: int, idx2: int, weight: float):
+        """Add an edge based on the head and tail node index with weight."""
+        self._data[idx1][idx2] = weight
+        self._num_edges += 1
+
     def add_edge(self, id1, id2, weight=1.0, directed=False):
         """Add an edge to the graph.
 
@@ -162,11 +167,9 @@ class AdjlstGraph(BaseGraph):
             idx1, idx2 = map(self.get_node_idx, (id1, id2))
             self._check_edge_existence(id1, id2, idx1, idx2, weight)
 
-            self._data[idx1][idx2] = weight
-            self._num_edges += 1
+            self._add_edge_from_idx(idx1, idx2, weight)
             if not directed:
-                self._data[idx2][idx1] = weight
-                self._num_edges += 1
+                self._add_edge_from_idx(idx2, idx1, weight)
 
     def read(self, edg_fp, weighted, directed, delimiter="\t"):
         """Read an edgelist file and create sparse graph.
@@ -251,9 +254,15 @@ class AdjlstGraph(BaseGraph):
 
         """
         g = cls(**kwargs)
+
+        # Setup node idmap in the order of node_ids
+        for node_id in node_ids:
+            g.add_node(node_id)
+
+        # Fill in edge data
         for idx1, idx2 in zip(*np.where(adj_mat != 0)):
-            id1, id2 = node_ids[idx1], node_ids[idx2]
-            g.add_edge(id1, id2, adj_mat[idx1, idx2], directed=True)
+            g._add_edge_from_idx(idx1, idx2, adj_mat[idx1, idx2])
+
         return g
 
 
@@ -285,7 +294,7 @@ class SparseGraph(BaseGraph):
     @property
     def num_edges(self):
         """Return the number of edges in the graph."""
-        return self.indptr.size
+        return self.indptr[-1]
 
     def read_edg(self, edg_fp, weighted, directed):
         """Create CSR sparse graph from edge list.
@@ -370,20 +379,8 @@ class SparseGraph(BaseGraph):
         """
         g = cls(**kwargs)
         g.set_ids(node_ids)
-
-        tot_num_edges = (adj_mat > 0).sum()
-        g.indptr = np.zeros(adj_mat.shape[0] + 1, dtype=np.uint32)
-        g.indices = np.zeros(tot_num_edges, dtype=np.uint32)
-        g.data = np.zeros(tot_num_edges, dtype=np.float32)
-
-        for i, row_data in enumerate(adj_mat):
-            nonzero_idx = np.where(row_data > 0)[0]
-            g.indptr[i + 1] = g.indptr[i] + nonzero_idx.size
-
-            chunk = slice(g.indptr[i], g.indptr[i + 1])
-            g.indices[chunk] = np.array(nonzero_idx, dtype=np.uint32)
-            g.data[chunk] = np.array(row_data[nonzero_idx], dtype=np.float32)
-
+        adjlst_graph = AdjlstGraph.from_mat(adj_mat, node_ids)
+        g.indptr, g.indices, g.data = adjlst_graph.to_csr()
         return g
 
 
