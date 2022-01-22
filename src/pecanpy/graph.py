@@ -503,6 +503,7 @@ class DenseGraph(BaseGraph):
         g = cls(**kwargs)
         g.set_ids(adjlst_graph.IDlst)
         g.data = adjlst_graph.to_dense()
+        g.nonzero = g.data != 0
         return g
 
     @classmethod
