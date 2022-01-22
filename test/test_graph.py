@@ -157,47 +157,35 @@ class TestAdjlstGraph(unittest.TestCase):
 
 class TestSparseGraph(unittest.TestCase):
     def tearDown(self):
-        del self.g
+        del self.g1
+        del self.g2
 
     def validate(self):
-        self.assertTrue(np.all(self.g.indptr == INDPTR))
-        self.assertTrue(np.all(self.g.indices == INDICES))
-        self.assertTrue(np.all(self.g.data == DATA))
-        self.assertEqual(self.g.IDlst, IDS)
+        self.assertTrue(np.all(self.g1.indptr == INDPTR))
+        self.assertTrue(np.all(self.g1.indices == INDICES))
+        self.assertTrue(np.all(self.g1.data == DATA))
+        self.assertEqual(self.g1.IDlst, IDS)
+        self.assertEqual(self.g1.num_nodes, 3)
+        self.assertEqual(self.g1.num_edges, 4)
+        self.assertEqual(self.g1.density, 2 / 3)
+
+        self.assertTrue(np.all(self.g2.indptr == INDPTR2))
+        self.assertTrue(np.all(self.g2.indices == INDICES2))
+        self.assertTrue(np.all(self.g2.data == DATA2))
+        self.assertEqual(self.g2.IDlst, IDS2)
+        self.assertEqual(self.g2.num_nodes, 5)
+        self.assertEqual(self.g2.num_edges, 8)
+        self.assertEqual(self.g2.density, 2 / 5)
 
     def test_from_mat(self):
-        self.g = SparseGraph.from_mat(MAT, IDS)
+        self.g1 = SparseGraph.from_mat(MAT, IDS)
+        self.g2 = SparseGraph.from_mat(MAT2, IDS2)
         self.validate()
 
     def test_from_adjlst_graph(self):
-        self.g = SparseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT, IDS))
+        self.g1 = SparseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT, IDS))
+        self.g2 = SparseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT2, IDS2))
         self.validate()
-
-    def test_properties(self):
-        self.g = SparseGraph.from_mat(MAT, IDS)
-        self.assertEqual(self.g.num_nodes, 3)
-        self.assertEqual(self.g.num_edges, 4)
-        self.assertEqual(self.g.density, 2 / 3)
-
-    def validate2(self):
-        self.assertTrue(np.all(self.g.indptr == INDPTR2))
-        self.assertTrue(np.all(self.g.indices == INDICES2))
-        self.assertTrue(np.all(self.g.data == DATA2))
-        self.assertEqual(self.g.IDlst, IDS2)
-
-    def test_from_mat2(self):
-        self.g = SparseGraph.from_mat(MAT2, IDS2)
-        self.validate2()
-
-    def test_from_adjlst_graph2(self):
-        self.g = SparseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT2, IDS2))
-        self.validate2()
-
-    def test_properties2(self):
-        self.g = SparseGraph.from_mat(MAT2, IDS2)
-        self.assertEqual(self.g.num_nodes, 5)
-        self.assertEqual(self.g.num_edges, 8)
-        self.assertEqual(self.g.density, 2 / 5)
 
 
 class TestDenseGraph(unittest.TestCase):
