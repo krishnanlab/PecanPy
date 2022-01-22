@@ -1,4 +1,8 @@
 """Lite graph objects used by pecanpy."""
+from typing import Iterator
+from typing import List
+from typing import Tuple
+
 import numpy as np
 
 
@@ -15,6 +19,11 @@ class BaseGraph:
         """Initialize ID list and ID map."""
         self.IDlst = []
         self.IDmap = {}  # id -> index
+
+    @property
+    def nodes(self):
+        """Return the list of node IDs."""
+        return self.IDlst
 
     @property
     def num_nodes(self):
@@ -69,6 +78,8 @@ class AdjlstGraph(BaseGraph):
         >>> indptr, indices, data = g.to_csr()  # convert to csr
         >>>
         >>> dense_mat = g.to_dense()  # convert to dense adjacency matrix
+        >>>
+        >>> g.save(edg_outpath)  # save the graph to an edge list file
 
     """
 
@@ -77,6 +88,18 @@ class AdjlstGraph(BaseGraph):
         super().__init__()
         self._data = []  # list of dict of node_indexx -> edge_weight
         self._num_edges = 0
+
+    @property
+    def edges_iter(self) -> Iterator[Tuple[int, int, float]]:
+        """Return an iterator that iterates over all edges."""
+        for head, head_nbrs in enumerate(self._data):
+            for tail in sorted(head_nbrs):
+                yield head, tail, head_nbrs[tail]
+
+    @property
+    def edges(self) -> List[Tuple[int, int, float]]:
+        """Return a list of triples (head, tail, weight) representing edges."""
+        return list(self.edges_iter)
 
     @property
     def num_edges(self):
@@ -201,6 +224,22 @@ class AdjlstGraph(BaseGraph):
             for edge_line in f:
                 edge = self._read_edge_line(edge_line, weighted, delimiter)
                 self.add_edge(*edge, directed)
+
+    def save(self, fp: str, unweighted: bool = False, delimiter: str = "\t"):
+        """Save AdjLst as an ``.edg`` edge list file.
+
+        Args:
+            unweighted (bool): If set to True, only write two columns,
+                corresponding to the head and tail nodes of the edges, and
+                ignore the edge weights (default: :obj:`False`).
+            delimiter (str): Delimiter for separating fields.
+
+        """
+        with open(fp, "w") as f:
+            for h, t, w in self.edges_iter:
+                h_id, t_id = self.nodes[h], self.nodes[t]
+                terms = (h_id, t_id) if unweighted else (h_id, t_id, str(w))
+                f.write(f"{delimiter.join(terms)}\n")
 
     def to_csr(self):
         """Construct compressed sparse row matrix."""
