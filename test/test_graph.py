@@ -1,3 +1,6 @@
+import tempfile
+import os
+import shutil
 import unittest
 
 import numpy as np
@@ -109,6 +112,48 @@ class TestAdjlstGraph(unittest.TestCase):
                 (4, 3, 1),
             ],
         )
+
+    def test_save(self):
+        self.g = AdjlstGraph.from_mat(MAT, IDS)
+
+        expected_results = {
+            (False, "\t"): [
+                "a\tb\t1.0\n",
+                "a\tc\t1.0\n",
+                "b\ta\t1.0\n",
+                "c\ta\t1.0\n",
+            ],
+            (True, "\t"): [
+                "a\tb\n",
+                "a\tc\n",
+                "b\ta\n",
+                "c\ta\n",
+            ],
+            (False, ","): [
+                "a,b,1.0\n",
+                "a,c,1.0\n",
+                "b,a,1.0\n",
+                "c,a,1.0\n",
+            ],
+            (True, ","): [
+                "a,b\n",
+                "a,c\n",
+                "b,a\n",
+                "c,a\n",
+            ],
+        }
+
+        tmpdir = tempfile.mkdtemp()
+        tmpfp = os.path.join(tmpdir, "test.edg")
+        for unweighted in True, False:
+            for delimiter in ["\t", ","]:
+                self.g.save(tmpfp, unweighted=unweighted, delimiter=delimiter)
+
+                with open(tmpfp, "r") as f:
+                    expected_result = expected_results[(unweighted, delimiter)]
+                    for line, expected_line in zip(f, expected_result):
+                        self.assertEqual(line, expected_line)
+        shutil.rmtree(tmpdir)
 
 
 class TestSparseGraph(unittest.TestCase):

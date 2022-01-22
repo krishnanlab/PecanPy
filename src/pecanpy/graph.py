@@ -77,6 +77,8 @@ class AdjlstGraph(BaseGraph):
         >>> indptr, indices, data = g.to_csr()  # convert to csr
         >>>
         >>> dense_mat = g.to_dense()  # convert to dense adjacency matrix
+        >>>
+        >>> g.save(edg_outpath)  # save the graph to an edge list file
 
     """
 
@@ -221,6 +223,23 @@ class AdjlstGraph(BaseGraph):
             for edge_line in f:
                 edge = self._read_edge_line(edge_line, weighted, delimiter)
                 self.add_edge(*edge, directed)
+
+    def save(self, fp: str, unweighted: bool = False, delimiter: str = "\t"):
+        """Save AdjLst as an ``.edg`` edge list file.
+
+        Args:
+            unweighted (bool): If set to True, only write two columns,
+                corresponding to the head and tail nodes of the edges, and
+                ignore the edge weights (default: :obj:`False`).
+            delimiter (str): Delimiter for separating fields.
+
+        """
+        with open(fp, "w") as f:
+            for h, t, w in self.edges_iter:
+                h, t = self.nodes[h], self.nodes[t]  # convert index to node id
+                line = delimiter.join((h, t) if unweighted else (h, t, str(w)))
+                f.write(line)
+                f.write("\n")
 
     def to_csr(self):
         """Construct compressed sparse row matrix."""
