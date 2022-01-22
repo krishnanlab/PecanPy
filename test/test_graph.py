@@ -50,10 +50,9 @@ IDMAP2 = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4}
 
 
 class TestBaseGraph(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.g = BaseGraph()
-        cls.g.set_ids(IDS)
+    def setUp(self):
+        self.g = BaseGraph()
+        self.g.set_ids(IDS)
 
     def test_set_ids(self):
         self.assertEqual(self.g.IDlst, IDS)
@@ -68,39 +67,39 @@ class TestBaseGraph(unittest.TestCase):
 
 
 class TestAdjlstGraph(unittest.TestCase):
+    def setUp(self):
+        self.g1 = AdjlstGraph.from_mat(MAT, IDS)
+        self.g2 = AdjlstGraph.from_mat(MAT2, IDS2)
+
     def test_from_mat(self):
-        g = AdjlstGraph.from_mat(MAT, IDS)
-        self.assertEqual(g._data, ADJLST)
-        self.assertEqual(g.IDlst, IDS)
+        self.assertEqual(self.g1._data, ADJLST)
+        self.assertEqual(self.g1.IDlst, IDS)
+
+        self.assertEqual(self.g2._data, ADJLST2)
+        self.assertEqual(self.g2.IDlst, IDS2)
 
     def test_properties(self):
-        self.g = AdjlstGraph.from_mat(MAT, IDS)
-        self.assertEqual(self.g.num_nodes, 3)
-        self.assertEqual(self.g.num_edges, 4)
-        self.assertEqual(self.g.density, 2 / 3)
+        self.assertEqual(self.g1.num_nodes, 3)
+        self.assertEqual(self.g1.num_edges, 4)
+        self.assertEqual(self.g1.density, 2 / 3)
 
-    def test_from_mat2(self):
-        g = AdjlstGraph.from_mat(MAT2, IDS2)
-        self.assertEqual(g._data, ADJLST2)
-        self.assertEqual(g.IDlst, IDS2)
-
-    def test_properties2(self):
-        self.g = AdjlstGraph.from_mat(MAT2, IDS2)
-        self.assertEqual(self.g.num_nodes, 5)
-        self.assertEqual(self.g.num_edges, 8)
-        self.assertEqual(self.g.density, 2 / 5)
+        self.assertEqual(self.g2.num_nodes, 5)
+        self.assertEqual(self.g2.num_edges, 8)
+        self.assertEqual(self.g2.density, 2 / 5)
 
     def test_edges(self):
-        self.g = AdjlstGraph.from_mat(MAT, IDS)
         self.assertEqual(
-            list(self.g.edges),
-            [(0, 1, 1), (0, 2, 1), (1, 0, 1), (2, 0, 1)],
+            list(self.g1.edges),
+            [
+                (0, 1, 1),
+                (0, 2, 1),
+                (1, 0, 1),
+                (2, 0, 1),
+            ],
         )
 
-    def test_edges2(self):
-        self.g = AdjlstGraph.from_mat(MAT2, IDS2)
         self.assertEqual(
-            list(self.g.edges),
+            list(self.g2.edges),
             [
                 (0, 1, 1),
                 (1, 0, 1),
@@ -114,8 +113,6 @@ class TestAdjlstGraph(unittest.TestCase):
         )
 
     def test_save(self):
-        self.g = AdjlstGraph.from_mat(MAT, IDS)
-
         expected_results = {
             (False, "\t"): [
                 "a\tb\t1.0\n",
@@ -145,14 +142,16 @@ class TestAdjlstGraph(unittest.TestCase):
 
         tmpdir = tempfile.mkdtemp()
         tmpfp = os.path.join(tmpdir, "test.edg")
+
         for unweighted in True, False:
             for delimiter in ["\t", ","]:
-                self.g.save(tmpfp, unweighted=unweighted, delimiter=delimiter)
+                self.g1.save(tmpfp, unweighted=unweighted, delimiter=delimiter)
 
                 with open(tmpfp, "r") as f:
                     expected_result = expected_results[(unweighted, delimiter)]
                     for line, expected_line in zip(f, expected_result):
                         self.assertEqual(line, expected_line)
+
         shutil.rmtree(tmpdir)
 
 
