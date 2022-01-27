@@ -154,7 +154,7 @@ def parse_args():
     parser.add_argument(
         "--delimiter",
         type=str,
-        default='\t',
+        default="\t",
         help="Delimiter used bewteen node IDs.",
     )
 

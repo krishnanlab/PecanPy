@@ -335,7 +335,7 @@ class SparseGraph(BaseGraph):
         """Return the number of edges in the graph."""
         return self.indptr[-1]
 
-    def read_edg(self, edg_fp, weighted, directed, delimeter='\t'):
+    def read_edg(self, edg_fp, weighted, directed, delimeter="\t"):
         """Create CSR sparse graph from edge list.
 
         First create ``AdjlstGraph`` by reading the edge list file, and then
@@ -483,10 +483,10 @@ class DenseGraph(BaseGraph):
             self.data = self.nonzero * 1.0
         self.set_ids(raw["IDs"].tolist())
 
-    def read_edg(self, edg_fp, weighted, directed):
+    def read_edg(self, edg_fp, weighted, directed, delimiter='\t'):
         """Read an edgelist file and construct dense graph."""
         g = AdjlstGraph()
-        g.read(edg_fp, weighted, directed)
+        g.read(edg_fp, weighted, directed, delimiter)
 
         self.set_ids(g.IDlst)
         self._set_data(g.to_dense())
