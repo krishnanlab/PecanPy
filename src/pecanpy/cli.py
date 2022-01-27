@@ -151,6 +151,13 @@ def parse_args():
         help="Noisy edge threshold parameter.",
     )
 
+    parser.add_argument(
+        "--delimiter",
+        type=str,
+        default="\t",
+        help="Delimiter used bewteen node IDs.",
+    )
+
     return parser.parse_args()
 
 
@@ -244,6 +251,7 @@ def read_graph(args):
     gamma = args.gamma
     mode = args.mode
     task = args.task
+    delimiter = args.delimiter
 
     if directed and extend:
         raise NotImplementedError("Node2vec+ not implemented for directed graph yet.")
@@ -253,15 +261,17 @@ def read_graph(args):
 
     if task in ["tocsr", "todense"]:  # perform conversion then save and exit
         g = graph.SparseGraph() if task == "tocsr" else graph.DenseGraph()
-        g.read_edg(fp, weighted, directed)
+        g.read_edg(fp, weighted, directed, delimiter)
         g.save(output)
         exit()
 
     pecanpy_mode = getattr(pecanpy, mode, None)
     g = pecanpy_mode(p, q, workers, verbose, extend, gamma)
 
-    read_func = g.read_npz if fp.endswith(".npz") else g.read_edg
-    read_func(fp, weighted, directed)
+    if fp.endswith(".npz"):
+        g.read_npz(fp, weighted)
+    else:
+        g.read_edg(fp, weighted, directed, delimiter)
 
     check_mode(g, args)
 

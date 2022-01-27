@@ -102,6 +102,8 @@ Another supported input format (only for `DenseOTF`) is the numpy array `.npz` f
 pecanpy --input $input_edgelist --output $output_npz --task todense
 ```
 
+The default delimiter for `.edg` is tab space (`\t`), you many change this by passing in the `--delimiter` option.
+
 ### Output
 
 The output file has *n+1* lines for graph with *n* vertices, with a header line of the following format:
