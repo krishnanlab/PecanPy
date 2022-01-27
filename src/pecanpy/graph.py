@@ -335,7 +335,7 @@ class SparseGraph(BaseGraph):
         """Return the number of edges in the graph."""
         return self.indptr[-1]
 
-    def read_edg(self, edg_fp, weighted, directed, delimeter="\t"):
+    def read_edg(self, edg_fp, weighted, directed, delimiter="\t"):
         """Create CSR sparse graph from edge list.
 
         First create ``AdjlstGraph`` by reading the edge list file, and then
@@ -349,11 +349,11 @@ class SparseGraph(BaseGraph):
 
         """
         g = AdjlstGraph()
-        g.read(edg_fp, weighted, directed, delimeter)
+        g.read(edg_fp, weighted, directed, delimiter)
         self.set_ids(g.IDlst)
         self.indptr, self.indices, self.data = g.to_csr()
 
-    def read_npz(self, fp, weighted, directed):
+    def read_npz(self, fp, weighted):
         """Directly read a CSR sparse graph.
 
         Note:
@@ -467,14 +467,13 @@ class DenseGraph(BaseGraph):
         self.data = data
         self.nonzero = data != 0
 
-    def read_npz(self, fp, weighted, directed):
+    def read_npz(self, fp, weighted):
         """Read ``.npz`` file and create dense graph.
 
         Args:
             fp (str): path to ``.npz`` file.
             weighted (bool): whether the graph is weighted, if unweighted,
                 all none zero weights will be converted to 1.
-            directed (bool): not used, for compatibility with ``SparseGraph``.
 
         """
         raw = np.load(fp)

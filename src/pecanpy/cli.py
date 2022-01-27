@@ -268,8 +268,10 @@ def read_graph(args):
     pecanpy_mode = getattr(pecanpy, mode, None)
     g = pecanpy_mode(p, q, workers, verbose, extend, gamma)
 
-    read_func = g.read_npz if fp.endswith(".npz") else g.read_edg
-    read_func(fp, weighted, directed)
+    if fp.endswith(".npz"):
+        g.read_npz(fp, weighted)
+    else:
+        g.read_edg(fp, weighted, directed, delimiter)
 
     check_mode(g, args)
 
