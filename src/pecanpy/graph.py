@@ -482,7 +482,7 @@ class DenseGraph(BaseGraph):
             self.data = self.nonzero * 1.0
         self.set_ids(raw["IDs"].tolist())
 
-    def read_edg(self, edg_fp, weighted, directed, delimiter='\t'):
+    def read_edg(self, edg_fp, weighted, directed, delimiter="\t"):
         """Read an edgelist file and construct dense graph."""
         g = AdjlstGraph()
         g.read(edg_fp, weighted, directed, delimiter)
