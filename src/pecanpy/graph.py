@@ -335,7 +335,7 @@ class SparseGraph(BaseGraph):
         """Return the number of edges in the graph."""
         return self.indptr[-1]
 
-    def read_edg(self, edg_fp, weighted, directed):
+    def read_edg(self, edg_fp, weighted, directed, delimeter='\t'):
         """Create CSR sparse graph from edge list.
 
         First create ``AdjlstGraph`` by reading the edge list file, and then
@@ -345,10 +345,11 @@ class SparseGraph(BaseGraph):
             edg_fp (str): path to edgelist file.
             weighted (bool): whether the graph is weighted.
             directed (bool): whether the graph is directed.
+            delimiter (str): delimiter used between node IDs.
 
         """
         g = AdjlstGraph()
-        g.read(edg_fp, weighted, directed)
+        g.read(edg_fp, weighted, directed, delimeter)
         self.set_ids(g.IDlst)
         self.indptr, self.indices, self.data = g.to_csr()
 
