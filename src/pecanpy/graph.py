@@ -252,6 +252,8 @@ class AdjlstGraph(BaseGraph):
         data = np.zeros(indptr[-1], dtype=np.float32)
 
         for i, nbrs in enumerate(self._data):
+            if len(nbrs) == 0:
+                continue
             new_indices, new_data = zip(*[(j, nbrs[j]) for j in sorted(nbrs)])
             chunk = slice(indptr[i], indptr[i + 1])
             indices[chunk] = np.array(new_indices, dtype=np.uint32)
