@@ -195,6 +195,7 @@ class TestSparseGraph(unittest.TestCase):
     def tearDown(self):
         del self.g1
         del self.g2
+        del self.g3
 
     def validate(self):
         self.assertTrue(np.all(self.g1.indptr == INDPTR))
@@ -213,14 +214,24 @@ class TestSparseGraph(unittest.TestCase):
         self.assertEqual(self.g2.num_edges, 8)
         self.assertEqual(self.g2.density, 2 / 5)
 
+        self.assertTrue(np.all(self.g3.indptr == INDPTR3))
+        self.assertTrue(np.all(self.g3.indices == INDICES3))
+        self.assertTrue(np.all(self.g3.data == DATA3))
+        self.assertEqual(self.g3.IDlst, IDS3)
+        self.assertEqual(self.g3.num_nodes, 4)
+        self.assertEqual(self.g3.num_edges, 5)
+        self.assertEqual(self.g3.density, 5 / 12)
+
     def test_from_mat(self):
         self.g1 = SparseGraph.from_mat(MAT, IDS)
         self.g2 = SparseGraph.from_mat(MAT2, IDS2)
+        self.g3 = SparseGraph.from_mat(MAT3, IDS3)
         self.validate()
 
     def test_from_adjlst_graph(self):
         self.g1 = SparseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT, IDS))
         self.g2 = SparseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT2, IDS2))
+        self.g3 = SparseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT3, IDS3))
         self.validate()
 
 
