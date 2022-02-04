@@ -253,14 +253,22 @@ class TestDenseGraph(unittest.TestCase):
         self.assertEqual(self.g2.num_edges, 8)
         self.assertEqual(self.g2.density, 2 / 5)
 
+        self.assertTrue(np.all(self.g3.data == MAT3))
+        self.assertEqual(self.g3.IDlst, IDS3)
+        self.assertEqual(self.g3.num_nodes, 4)
+        self.assertEqual(self.g3.num_edges, 5)
+        self.assertEqual(self.g3.density, 5 / 12)
+
     def test_from_mat(self):
         self.g1 = DenseGraph.from_mat(MAT, IDS)
         self.g2 = DenseGraph.from_mat(MAT2, IDS2)
+        self.g3 = DenseGraph.from_mat(MAT3, IDS3)
         self.validate()
 
     def test_from_adjlst_graph(self):
         self.g1 = DenseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT, IDS))
         self.g2 = DenseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT2, IDS2))
+        self.g3 = DenseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT3, IDS3))
         self.validate()
 
 
