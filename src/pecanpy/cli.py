@@ -152,6 +152,13 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--random_state",
+        type=int,
+        default=None,
+        help="Random seed for generating random walks.",
+    )
+
+    parser.add_argument(
         "--delimiter",
         type=str,
         default="\t",
@@ -249,6 +256,7 @@ def read_graph(args):
     directed = args.directed
     extend = args.extend
     gamma = args.gamma
+    random_state = args.random_state
     mode = args.mode
     task = args.task
     delimiter = args.delimiter
@@ -266,7 +274,7 @@ def read_graph(args):
         exit()
 
     pecanpy_mode = getattr(pecanpy, mode, None)
-    g = pecanpy_mode(p, q, workers, verbose, extend, gamma)
+    g = pecanpy_mode(p, q, workers, verbose, extend, gamma, random_state)
 
     if fp.endswith(".npz"):
         g.read_npz(fp, weighted)
