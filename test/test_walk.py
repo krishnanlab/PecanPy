@@ -19,31 +19,45 @@ MAT = np.array(
 )
 IDS = ["a", "b", "c", "d", "e"]
 
-FIRST_ORDER_WALK_SEED0 = [
-    ["c", "b", "c", "d"],
-    ["d", "c", "d", "e"],
-    ["e", "d", "c", "b"],
-    ["e", "d", "c", "b"],
-    ["b", "a", "b", "a"],
-    ["b", "a", "b", "c"],
-    ["c", "e", "d", "e"],
-    ["d", "c", "b", "c"],
-    ["a", "b", "c", "d"],
-    ["a", "b", "c", "b"],
-]
+WALKS = {
+    "FirstOrderUnweighted": [
+        ["c", "b", "c", "d"],
+        ["d", "c", "d", "e"],
+        ["e", "d", "c", "b"],
+        ["e", "d", "c", "b"],
+        ["b", "a", "b", "a"],
+        ["b", "a", "b", "c"],
+        ["c", "e", "d", "e"],
+        ["d", "c", "b", "c"],
+        ["a", "b", "c", "d"],
+        ["a", "b", "c", "b"],
+    ],
+    "SparseOTF": [
+        ["c", "d", "e", "d"],
+        ["d", "e", "c", "d"],
+        ["e", "c", "e", "d"],
+        ["e", "c", "e", "d"],
+        ["b", "c", "e", "c"],
+        ["b", "a", "b", "c"],
+        ["c", "e", "d", "e"],
+        ["d", "e", "c", "e"],
+        ["a", "b", "c", "b"],
+        ["a", "b", "c", "d"],
+    ],
+}
 
 
 class TestWalk(unittest.TestCase):
     @parameterized.expand(
         [
-            (pecanpy.FirstOrderUnweighted,),
+            ("FirstOrderUnweighted", pecanpy.FirstOrderUnweighted),
+            ("SparseOTF", pecanpy.SparseOTF),
         ],
     )
-    def test_first_order_unweighted(self, mode):
-        print(mode)
+    def test_first_order_unweighted(self, name, mode):
         graph = mode.from_mat(MAT, IDS, p=1, q=1, random_state=0)
         walks = graph.simulate_walks(2, 3)
-        self.assertEqual(walks, FIRST_ORDER_WALK_SEED0)
+        self.assertEqual(walks, WALKS[name])
         print(walks)
 
 
