@@ -44,6 +44,18 @@ WALKS = {
         ["a", "b", "c", "b"],
         ["a", "b", "c", "d"],
     ],
+    "DenseOTF": [
+        ["c", "d", "e", "d"],
+        ["d", "e", "c", "d"],
+        ["e", "c", "e", "d"],
+        ["e", "c", "e", "d"],
+        ["b", "c", "e", "c"],
+        ["b", "a", "b", "c"],
+        ["c", "e", "d", "e"],
+        ["d", "e", "c", "e"],
+        ["a", "b", "c", "b"],
+        ["a", "b", "c", "d"],
+    ],
 }
 
 
@@ -52,6 +64,7 @@ class TestWalk(unittest.TestCase):
         [
             ("FirstOrderUnweighted", pecanpy.FirstOrderUnweighted),
             ("SparseOTF", pecanpy.SparseOTF),
+            ("DenseOTF", pecanpy.DenseOTF),
         ],
     )
     def test_first_order_unweighted(self, name, mode):

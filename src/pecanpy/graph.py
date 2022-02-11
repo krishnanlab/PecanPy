@@ -466,7 +466,7 @@ class DenseGraph(BaseGraph):
 
     def _set_data(self, data):
         """Set data and update nonzero."""
-        self.data = data
+        self.data = data.astype(float)
         self.nonzero = data != 0
 
     def read_npz(self, fp, weighted):
@@ -520,7 +520,6 @@ class DenseGraph(BaseGraph):
 
         """
         g = cls(**kwargs)
-        g.data = adj_mat
-        g.nonzero = adj_mat != 0
+        g._set_data(adj_mat)
         g.set_ids(node_ids)
         return g
