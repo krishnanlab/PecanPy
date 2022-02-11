@@ -3,6 +3,7 @@ import numpy as np
 from gensim.models import Word2Vec
 from numba import njit, prange
 from numba_progress import ProgressBar
+from numba.np.ufunc.parallel import _get_thread_id
 from pecanpy.rw import DenseRWGraph, SparseRWGraph
 from pecanpy.wrappers import Timer
 
@@ -41,32 +42,45 @@ class Base:
 
     """
 
-    def __init__(self, p, q, workers, verbose=False, extend=False, gamma=0):
+    def __init__(
+        self,
+        p=1,
+        q=1,
+        workers=1,
+        verbose=False,
+        extend=False,
+        gamma=0,
+        random_state=None,
+    ):
         """Initializ node2vec base class.
 
         Args:
             p (float): return parameter, value less than 1 encourages returning
-                back to previous vertex, and discourage for value grater than 1.
+                back to previous vertex, and discourage for value grater than 1
+                (default: 1).
             q (float): in-out parameter, value less than 1 encourages walks to
                 go "outward", and value greater than 1 encourage walking within
-                a localized neighborhood.
-            workers (int):  number of threads to be spawned for runing node2vec
-                including walk generation and word2vec embedding.
+                a localized neighborhood (default: 1)
+            workers (int): number of threads to be spawned for runing node2vec
+                including walk generation and word2vec embedding (default: 1)
             verbose (bool): show progress bar for walk generation.
             extend (bool): use node2vec+ extension if set to :obj:`True`
                 (default: :obj:`False`).
             gamma (float): Multiplication factor for the std term of edge
                 weights added to the average edge weights as the noisy edge
                 threashold, only used by node2vec+ (default: 0)
+            random_state (int, optional): Random seed for generating random
+                walks (default: :obj:`None`).
 
         """
         super().__init__()
         self.p = p
         self.q = q
-        self.workers = workers
+        self.workers = workers  # TODO: not doing anything, need to fix.
         self.verbose = verbose
         self.extend = extend
         self.gamma = gamma
+        self.random_state = random_state
 
     def _map_walk(self, walk_idx_ary):
         """Map walk from node index to node ID.
@@ -97,8 +111,11 @@ class Base:
         num_nodes = len(self.IDlst)
         nodes = np.array(range(num_nodes), dtype=np.uint32)
         start_node_idx_ary = np.concatenate([nodes] * num_walks)
-        np.random.shuffle(start_node_idx_ary)
         tot_num_jobs = start_node_idx_ary.size
+
+        random_state = self.random_state
+        np.random.seed(random_state)
+        np.random.shuffle(start_node_idx_ary)  # for balanced work load
 
         move_forward = self.get_move_forward()
         has_nbrs = self.get_has_nbrs()
@@ -107,6 +124,9 @@ class Base:
         @njit(parallel=True, nogil=True)
         def node2vec_walks(num_iter, progress_proxy):
             """Simulate a random walk starting from start node."""
+            # Seed the random number generator
+            np.random.seed(random_state + _get_thread_id())
+
             # use the last entry of each walk index array to keep track of the
             # effective walk length
             walk_idx_mat = np.zeros((num_iter, walk_length + 2), dtype=np.uint32)
