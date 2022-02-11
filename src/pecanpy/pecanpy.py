@@ -2,8 +2,8 @@
 import numpy as np
 from gensim.models import Word2Vec
 from numba import njit, prange
-from numba_progress import ProgressBar
 from numba.np.ufunc.parallel import _get_thread_id
+from numba_progress import ProgressBar
 from pecanpy.rw import DenseRWGraph, SparseRWGraph
 from pecanpy.wrappers import Timer
 
@@ -125,7 +125,8 @@ class Base:
         def node2vec_walks(num_iter, progress_proxy):
             """Simulate a random walk starting from start node."""
             # Seed the random number generator
-            np.random.seed(random_state + _get_thread_id())
+            if random_state is not None:
+                np.random.seed(random_state + _get_thread_id())
 
             # use the last entry of each walk index array to keep track of the
             # effective walk length
