@@ -95,7 +95,6 @@ class TestWalk(unittest.TestCase):
     )
     def test_first_order_unweighted(self, name, mode):
         graph = mode.from_mat(MAT, IDS, p=1, q=1, random_state=0)
-        graph.preprocess_transition_probs()  # TODO: remove.
         walks = graph.simulate_walks(2, 3)
         self.assertEqual(walks, WALKS[name])
         print(walks)

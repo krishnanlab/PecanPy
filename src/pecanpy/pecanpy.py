@@ -81,6 +81,7 @@ class Base:
         self.extend = extend
         self.gamma = gamma
         self.random_state = random_state
+        self._preprocessed = False
 
     def _map_walk(self, walk_idx_ary):
         """Map walk from node index to node ID.
@@ -108,6 +109,8 @@ class Base:
             walks_length (int): length of walk.
 
         """
+        self._preprocess_transition_probs()
+
         num_nodes = len(self.IDlst)
         nodes = np.array(range(num_nodes), dtype=np.uint32)
         start_node_idx_ary = np.concatenate([nodes] * num_walks)
@@ -188,6 +191,11 @@ class Base:
     def preprocess_transition_probs(self):
         """Null default preprocess method."""
         pass
+
+    def _preprocess_transition_probs(self):
+        if not self._preprocessed:
+            self.preprocess_transition_probs()
+            self._preprocessed = True
 
     def embed(
         self,
