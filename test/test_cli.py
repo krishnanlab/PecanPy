@@ -1,5 +1,5 @@
 import os
-import os.path as op
+import os.path as osp
 import shutil
 import subprocess
 import tempfile
@@ -11,12 +11,12 @@ from pecanpy import cli
 
 set_num_threads(1)
 
-DATA_DIR = op.abspath(op.join(__file__, op.pardir, op.pardir, "demo"))
-EDG_FP = op.join(DATA_DIR, "karate.edg")
+DATA_DIR = osp.abspath(osp.join(__file__, osp.pardir, osp.pardir, "demo"))
+EDG_FP = osp.join(DATA_DIR, "karate.edg")
 
 TMP_DATA_DIR = tempfile.mkdtemp()
-CSR_FP = op.join(TMP_DATA_DIR, "karate.csr.npz")
-DENSE_FP = op.join(TMP_DATA_DIR, "karate.dense.npz")
+CSR_FP = osp.join(TMP_DATA_DIR, "karate.csr.npz")
+DENSE_FP = osp.join(TMP_DATA_DIR, "karate.dense.npz")
 COM = ["pecanpy", "--input", EDG_FP, "--output"]
 
 
