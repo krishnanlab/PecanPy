@@ -1,7 +1,8 @@
 """Dense Graph object equipped with random walk computation."""
 import numpy as np
 from numba import njit
-from pecanpy.graph import DenseGraph
+
+from ..graph import DenseGraph
 
 
 class DenseRWGraph(DenseGraph):

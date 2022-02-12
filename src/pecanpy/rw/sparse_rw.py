@@ -1,7 +1,9 @@
 """Sparse Graph equipped with random walk computation."""
 import numpy as np
-from numba import boolean, njit
-from pecanpy.graph import SparseGraph
+from numba import boolean
+from numba import njit
+
+from ..graph import SparseGraph
 
 
 class SparseRWGraph(SparseGraph):

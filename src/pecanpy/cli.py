@@ -12,14 +12,15 @@ Examples:
         $ pecanpy --help
 
 """
-
 import argparse
 
 import numba
 import numpy as np
 from gensim.models import Word2Vec
-from pecanpy import graph, pecanpy
-from pecanpy.wrappers import Timer
+
+from . import graph
+from . import pecanpy
+from .wrappers import Timer
 
 
 def parse_args():
