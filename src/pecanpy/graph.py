@@ -58,6 +58,14 @@ class BaseGraph:
         self._node_ids = node_ids
         self._node_idmap = {j: i for i, j in enumerate(node_ids)}
 
+    def get_has_nbrs(self):
+        """Abstract method to be specified by derived classes."""
+        raise NotImplementedError
+
+    def get_move_forward(self):
+        """Abstract method to be specified by derived classes."""
+        raise NotImplementedError
+
 
 class AdjlstGraph(BaseGraph):
     """Adjacency list Graph object used for reading/writing edge list files.
