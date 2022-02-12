@@ -247,7 +247,7 @@ def read_graph(args):
     (``DenseOTF``).
 
     """
-    fp = args.input
+    path = args.input
     output = args.output
     p = args.p
     q = args.q
@@ -270,17 +270,17 @@ def read_graph(args):
 
     if task in ["tocsr", "todense"]:  # perform conversion then save and exit
         g = graph.SparseGraph() if task == "tocsr" else graph.DenseGraph()
-        g.read_edg(fp, weighted, directed, delimiter)
+        g.read_edg(path, weighted, directed, delimiter)
         g.save(output)
         exit()
 
     pecanpy_mode = getattr(pecanpy, mode, None)
     g = pecanpy_mode(p, q, workers, verbose, extend, gamma, random_state)
 
-    if fp.endswith(".npz"):
-        g.read_npz(fp, weighted)
+    if path.endswith(".npz"):
+        g.read_npz(path, weighted)
     else:
-        g.read_edg(fp, weighted, directed, delimiter)
+        g.read_edg(path, weighted, directed, delimiter)
 
     check_mode(g, args)
 
@@ -300,11 +300,11 @@ def learn_embeddings(args, walks):
         epochs=args.epochs,
     )
 
-    output_fp = args.output
-    if output_fp.endswith(".npz"):
-        np.savez(output_fp, IDs=model.wv.index_to_key, data=model.wv.vectors)
+    output_path = args.output
+    if output_path.endswith(".npz"):
+        np.savez(output_path, IDs=model.wv.index_to_key, data=model.wv.vectors)
     else:
-        model.wv.save_word2vec_format(output_fp)
+        model.wv.save_word2vec_format(output_path)
 
 
 @Timer("pre-compute transition probabilities")

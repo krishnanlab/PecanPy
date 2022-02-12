@@ -180,13 +180,17 @@ class TestAdjlstGraph(unittest.TestCase):
         }
 
         tmpdir = tempfile.mkdtemp()
-        tmpfp = os.path.join(tmpdir, "test.edg")
+        tmppath = os.path.join(tmpdir, "test.edg")
 
         for unweighted in True, False:
             for delimiter in ["\t", ","]:
-                self.g1.save(tmpfp, unweighted=unweighted, delimiter=delimiter)
+                self.g1.save(
+                    tmppath,
+                    unweighted=unweighted,
+                    delimiter=delimiter,
+                )
 
-                with open(tmpfp, "r") as f:
+                with open(tmppath, "r") as f:
                     expected_result = expected_results[(unweighted, delimiter)]
                     for line, expected_line in zip(f, expected_result):
                         self.assertEqual(line, expected_line)

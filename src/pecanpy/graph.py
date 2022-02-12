@@ -218,7 +218,7 @@ class AdjlstGraph(BaseGraph):
 
     def read(
         self,
-        edg_fp: str,
+        path: str,
         weighted: bool,
         directed: bool,
         delimiter: str = "\t",
@@ -231,7 +231,7 @@ class AdjlstGraph(BaseGraph):
             weight will be used (warning for such behavior will be printed).
 
         Args:
-            edg_fp (str): path to edgelist file, where the file is tab
+            path (str): path to edgelist file, where the file is tab
                 seperated and contains 2 or 3 columns depending on whether
                 the input graph is weighted, where the the first column
                 contains the source nodes and the second column contains the
@@ -248,12 +248,12 @@ class AdjlstGraph(BaseGraph):
             delimiter (str): delimiter of the edge list file, default is tab.
 
         """
-        with open(edg_fp, "r") as f:
+        with open(path, "r") as f:
             for edge_line in f:
                 edge = self._read_edge_line(edge_line, weighted, delimiter)
                 self.add_edge(*edge, directed)
 
-    def save(self, fp: str, unweighted: bool = False, delimiter: str = "\t"):
+    def save(self, path: str, unweighted: bool = False, delimiter: str = "\t"):
         """Save AdjLst as an ``.edg`` edge list file.
 
         Args:
@@ -263,7 +263,7 @@ class AdjlstGraph(BaseGraph):
             delimiter (str): Delimiter for separating fields.
 
         """
-        with open(fp, "w") as f:
+        with open(path, "w") as f:
             for h, t, w in self.edges_iter:
                 h_id, t_id = self.nodes[h], self.nodes[t]
                 terms = (h_id, t_id) if unweighted else (h_id, t_id, str(w))
@@ -372,7 +372,7 @@ class SparseGraph(BaseGraph):
 
     def read_edg(
         self,
-        edg_fp: str,
+        path: str,
         weighted: bool,
         directed: bool,
         delimiter: str = "\t",
@@ -383,18 +383,18 @@ class SparseGraph(BaseGraph):
         convert to ``SparseGraph`` via ``to_csr``.
 
         Args:
-            edg_fp (str): path to edgelist file.
+            path (str): path to edgelist file.
             weighted (bool): whether the graph is weighted.
             directed (bool): whether the graph is directed.
             delimiter (str): delimiter used between node IDs.
 
         """
         g = AdjlstGraph()
-        g.read(edg_fp, weighted, directed, delimiter)
+        g.read(path, weighted, directed, delimiter)
         self.set_node_ids(g.nodes)
         self.indptr, self.indices, self.data = g.to_csr()
 
-    def read_npz(self, fp: str, weighted: bool):
+    def read_npz(self, path: str, weighted: bool):
         """Directly read a CSR sparse graph.
 
         Note:
@@ -405,7 +405,7 @@ class SparseGraph(BaseGraph):
                 be loaded directly by ``SparseGraph`` later.
 
         Args:
-            fp (str): path to the csr file, which is an npz file with four
+            path (str): path to the csr file, which is an npz file with four
                 arrays with keys 'IDs', 'data', 'indptr', 'indices', which
                 correspond to the node IDs, the edge weights, the offset array
                 for each node, and the indices of the edges.
@@ -414,7 +414,7 @@ class SparseGraph(BaseGraph):
             directed (bool): not used, for compatibility with ``SparseGraph``.
 
         """
-        raw = np.load(fp)
+        raw = np.load(path)
         self.set_node_ids(raw["IDs"].tolist())
         self.data = raw["data"]
         if not weighted:  # overwrite edge weights with constant
@@ -422,10 +422,10 @@ class SparseGraph(BaseGraph):
         self.indptr = raw["indptr"]
         self.indices = raw["indices"]
 
-    def save(self, fp: str):
+    def save(self, path: str):
         """Save CSR as ``.csr.npz`` file."""
         np.savez(
-            fp,
+            path,
             IDs=self.nodes,
             data=self.data,
             indptr=self.indptr,
@@ -522,16 +522,16 @@ class DenseGraph(BaseGraph):
         """Return the nonzero mask for the adjacency matrix."""
         return self._nonzero
 
-    def read_npz(self, fp: str, weighted: bool):
+    def read_npz(self, path: str, weighted: bool):
         """Read ``.npz`` file and create dense graph.
 
         Args:
-            fp (str): path to ``.npz`` file.
+            path (str): path to ``.npz`` file.
             weighted (bool): whether the graph is weighted, if unweighted,
                 all none zero weights will be converted to 1.
 
         """
-        raw = np.load(fp)
+        raw = np.load(path)
         self.data = raw["data"]
         if not weighted:  # overwrite edge weights with constant
             self.data = self.nonzero * 1.0  # type: ignore
@@ -539,21 +539,21 @@ class DenseGraph(BaseGraph):
 
     def read_edg(
         self,
-        edg_fp: str,
+        path: str,
         weighted: bool,
         directed: bool,
         delimiter: str = "\t",
     ):
         """Read an edgelist file and construct dense graph."""
         g = AdjlstGraph()
-        g.read(edg_fp, weighted, directed, delimiter)
+        g.read(path, weighted, directed, delimiter)
 
         self.set_node_ids(g.nodes)
         self.data = g.to_dense()
 
-    def save(self, fp: str):
+    def save(self, path: str):
         """Save dense graph  as ``.dense.npz`` file."""
-        np.savez(fp, data=self.data, IDs=self.nodes)
+        np.savez(path, data=self.data, IDs=self.nodes)
 
     @classmethod
     def from_adjlst_graph(cls, adjlst_graph, **kwargs):
