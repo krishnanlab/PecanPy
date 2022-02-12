@@ -5,9 +5,10 @@ from numba import njit
 from numba import prange
 from numba.np.ufunc.parallel import _get_thread_id
 from numba_progress import ProgressBar
-from pecanpy.rw import DenseRWGraph
-from pecanpy.rw import SparseRWGraph
-from pecanpy.wrappers import Timer
+
+from .rw import DenseRWGraph
+from .rw import SparseRWGraph
+from .wrappers import Timer
 
 
 class Base:
