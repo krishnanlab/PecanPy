@@ -2,6 +2,7 @@
 from typing import Dict
 from typing import Iterator
 from typing import List
+from typing import Optional
 from typing import Tuple
 
 import numpy as np
@@ -357,14 +358,25 @@ class SparseGraph(BaseGraph):
     def __init__(self):
         """Initialize SparseGraph object."""
         super().__init__()
-        self.data = self.indptr = self.indices = None
+        self.data: Optional[np.ndarray] = None
+        self.indptr: Optional[np.ndarray] = None
+        self.indices: Optional[np.ndarray] = None
 
     @property
-    def num_edges(self):
+    def num_edges(self) -> int:
         """Return the number of edges in the graph."""
-        return self.indptr[-1]
+        if self.indptr is not None:
+            return self.indptr[-1]
+        else:
+            raise ValueError("Empty graph.")
 
-    def read_edg(self, edg_fp, weighted, directed, delimiter="\t"):
+    def read_edg(
+        self,
+        edg_fp: str,
+        weighted: bool,
+        directed: bool,
+        delimiter: str = "\t",
+    ):
         """Create CSR sparse graph from edge list.
 
         First create ``AdjlstGraph`` by reading the edge list file, and then
@@ -382,7 +394,7 @@ class SparseGraph(BaseGraph):
         self.set_node_ids(g.nodes)
         self.indptr, self.indices, self.data = g.to_csr()
 
-    def read_npz(self, fp, weighted):
+    def read_npz(self, fp: str, weighted: bool):
         """Directly read a CSR sparse graph.
 
         Note:
@@ -410,7 +422,7 @@ class SparseGraph(BaseGraph):
         self.indptr = raw["indptr"]
         self.indices = raw["indices"]
 
-    def save(self, fp):
+    def save(self, fp: str):
         """Save CSR as ``.csr.npz`` file."""
         np.savez(
             fp,
@@ -435,7 +447,7 @@ class SparseGraph(BaseGraph):
         return g
 
     @classmethod
-    def from_mat(cls, adj_mat, node_ids, **kwargs):
+    def from_mat(cls, adj_mat: np.ndarray, node_ids: List[str], **kwargs):
         """Construct csr graph using adjacency matrix and node IDs.
 
         Note:
@@ -483,31 +495,34 @@ class DenseGraph(BaseGraph):
     def __init__(self):
         """Initialize DenseGraph object."""
         super().__init__()
-        self._data = None
-        self._nonzero = None
+        self._data: Optional[np.ndarray] = None
+        self._nonzero: Optional[np.ndarray] = None
 
     @property
-    def num_edges(self):
+    def num_edges(self) -> int:
         """Return the number of edges in the graph."""
-        return self.nonzero.sum()
+        if self.nonzero is not None:
+            return self.nonzero.sum()
+        else:
+            raise ValueError("Empty graph.")
 
     @property
-    def data(self):
+    def data(self) -> Optional[np.ndarray]:
         """Return the adjacency matrix."""
         return self._data
 
     @data.setter
-    def data(self, data):
+    def data(self, data: np.ndarray):
         """Set adjacency matrix and the corresponding nonzero matrix."""
         self._data = data.astype(float)
         self._nonzero = self._data != 0
 
     @property
-    def nonzero(self):
+    def nonzero(self) -> Optional[np.ndarray]:
         """Return the nonzero mask for the adjacency matrix."""
         return self._nonzero
 
-    def read_npz(self, fp, weighted):
+    def read_npz(self, fp: str, weighted: bool):
         """Read ``.npz`` file and create dense graph.
 
         Args:
@@ -519,10 +534,16 @@ class DenseGraph(BaseGraph):
         raw = np.load(fp)
         self.data = raw["data"]
         if not weighted:  # overwrite edge weights with constant
-            self.data = self.nonzero * 1.0
+            self.data = self.nonzero * 1.0  # type: ignore
         self.set_node_ids(raw["IDs"].tolist())
 
-    def read_edg(self, edg_fp, weighted, directed, delimiter="\t"):
+    def read_edg(
+        self,
+        edg_fp: str,
+        weighted: bool,
+        directed: bool,
+        delimiter: str = "\t",
+    ):
         """Read an edgelist file and construct dense graph."""
         g = AdjlstGraph()
         g.read(edg_fp, weighted, directed, delimiter)
@@ -530,7 +551,7 @@ class DenseGraph(BaseGraph):
         self.set_node_ids(g.nodes)
         self.data = g.to_dense()
 
-    def save(self, fp):
+    def save(self, fp: str):
         """Save dense graph  as ``.dense.npz`` file."""
         np.savez(fp, data=self.data, IDs=self.nodes)
 
@@ -549,7 +570,7 @@ class DenseGraph(BaseGraph):
         return g
 
     @classmethod
-    def from_mat(cls, adj_mat, node_ids, **kwargs):
+    def from_mat(cls, adj_mat: np.ndarray, node_ids: List[str], **kwargs):
         """Construct dense graph using adjacency matrix and node IDs.
 
         Args:
