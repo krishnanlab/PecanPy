@@ -120,7 +120,7 @@ node_id dim_1 dim_2 ... dim_d
 
 ### Development Note
 
-Run `black src/pecanpy/` to automatically follow black code formatting.  
+Run `black src/pecanpy/` to automatically follow black code formatting.
 Run `tox -e flake8` and resolve suggestions before committing to ensure consistent code style.
 
 ## Additional Information
@@ -134,10 +134,10 @@ For support please contact [Remy Liu](https://twitter.com/RemyLau3) at liurenmi@
 This repository and all its contents are released under the [BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause); See [LICENSE.md](https://github.com/krishnanlab/pecanpy/blob/master/LICENSE.md).
 
 ### Citation
-If you use PecanPy, please cite:  
+If you use PecanPy, please cite:
 Liu R, Krishnan A (2021) **PecanPy: a fast, efficient, and parallelized Python implementation of node2vec.** _Bioinformatics_ https://doi.org/10.1093/bioinformatics/btab202
 
-If you find _node2vec+_ useful, please cite:  
+If you find _node2vec+_ useful, please cite:
 Liu R, Hirn M, Krishnan A (2021) **Accurately Modeling Biased Random Walks on Weighted Wraphs Using Node2vec+.** _axXiv_ https://arxiv.org/abs/2109.08031
 
 ### Authors
