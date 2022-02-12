@@ -17,18 +17,18 @@ class BaseGraph:
 
     def __init__(self):
         """Initialize ID list and ID map."""
-        self.IDlst = []
+        self._node_ids = []
         self.IDmap = {}  # id -> index
 
     @property
     def nodes(self):
         """Return the list of node IDs."""
-        return self.IDlst
+        return self._node_ids
 
     @property
     def num_nodes(self):
         """Return the number of nodes in the graph."""
-        return len(self.IDlst)
+        return len(self.nodes)
 
     @property
     def num_edges(self):
@@ -46,10 +46,10 @@ class BaseGraph:
     def set_ids(self, ids):
         """Update ID list and mapping.
 
-        Set IDlst given the input ids and also set the IDmap based on it.
+        Set _node_ids given the input ids and also set the IDmap based on it.
 
         """
-        self.IDlst = ids
+        self._node_ids = ids
         self.IDmap = {j: i for i, j in enumerate(ids)}
 
 
@@ -165,7 +165,7 @@ class AdjlstGraph(BaseGraph):
         """
         if node_id not in self.IDmap:
             self.IDmap[node_id] = self.num_nodes
-            self.IDlst.append(node_id)
+            self.nodes.append(node_id)
             self._data.append({})
 
     def _add_edge_from_idx(self, idx1: int, idx2: int, weight: float):
@@ -243,7 +243,7 @@ class AdjlstGraph(BaseGraph):
 
     def to_csr(self):
         """Construct compressed sparse row matrix."""
-        indptr = np.zeros(len(self.IDlst) + 1, dtype=np.uint32)
+        indptr = np.zeros(len(self.nodes) + 1, dtype=np.uint32)
         for i, row_data in enumerate(self._data):
             indptr[i + 1] = indptr[i] + len(row_data)
 
@@ -267,13 +267,13 @@ class AdjlstGraph(BaseGraph):
         Note:
             This method does not return DenseGraph object, but instead return
             dense adjacency matrix as ``numpy.ndarray``, the index is the same
-            as that of IDlst.
+            as that of ``nodes``.
 
         Return:
             numpy.ndarray: Full adjacency matrix as 2d numpy array.
 
         """
-        n_nodes = len(self.IDlst)
+        n_nodes = len(self.nodes)
         mat = np.zeros((n_nodes, n_nodes))
 
         for src_node, src_nbrs in enumerate(self._data):
@@ -352,7 +352,7 @@ class SparseGraph(BaseGraph):
         """
         g = AdjlstGraph()
         g.read(edg_fp, weighted, directed, delimiter)
-        self.set_ids(g.IDlst)
+        self.set_ids(g.nodes)
         self.indptr, self.indices, self.data = g.to_csr()
 
     def read_npz(self, fp, weighted):
@@ -387,7 +387,7 @@ class SparseGraph(BaseGraph):
         """Save CSR as ``.csr.npz`` file."""
         np.savez(
             fp,
-            IDs=self.IDlst,
+            IDs=self.nodes,
             data=self.data,
             indptr=self.indptr,
             indices=self.indices,
@@ -403,7 +403,7 @@ class SparseGraph(BaseGraph):
 
         """
         g = cls(**kwargs)
-        g.set_ids(adjlst_graph.IDlst)
+        g.set_ids(adjlst_graph.nodes)
         g.indptr, g.indices, g.data = adjlst_graph.to_csr()
         return g
 
@@ -500,12 +500,12 @@ class DenseGraph(BaseGraph):
         g = AdjlstGraph()
         g.read(edg_fp, weighted, directed, delimiter)
 
-        self.set_ids(g.IDlst)
+        self.set_ids(g.nodes)
         self.data = g.to_dense()
 
     def save(self, fp):
         """Save dense graph  as ``.dense.npz`` file."""
-        np.savez(fp, data=self.data, IDs=self.IDlst)
+        np.savez(fp, data=self.data, IDs=self.nodes)
 
     @classmethod
     def from_adjlst_graph(cls, adjlst_graph, **kwargs):
@@ -517,7 +517,7 @@ class DenseGraph(BaseGraph):
 
         """
         g = cls(**kwargs)
-        g.set_ids(adjlst_graph.IDlst)
+        g.set_ids(adjlst_graph.nodes)
         g.data = adjlst_graph.to_dense()
         return g
 

@@ -1,10 +1,13 @@
-import tempfile
 import os
 import shutil
+import tempfile
 import unittest
 
 import numpy as np
-from pecanpy.graph import BaseGraph, AdjlstGraph, SparseGraph, DenseGraph
+from pecanpy.graph import AdjlstGraph
+from pecanpy.graph import BaseGraph
+from pecanpy.graph import DenseGraph
+from pecanpy.graph import SparseGraph
 
 MAT = np.array(
     [
@@ -78,7 +81,7 @@ class TestBaseGraph(unittest.TestCase):
         self.g.set_ids(IDS)
 
     def test_set_ids(self):
-        self.assertEqual(self.g.IDlst, IDS)
+        self.assertEqual(self.g.nodes, IDS)
         self.assertEqual(self.g.IDmap, IDMAP)
 
     def test_properties(self):
@@ -102,13 +105,13 @@ class TestAdjlstGraph(unittest.TestCase):
 
     def test_from_mat(self):
         self.assertEqual(self.g1._data, ADJLST)
-        self.assertEqual(self.g1.IDlst, IDS)
+        self.assertEqual(self.g1.nodes, IDS)
 
         self.assertEqual(self.g2._data, ADJLST2)
-        self.assertEqual(self.g2.IDlst, IDS2)
+        self.assertEqual(self.g2.nodes, IDS2)
 
         self.assertEqual(self.g3._data, ADJLST3)
-        self.assertEqual(self.g3.IDlst, IDS3)
+        self.assertEqual(self.g3.nodes, IDS3)
 
     def test_properties(self):
         self.assertEqual(self.g1.num_nodes, 3)
@@ -201,7 +204,7 @@ class TestSparseGraph(unittest.TestCase):
         self.assertTrue(np.all(self.g1.indptr == INDPTR))
         self.assertTrue(np.all(self.g1.indices == INDICES))
         self.assertTrue(np.all(self.g1.data == DATA))
-        self.assertEqual(self.g1.IDlst, IDS)
+        self.assertEqual(self.g1.nodes, IDS)
         self.assertEqual(self.g1.num_nodes, 3)
         self.assertEqual(self.g1.num_edges, 4)
         self.assertEqual(self.g1.density, 2 / 3)
@@ -209,7 +212,7 @@ class TestSparseGraph(unittest.TestCase):
         self.assertTrue(np.all(self.g2.indptr == INDPTR2))
         self.assertTrue(np.all(self.g2.indices == INDICES2))
         self.assertTrue(np.all(self.g2.data == DATA2))
-        self.assertEqual(self.g2.IDlst, IDS2)
+        self.assertEqual(self.g2.nodes, IDS2)
         self.assertEqual(self.g2.num_nodes, 5)
         self.assertEqual(self.g2.num_edges, 8)
         self.assertEqual(self.g2.density, 2 / 5)
@@ -217,7 +220,7 @@ class TestSparseGraph(unittest.TestCase):
         self.assertTrue(np.all(self.g3.indptr == INDPTR3))
         self.assertTrue(np.all(self.g3.indices == INDICES3))
         self.assertTrue(np.all(self.g3.data == DATA3))
-        self.assertEqual(self.g3.IDlst, IDS3)
+        self.assertEqual(self.g3.nodes, IDS3)
         self.assertEqual(self.g3.num_nodes, 4)
         self.assertEqual(self.g3.num_edges, 5)
         self.assertEqual(self.g3.density, 5 / 12)
@@ -242,19 +245,19 @@ class TestDenseGraph(unittest.TestCase):
 
     def validate(self):
         self.assertTrue(np.all(self.g1.data == MAT))
-        self.assertEqual(self.g1.IDlst, IDS)
+        self.assertEqual(self.g1.nodes, IDS)
         self.assertEqual(self.g1.num_nodes, 3)
         self.assertEqual(self.g1.num_edges, 4)
         self.assertEqual(self.g1.density, 2 / 3)
 
         self.assertTrue(np.all(self.g2.data == MAT2))
-        self.assertEqual(self.g2.IDlst, IDS2)
+        self.assertEqual(self.g2.nodes, IDS2)
         self.assertEqual(self.g2.num_nodes, 5)
         self.assertEqual(self.g2.num_edges, 8)
         self.assertEqual(self.g2.density, 2 / 5)
 
         self.assertTrue(np.all(self.g3.data == MAT3))
-        self.assertEqual(self.g3.IDlst, IDS3)
+        self.assertEqual(self.g3.nodes, IDS3)
         self.assertEqual(self.g3.num_nodes, 4)
         self.assertEqual(self.g3.num_edges, 5)
         self.assertEqual(self.g3.density, 5 / 12)

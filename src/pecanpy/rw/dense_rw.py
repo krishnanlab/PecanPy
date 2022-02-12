@@ -10,9 +10,8 @@ class DenseRWGraph(DenseGraph):
 
     def get_noise_thresholds(self):
         """Compute average edge weights."""
-        num_nodes = len(self.IDlst)
-        noise_threshold_ary = np.zeros(num_nodes, dtype=np.float32)
-        for i in range(num_nodes):
+        noise_threshold_ary = np.zeros(self.num_nodes, dtype=np.float32)
+        for i in range(self.num_nodes):
             weights = self.data[i, self.nonzero[i]]
             noise_threshold_ary[i] = weights.mean() + self.gamma * weights.std()
         noise_threshold_ary = np.maximum(noise_threshold_ary, 0)

@@ -1,10 +1,12 @@
 """Different strategies for generating node2vec walks."""
 import numpy as np
 from gensim.models import Word2Vec
-from numba import njit, prange
+from numba import njit
+from numba import prange
 from numba.np.ufunc.parallel import _get_thread_id
 from numba_progress import ProgressBar
-from pecanpy.rw import DenseRWGraph, SparseRWGraph
+from pecanpy.rw import DenseRWGraph
+from pecanpy.rw import SparseRWGraph
 from pecanpy.wrappers import Timer
 
 
@@ -93,7 +95,7 @@ class Base:
 
         """
         end_idx = walk_idx_ary[-1]
-        walk = [self.IDlst[i] for i in walk_idx_ary[:end_idx]]
+        walk = [self.nodes[i] for i in walk_idx_ary[:end_idx]]
         return walk
 
     def simulate_walks(self, num_walks, walk_length):
@@ -111,8 +113,7 @@ class Base:
         """
         self._preprocess_transition_probs()
 
-        num_nodes = len(self.IDlst)
-        nodes = np.array(range(num_nodes), dtype=np.uint32)
+        nodes = np.array(range(self.num_nodes), dtype=np.uint32)
         start_node_idx_ary = np.concatenate([nodes] * num_walks)
         tot_num_jobs = start_node_idx_ary.size
 
@@ -247,7 +248,7 @@ class Base:
         )
 
         # index mapping back to node IDs
-        idx_list = [w2v.wv.get_index(i) for i in self.IDlst]
+        idx_list = [w2v.wv.get_index(i) for i in self.nodes]
 
         return w2v.wv.vectors[idx_list]
 

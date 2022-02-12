@@ -25,7 +25,7 @@ class TestPecanPy(unittest.TestCase):
         g = graph.DenseGraph()
         g.read_edg(EDG_FP, weighted=False, directed=False)
         self.mat = g.data
-        self.ids = g.IDlst
+        self.ids = g.nodes
 
     @parameterized.expand(SETTINGS)
     def test_from_mat(self, name, mode):
