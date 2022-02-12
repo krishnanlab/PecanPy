@@ -469,16 +469,16 @@ class DenseGraph(BaseGraph):
         """Return the adjacency matrix."""
         return self._data
 
-    @property
-    def nonzero(self):
-        """Return the nonzero mask for the adjacency matrix."""
-        return self._nonzero
-
     @data.setter
     def data(self, data):
         """Set adjacency matrix and the corresponding nonzero matrix."""
         self._data = data.astype(float)
         self._nonzero = self._data != 0
+
+    @property
+    def nonzero(self):
+        """Return the nonzero mask for the adjacency matrix."""
+        return self._nonzero
 
     def read_npz(self, fp, weighted):
         """Read ``.npz`` file and create dense graph.
