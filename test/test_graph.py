@@ -78,11 +78,11 @@ IDMAP3 = {"a": 0, "b": 1, "c": 2, "d": 3}
 class TestBaseGraph(unittest.TestCase):
     def setUp(self):
         self.g = BaseGraph()
-        self.g.set_ids(IDS)
+        self.g.set_node_ids(IDS)
 
-    def test_set_ids(self):
+    def test_set_node_ids(self):
         self.assertEqual(self.g.nodes, IDS)
-        self.assertEqual(self.g.IDmap, IDMAP)
+        self.assertEqual(self.g._node_idmap, IDMAP)
 
     def test_properties(self):
         self.assertEqual(self.g.num_nodes, 3)

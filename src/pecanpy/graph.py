@@ -18,7 +18,7 @@ class BaseGraph:
     def __init__(self):
         """Initialize ID list and ID map."""
         self._node_ids = []
-        self.IDmap = {}  # id -> index
+        self._node_idmap = {}  # id -> index
 
     @property
     def nodes(self):
@@ -46,11 +46,12 @@ class BaseGraph:
     def set_ids(self, ids):
         """Update ID list and mapping.
 
-        Set _node_ids given the input ids and also set the IDmap based on it.
+        Set _node_ids given the input ids and also set the corresponding
+        _node_idmap based on it, which maps from node ID to the index.
 
         """
         self._node_ids = ids
-        self.IDmap = {j: i for i, j in enumerate(ids)}
+        self._node_idmap = {j: i for i, j in enumerate(ids)}
 
 
 class AdjlstGraph(BaseGraph):
@@ -150,7 +151,7 @@ class AdjlstGraph(BaseGraph):
     def get_node_idx(self, node_id):
         """Get index of the node and create new node when necessary."""
         self.add_node(node_id)
-        return self.IDmap[node_id]
+        return self._node_idmap[node_id]
 
     def add_node(self, node_id):
         """Create a new node.
@@ -163,8 +164,8 @@ class AdjlstGraph(BaseGraph):
             Does not raise error even if the node alrealy exists.
 
         """
-        if node_id not in self.IDmap:
-            self.IDmap[node_id] = self.num_nodes
+        if node_id not in self._node_idmap:
+            self._node_idmap[node_id] = self.num_nodes
             self.nodes.append(node_id)
             self._data.append({})
 
