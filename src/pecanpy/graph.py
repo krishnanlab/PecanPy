@@ -456,18 +456,29 @@ class DenseGraph(BaseGraph):
     def __init__(self):
         """Initialize DenseGraph object."""
         super().__init__()
-        self.data = None
-        self.nonzero = None
+        self._data = None
+        self._nonzero = None
 
     @property
     def num_edges(self):
         """Return the number of edges in the graph."""
         return self.nonzero.sum()
 
-    def _set_data(self, data):
-        """Set data and update nonzero."""
-        self.data = data
-        self.nonzero = data != 0
+    @property
+    def data(self):
+        """Return the adjacency matrix."""
+        return self._data
+
+    @property
+    def nonzero(self):
+        """Return the nonzero mask for the adjacency matrix."""
+        return self._nonzero
+
+    @data.setter
+    def data(self, data):
+        """Set adjacency matrix and the corresponding nonzero matrix."""
+        self._data = data.astype(float)
+        self._nonzero = self._data != 0
 
     def read_npz(self, fp, weighted):
         """Read ``.npz`` file and create dense graph.
@@ -479,7 +490,7 @@ class DenseGraph(BaseGraph):
 
         """
         raw = np.load(fp)
-        self._set_data(raw["data"])
+        self.data = raw["data"]
         if not weighted:  # overwrite edge weights with constant
             self.data = self.nonzero * 1.0
         self.set_ids(raw["IDs"].tolist())
@@ -490,7 +501,7 @@ class DenseGraph(BaseGraph):
         g.read(edg_fp, weighted, directed, delimiter)
 
         self.set_ids(g.IDlst)
-        self._set_data(g.to_dense())
+        self.data = g.to_dense()
 
     def save(self, fp):
         """Save dense graph  as ``.dense.npz`` file."""
@@ -507,7 +518,7 @@ class DenseGraph(BaseGraph):
         """
         g = cls(**kwargs)
         g.set_ids(adjlst_graph.IDlst)
-        g._set_data(adjlst_graph.to_dense())
+        g.data = adjlst_graph.to_dense()
         return g
 
     @classmethod
@@ -521,6 +532,5 @@ class DenseGraph(BaseGraph):
         """
         g = cls(**kwargs)
         g.data = adj_mat
-        g.nonzero = adj_mat != 0
         g.set_ids(node_ids)
         return g

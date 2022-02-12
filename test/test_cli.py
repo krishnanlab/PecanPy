@@ -1,5 +1,5 @@
 import os
-import os.path as op
+import os.path as osp
 import shutil
 import subprocess
 import tempfile
@@ -7,17 +7,26 @@ import unittest
 from unittest.mock import patch
 
 from numba import set_num_threads
+from parameterized import parameterized
 from pecanpy import cli
 
 set_num_threads(1)
 
-DATA_DIR = op.abspath(op.join(__file__, op.pardir, op.pardir, "demo"))
-EDG_FP = op.join(DATA_DIR, "karate.edg")
+DATA_DIR = osp.abspath(osp.join(__file__, osp.pardir, osp.pardir, "demo"))
+EDG_FP = osp.join(DATA_DIR, "karate.edg")
 
 TMP_DATA_DIR = tempfile.mkdtemp()
-CSR_FP = op.join(TMP_DATA_DIR, "karate.csr.npz")
-DENSE_FP = op.join(TMP_DATA_DIR, "karate.dense.npz")
+CSR_FP = osp.join(TMP_DATA_DIR, "karate.csr.npz")
+DENSE_FP = osp.join(TMP_DATA_DIR, "karate.dense.npz")
 COM = ["pecanpy", "--input", EDG_FP, "--output"]
+
+SETTINGS = [
+    ("FirstOrderUnweighted",),
+    ("PreCompFirstOrder",),
+    ("PreComp",),
+    ("SparseOTF",),
+    ("DenseOTF",),
+]
 
 
 class TestCli(unittest.TestCase):
@@ -69,35 +78,13 @@ class TestCli(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     self.execute("PreCompFirstOrder", EDG_FP, p, q)
 
-    def test_firstorderunweighted_from_edg(self):
-        self.execute("FirstOrderUnweighted", EDG_FP)
+    @parameterized.expand(SETTINGS)
+    def test_from_edg(self, name):
+        self.execute(name, EDG_FP)
 
-    def test_precompfirstorder_from_edg(self):
-        self.execute("PreCompFirstOrder", EDG_FP)
-
-    def test_precomp_from_edg(self):
-        self.execute("PreComp", EDG_FP)
-
-    def test_sparseotf_from_edg(self):
-        self.execute("SparseOTF", EDG_FP)
-
-    def test_denseotf_from_edg(self):
-        self.execute("DenseOTF", EDG_FP)
-
-    def test_firstorderunweighted_from_csr(self):
-        self.execute("FirstOrderUnweighted", CSR_FP)
-
-    def test_precompfirstorder_from_npz(self):
-        self.execute("PreCompFirstOrder", CSR_FP)
-
-    def test_precomp_from_npz(self):
-        self.execute("PreComp", CSR_FP)
-
-    def test_sparseotf_from_npz(self):
-        self.execute("SparseOTF", CSR_FP)
-
-    def test_denseotf_from_npz(self):
-        self.execute("DenseOTF", DENSE_FP)
+    @parameterized.expand(SETTINGS)
+    def test_from_npz(self, name):
+        self.execute(name, DENSE_FP if name == "DenseOTF" else CSR_FP)
 
 
 if __name__ == "__main__":
