@@ -1,14 +1,21 @@
 """Different strategies for generating node2vec walks."""
+from typing import List
+from typing import Optional
+
 import numpy as np
 from gensim.models import Word2Vec
-from numba import njit, prange
+from numba import njit
+from numba import prange
 from numba.np.ufunc.parallel import _get_thread_id
 from numba_progress import ProgressBar
-from pecanpy.rw import DenseRWGraph, SparseRWGraph
-from pecanpy.wrappers import Timer
+
+from .graph import BaseGraph
+from .rw import DenseRWGraph
+from .rw import SparseRWGraph
+from .wrappers import Timer
 
 
-class Base:
+class Base(BaseGraph):
     """Base node2vec object.
 
     This base object provides the skeleton for the node2vec walk algorithm,
@@ -44,13 +51,13 @@ class Base:
 
     def __init__(
         self,
-        p=1,
-        q=1,
-        workers=1,
-        verbose=False,
-        extend=False,
-        gamma=0,
-        random_state=None,
+        p: float = 1,
+        q: float = 1,
+        workers: int = 1,
+        verbose: bool = False,
+        extend: bool = False,
+        gamma: float = 0,
+        random_state: Optional[int] = None,
     ):
         """Initializ node2vec base class.
 
@@ -81,9 +88,9 @@ class Base:
         self.extend = extend
         self.gamma = gamma
         self.random_state = random_state
-        self._preprocessed = False
+        self._preprocessed: bool = False
 
-    def _map_walk(self, walk_idx_ary):
+    def _map_walk(self, walk_idx_ary: np.ndarray) -> List[str]:
         """Map walk from node index to node ID.
 
         Note:
@@ -93,10 +100,14 @@ class Base:
 
         """
         end_idx = walk_idx_ary[-1]
-        walk = [self.IDlst[i] for i in walk_idx_ary[:end_idx]]
+        walk = [self.nodes[i] for i in walk_idx_ary[:end_idx]]
         return walk
 
-    def simulate_walks(self, num_walks, walk_length):
+    def simulate_walks(
+        self,
+        num_walks: int,
+        walk_length: int,
+    ) -> List[List[str]]:
         """Generate walks starting from each nodes ``num_walks`` time.
 
         Note:
@@ -111,8 +122,7 @@ class Base:
         """
         self._preprocess_transition_probs()
 
-        num_nodes = len(self.IDlst)
-        nodes = np.array(range(num_nodes), dtype=np.uint32)
+        nodes = np.array(range(self.num_nodes), dtype=np.uint32)
         start_node_idx_ary = np.concatenate([nodes] * num_walks)
         tot_num_jobs = start_node_idx_ary.size
 
@@ -199,13 +209,13 @@ class Base:
 
     def embed(
         self,
-        dim=128,
-        num_walks=10,
-        walk_length=80,
-        window_size=10,
-        epochs=1,
-        verbose=False,
-    ):
+        dim: int = 128,
+        num_walks: int = 10,
+        walk_length: int = 80,
+        window_size: int = 10,
+        epochs: int = 1,
+        verbose: bool = False,
+    ) -> np.ndarray:
         """Generate embeddings.
 
         This is a shortcut function that combines ``simulate_walks`` with
@@ -247,7 +257,7 @@ class Base:
         )
 
         # index mapping back to node IDs
-        idx_list = [w2v.wv.get_index(i) for i in self.IDlst]
+        idx_list = [w2v.wv.get_index(i) for i in self.nodes]
 
         return w2v.wv.vectors[idx_list]
 

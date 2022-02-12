@@ -1,7 +1,9 @@
 """Sparse Graph equipped with random walk computation."""
 import numpy as np
-from numba import boolean, njit
-from pecanpy.graph import SparseGraph
+from numba import boolean
+from numba import njit
+
+from ..graph import SparseGraph
 
 
 class SparseRWGraph(SparseGraph):
@@ -22,9 +24,8 @@ class SparseRWGraph(SparseGraph):
         data = self.data
         indptr = self.indptr
 
-        num_nodes = len(self.IDlst)
-        noise_threshold_ary = np.zeros(num_nodes, dtype=np.float32)
-        for i in range(num_nodes):
+        noise_threshold_ary = np.zeros(self.num_nodes, dtype=np.float32)
+        for i in range(self.num_nodes):
             noise_threshold_ary[i] = (
                 data[indptr[i] : indptr[i + 1]].mean()
                 + self.gamma * data[indptr[i] : indptr[i + 1]].std()

@@ -1,6 +1,8 @@
 """Lite graph objects used by pecanpy."""
+from typing import Dict
 from typing import Iterator
 from typing import List
+from typing import Optional
 from typing import Tuple
 
 import numpy as np
@@ -17,21 +19,21 @@ class BaseGraph:
 
     def __init__(self):
         """Initialize ID list and ID map."""
-        self.IDlst = []
-        self.IDmap = {}  # id -> index
+        self._node_ids: List[str] = []
+        self._node_idmap: Dict[str, int] = {}  # id -> index
 
     @property
-    def nodes(self):
+    def nodes(self) -> List[str]:
         """Return the list of node IDs."""
-        return self.IDlst
+        return self._node_ids
 
     @property
-    def num_nodes(self):
+    def num_nodes(self) -> int:
         """Return the number of nodes in the graph."""
-        return len(self.IDlst)
+        return len(self.nodes)
 
     @property
-    def num_edges(self):
+    def num_edges(self) -> int:
         """Return the number of edges in the graph."""
         raise NotImplementedError(
             f"{self.__class__.__name__} does not have num_edges, use the "
@@ -39,18 +41,30 @@ class BaseGraph:
         )
 
     @property
-    def density(self):
+    def density(self) -> float:
         """Return the edge density of the graph."""
         return self.num_edges / self.num_nodes / (self.num_nodes - 1)
 
-    def set_ids(self, ids):
+    def set_node_ids(self, node_ids: List[str]):
         """Update ID list and mapping.
 
-        Set IDlst given the input ids and also set the IDmap based on it.
+        Set _node_ids given the input node IDs and also set the corresponding
+        _node_idmap based on it, which maps from node ID to the index.
+
+        Args:
+            node_ids (:obj:`list` of :obj:`str`): List of node IDs to use.
 
         """
-        self.IDlst = ids
-        self.IDmap = {j: i for i, j in enumerate(ids)}
+        self._node_ids = node_ids
+        self._node_idmap = {j: i for i, j in enumerate(node_ids)}
+
+    def get_has_nbrs(self):
+        """Abstract method to be specified by derived classes."""
+        raise NotImplementedError
+
+    def get_move_forward(self):
+        """Abstract method to be specified by derived classes."""
+        raise NotImplementedError
 
 
 class AdjlstGraph(BaseGraph):
@@ -86,8 +100,8 @@ class AdjlstGraph(BaseGraph):
     def __init__(self):
         """Initialize AdjlstGraph object."""
         super().__init__()
-        self._data = []  # list of dict of node_indexx -> edge_weight
-        self._num_edges = 0
+        self._data: List[Dict[int, float]] = []  # list of nbrs idx -> weights
+        self._num_edges: int = 0
 
     @property
     def edges_iter(self) -> Iterator[Tuple[int, int, float]]:
@@ -107,7 +121,11 @@ class AdjlstGraph(BaseGraph):
         return self._num_edges
 
     @staticmethod
-    def _read_edge_line(edge_line, weighted, delimiter):
+    def _read_edge_line(
+        edge_line: str,
+        weighted: bool,
+        delimiter: str,
+    ) -> Tuple[str, str, float]:
         """Read a line from the edge list file."""
         terms = edge_line.strip().split(delimiter)
         id1, id2 = terms[0].strip(), terms[1].strip()
@@ -124,7 +142,7 @@ class AdjlstGraph(BaseGraph):
         return id1, id2, weight
 
     @staticmethod
-    def _is_valid_edge_weight(id1, id2, weight):
+    def _is_valid_edge_weight(id1: str, id2: str, weight: float) -> bool:
         """Check if the edge weight is non-negative."""
         if weight <= 0:
             edg_str = f"w({id1},{id2}) = {weight}"
@@ -132,27 +150,33 @@ class AdjlstGraph(BaseGraph):
             return False
         return True
 
-    def _check_edge_existence(self, id1, id2, idx1, idx2, weight):
+    def _check_edge_existence(
+        self,
+        id1: str,
+        id2: str,
+        idx1: int,
+        idx2: int,
+        weight: float,
+    ):
         """Check if an edge exists.
 
         If the edge to be added already exists and the new edge weight is
         different from the existing edge weights, print warning message.
 
         """
-        if idx2 in self._data[idx1]:
-            if self._data[idx1][idx2] != weight:
-                print(
-                    f"WARNING: edge from {id1} to {id2} exists, with "
-                    f"value of {self._data[idx1][idx2]:.2f}. "
-                    f"Now overwrite to {weight:.2f}.",
-                )
+        if idx2 in self._data[idx1] and self._data[idx1][idx2] != weight:
+            print(
+                f"WARNING: edge from {id1} to {id2} exists, with "
+                f"value of {self._data[idx1][idx2]:.2f}. "
+                f"Now overwrite to {weight:.2f}.",
+            )
 
-    def get_node_idx(self, node_id):
+    def get_node_idx(self, node_id: str) -> int:
         """Get index of the node and create new node when necessary."""
         self.add_node(node_id)
-        return self.IDmap[node_id]
+        return self._node_idmap[node_id]
 
-    def add_node(self, node_id):
+    def add_node(self, node_id: str):
         """Create a new node.
 
         Add a new node to the graph if not already exsitsed, by updating the
@@ -163,9 +187,9 @@ class AdjlstGraph(BaseGraph):
             Does not raise error even if the node alrealy exists.
 
         """
-        if node_id not in self.IDmap:
-            self.IDmap[node_id] = self.num_nodes
-            self.IDlst.append(node_id)
+        if node_id not in self._node_idmap:
+            self._node_idmap[node_id] = self.num_nodes
+            self.nodes.append(node_id)
             self._data.append({})
 
     def _add_edge_from_idx(self, idx1: int, idx2: int, weight: float):
@@ -173,7 +197,13 @@ class AdjlstGraph(BaseGraph):
         self._data[idx1][idx2] = weight
         self._num_edges += 1
 
-    def add_edge(self, id1, id2, weight=1.0, directed=False):
+    def add_edge(
+        self,
+        id1: str,
+        id2: str,
+        weight: float = 1.0,
+        directed: bool = False,
+    ):
         """Add an edge to the graph.
 
         Note:
@@ -194,7 +224,13 @@ class AdjlstGraph(BaseGraph):
             if not directed:
                 self._add_edge_from_idx(idx2, idx1, weight)
 
-    def read(self, edg_fp, weighted, directed, delimiter="\t"):
+    def read(
+        self,
+        path: str,
+        weighted: bool,
+        directed: bool,
+        delimiter: str = "\t",
+    ):
         """Read an edgelist file and create sparse graph.
 
         Note:
@@ -203,7 +239,7 @@ class AdjlstGraph(BaseGraph):
             weight will be used (warning for such behavior will be printed).
 
         Args:
-            edg_fp (str): path to edgelist file, where the file is tab
+            path (str): path to edgelist file, where the file is tab
                 seperated and contains 2 or 3 columns depending on whether
                 the input graph is weighted, where the the first column
                 contains the source nodes and the second column contains the
@@ -220,12 +256,12 @@ class AdjlstGraph(BaseGraph):
             delimiter (str): delimiter of the edge list file, default is tab.
 
         """
-        with open(edg_fp, "r") as f:
+        with open(path, "r") as f:
             for edge_line in f:
                 edge = self._read_edge_line(edge_line, weighted, delimiter)
                 self.add_edge(*edge, directed)
 
-    def save(self, fp: str, unweighted: bool = False, delimiter: str = "\t"):
+    def save(self, path: str, unweighted: bool = False, delimiter: str = "\t"):
         """Save AdjLst as an ``.edg`` edge list file.
 
         Args:
@@ -235,15 +271,15 @@ class AdjlstGraph(BaseGraph):
             delimiter (str): Delimiter for separating fields.
 
         """
-        with open(fp, "w") as f:
+        with open(path, "w") as f:
             for h, t, w in self.edges_iter:
                 h_id, t_id = self.nodes[h], self.nodes[t]
                 terms = (h_id, t_id) if unweighted else (h_id, t_id, str(w))
                 f.write(f"{delimiter.join(terms)}\n")
 
-    def to_csr(self):
+    def to_csr(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Construct compressed sparse row matrix."""
-        indptr = np.zeros(len(self.IDlst) + 1, dtype=np.uint32)
+        indptr = np.zeros(len(self.nodes) + 1, dtype=np.uint32)
         for i, row_data in enumerate(self._data):
             indptr[i + 1] = indptr[i] + len(row_data)
 
@@ -261,19 +297,19 @@ class AdjlstGraph(BaseGraph):
 
         return indptr, indices, data
 
-    def to_dense(self):
+    def to_dense(self) -> np.ndarray:
         """Construct dense adjacency matrix.
 
         Note:
             This method does not return DenseGraph object, but instead return
             dense adjacency matrix as ``numpy.ndarray``, the index is the same
-            as that of IDlst.
+            as that of ``nodes``.
 
         Return:
             numpy.ndarray: Full adjacency matrix as 2d numpy array.
 
         """
-        n_nodes = len(self.IDlst)
+        n_nodes = len(self.nodes)
         mat = np.zeros((n_nodes, n_nodes))
 
         for src_node, src_nbrs in enumerate(self._data):
@@ -283,8 +319,8 @@ class AdjlstGraph(BaseGraph):
         return mat
 
     @classmethod
-    def from_mat(cls, adj_mat, node_ids, **kwargs):
-        """Construct graph using adjacency matrix and node ids.
+    def from_mat(cls, adj_mat: np.ndarray, node_ids: List[str], **kwargs):
+        """Construct graph using adjacency matrix and node IDs.
 
         Args:
             adj_mat(:obj:`numpy.ndarray`): 2D numpy array of adjacency matrix
@@ -330,32 +366,43 @@ class SparseGraph(BaseGraph):
     def __init__(self):
         """Initialize SparseGraph object."""
         super().__init__()
-        self.data = self.indptr = self.indices = None
+        self.data: Optional[np.ndarray] = None
+        self.indptr: Optional[np.ndarray] = None
+        self.indices: Optional[np.ndarray] = None
 
     @property
-    def num_edges(self):
+    def num_edges(self) -> int:
         """Return the number of edges in the graph."""
-        return self.indptr[-1]
+        if self.indptr is not None:
+            return self.indptr[-1]
+        else:
+            raise ValueError("Empty graph.")
 
-    def read_edg(self, edg_fp, weighted, directed, delimiter="\t"):
+    def read_edg(
+        self,
+        path: str,
+        weighted: bool,
+        directed: bool,
+        delimiter: str = "\t",
+    ):
         """Create CSR sparse graph from edge list.
 
         First create ``AdjlstGraph`` by reading the edge list file, and then
         convert to ``SparseGraph`` via ``to_csr``.
 
         Args:
-            edg_fp (str): path to edgelist file.
+            path (str): path to edgelist file.
             weighted (bool): whether the graph is weighted.
             directed (bool): whether the graph is directed.
             delimiter (str): delimiter used between node IDs.
 
         """
         g = AdjlstGraph()
-        g.read(edg_fp, weighted, directed, delimiter)
-        self.set_ids(g.IDlst)
+        g.read(path, weighted, directed, delimiter)
+        self.set_node_ids(g.nodes)
         self.indptr, self.indices, self.data = g.to_csr()
 
-    def read_npz(self, fp, weighted):
+    def read_npz(self, path: str, weighted: bool):
         """Directly read a CSR sparse graph.
 
         Note:
@@ -366,7 +413,7 @@ class SparseGraph(BaseGraph):
                 be loaded directly by ``SparseGraph`` later.
 
         Args:
-            fp (str): path to the csr file, which is an npz file with four
+            path (str): path to the csr file, which is an npz file with four
                 arrays with keys 'IDs', 'data', 'indptr', 'indices', which
                 correspond to the node IDs, the edge weights, the offset array
                 for each node, and the indices of the edges.
@@ -375,19 +422,19 @@ class SparseGraph(BaseGraph):
             directed (bool): not used, for compatibility with ``SparseGraph``.
 
         """
-        raw = np.load(fp)
-        self.set_ids(raw["IDs"].tolist())
+        raw = np.load(path)
+        self.set_node_ids(raw["IDs"].tolist())
         self.data = raw["data"]
         if not weighted:  # overwrite edge weights with constant
             self.data[:] = 1.0
         self.indptr = raw["indptr"]
         self.indices = raw["indices"]
 
-    def save(self, fp):
+    def save(self, path: str):
         """Save CSR as ``.csr.npz`` file."""
         np.savez(
-            fp,
-            IDs=self.IDlst,
+            path,
+            IDs=self.nodes,
             data=self.data,
             indptr=self.indptr,
             indices=self.indices,
@@ -403,13 +450,13 @@ class SparseGraph(BaseGraph):
 
         """
         g = cls(**kwargs)
-        g.set_ids(adjlst_graph.IDlst)
+        g.set_node_ids(adjlst_graph.nodes)
         g.indptr, g.indices, g.data = adjlst_graph.to_csr()
         return g
 
     @classmethod
-    def from_mat(cls, adj_mat, node_ids, **kwargs):
-        """Construct csr graph using adjacency matrix and node ids.
+    def from_mat(cls, adj_mat: np.ndarray, node_ids: List[str], **kwargs):
+        """Construct csr graph using adjacency matrix and node IDs.
 
         Note:
             Only consider positive valued edges.
@@ -420,7 +467,7 @@ class SparseGraph(BaseGraph):
 
         """
         g = cls(**kwargs)
-        g.set_ids(node_ids)
+        g.set_node_ids(node_ids)
         adjlst_graph = AdjlstGraph.from_mat(adj_mat, node_ids)
         g.indptr, g.indices, g.data = adjlst_graph.to_csr()
         return g
@@ -456,56 +503,65 @@ class DenseGraph(BaseGraph):
     def __init__(self):
         """Initialize DenseGraph object."""
         super().__init__()
-        self._data = None
-        self._nonzero = None
+        self._data: Optional[np.ndarray] = None
+        self._nonzero: Optional[np.ndarray] = None
 
     @property
-    def num_edges(self):
+    def num_edges(self) -> int:
         """Return the number of edges in the graph."""
-        return self.nonzero.sum()
+        if self.nonzero is not None:
+            return self.nonzero.sum()
+        else:
+            raise ValueError("Empty graph.")
 
     @property
-    def data(self):
+    def data(self) -> Optional[np.ndarray]:
         """Return the adjacency matrix."""
         return self._data
 
-    @property
-    def nonzero(self):
-        """Return the nonzero mask for the adjacency matrix."""
-        return self._nonzero
-
     @data.setter
-    def data(self, data):
+    def data(self, data: np.ndarray):
         """Set adjacency matrix and the corresponding nonzero matrix."""
         self._data = data.astype(float)
         self._nonzero = self._data != 0
 
-    def read_npz(self, fp, weighted):
+    @property
+    def nonzero(self) -> Optional[np.ndarray]:
+        """Return the nonzero mask for the adjacency matrix."""
+        return self._nonzero
+
+    def read_npz(self, path: str, weighted: bool):
         """Read ``.npz`` file and create dense graph.
 
         Args:
-            fp (str): path to ``.npz`` file.
+            path (str): path to ``.npz`` file.
             weighted (bool): whether the graph is weighted, if unweighted,
                 all none zero weights will be converted to 1.
 
         """
-        raw = np.load(fp)
+        raw = np.load(path)
         self.data = raw["data"]
         if not weighted:  # overwrite edge weights with constant
-            self.data = self.nonzero * 1.0
-        self.set_ids(raw["IDs"].tolist())
+            self.data = self.nonzero * 1.0  # type: ignore
+        self.set_node_ids(raw["IDs"].tolist())
 
-    def read_edg(self, edg_fp, weighted, directed, delimiter="\t"):
+    def read_edg(
+        self,
+        path: str,
+        weighted: bool,
+        directed: bool,
+        delimiter: str = "\t",
+    ):
         """Read an edgelist file and construct dense graph."""
         g = AdjlstGraph()
-        g.read(edg_fp, weighted, directed, delimiter)
+        g.read(path, weighted, directed, delimiter)
 
-        self.set_ids(g.IDlst)
+        self.set_node_ids(g.nodes)
         self.data = g.to_dense()
 
-    def save(self, fp):
+    def save(self, path: str):
         """Save dense graph  as ``.dense.npz`` file."""
-        np.savez(fp, data=self.data, IDs=self.IDlst)
+        np.savez(path, data=self.data, IDs=self.nodes)
 
     @classmethod
     def from_adjlst_graph(cls, adjlst_graph, **kwargs):
@@ -517,20 +573,20 @@ class DenseGraph(BaseGraph):
 
         """
         g = cls(**kwargs)
-        g.set_ids(adjlst_graph.IDlst)
+        g.set_node_ids(adjlst_graph.nodes)
         g.data = adjlst_graph.to_dense()
         return g
 
     @classmethod
-    def from_mat(cls, adj_mat, node_ids, **kwargs):
-        """Construct dense graph using adjacency matrix and node ids.
+    def from_mat(cls, adj_mat: np.ndarray, node_ids: List[str], **kwargs):
+        """Construct dense graph using adjacency matrix and node IDs.
 
         Args:
             adj_mat(:obj:`numpy.ndarray`): 2D numpy array of adjacency matrix
-            ids(:obj:`list` of str): node ID list
+            node_ids(:obj:`list` of str): node ID list
 
         """
         g = cls(**kwargs)
         g.data = adj_mat
-        g.set_ids(node_ids)
+        g.set_node_ids(node_ids)
         return g
