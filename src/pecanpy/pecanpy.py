@@ -77,7 +77,10 @@ class Base(BaseGraph):
                 weights added to the average edge weights as the noisy edge
                 threashold, only used by node2vec+ (default: 0)
             random_state (int, optional): Random seed for generating random
-                walks (default: :obj:`None`).
+                walks. Note that to fully ensure reproducibility, use single
+                thread (i.e., workers=1), and potentially need to set the
+                Python environment variable ``PYTHONHASHSEED`` to match the
+                random_state (default: :obj:`None`).
 
         """
         super().__init__()
@@ -254,6 +257,7 @@ class Base(BaseGraph):
             min_count=0,
             workers=self.workers,
             epochs=epochs,
+            seed=self.random_state,
         )
 
         # index mapping back to node IDs

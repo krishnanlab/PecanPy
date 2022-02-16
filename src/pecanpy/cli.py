@@ -298,6 +298,7 @@ def learn_embeddings(args, walks):
         sg=1,
         workers=args.workers,
         epochs=args.epochs,
+        seed=args.random_state,
     )
 
     output_path = args.output
