@@ -154,9 +154,9 @@ def isnotin(ptr_ary1, ptr_ary2):
     returned to the ``get_normalized_probs``.
 
     Args:
-        ptr_ary1 (:obj:`numpy.ndarray` of :obj:`uint32`): array of pointers to
+        ptr_ary1 (Uint32Array): array of pointers to
             the neighbors of the current state
-        ptr_ary2 (:obj:`numpy.ndarray` of :obj:`uint32`): array of pointers to
+        ptr_ary2 (Uint32Array): array of pointers to
             the neighbors of the previous state
 
     Returns:
@@ -241,15 +241,13 @@ def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, noise_thresholds):
     the previous state as out edges if the edge weight is below average.
 
     Args:
-        ptr_ary1 (:obj:`numpy.ndarray` of :obj:`uint32`): array of pointers to
-            the neighbors of the current state
-        ptr_ary2 (:obj:`numpy.ndarray` of :obj:`uint32`): array of pointers to
-            the neighbors of the previous state
-        wts_ary2 (:obj: `numpy.ndarray` of :obj:`float32`): array of edge
-            weights of the previous state
-        noise_thresholds (:obj: `numpy.ndarray` of :obj:`float32`): array of
-            noisy edge threshold computed based on the average and the std of
-            the edge weights of each node
+        ptr_ary1 (Uint32Array): array of pointers to the neighbors of the
+            current state
+        ptr_ary2 (Uint32Array): array of pointers to the neighbors of the
+            previous state
+        wts_ary2 (Float32Array): array of edge weights of the previous state
+        noise_thresholds (Float32Array): array of noisy edge threshold computed
+            based on the average and the std of the edge weights of each node
 
     Return:
         Indicator of whether a neighbor of the current state is considered as

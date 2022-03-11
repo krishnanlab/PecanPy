@@ -266,7 +266,7 @@ class Base(BaseGraph):
                 skip-gram training if set to True
 
         Return:
-            numpy.ndarray: The embedding matrix, each row is a node embedding
+            Embeddings: The embedding matrix, each row is a node embedding
                 vector. The index is the same as that for the graph.
 
         """
@@ -626,7 +626,7 @@ def alias_setup(probs):
 
     Args:
         probs (list(float32)): normalized transition probabilities array, could
-            be in either list or numpy.ndarray, of float32 values.
+            be in either list or NDArray, of float32 values.
 
     """
     k = probs.size

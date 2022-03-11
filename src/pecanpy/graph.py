@@ -87,8 +87,8 @@ class AdjlstGraph(BaseGraph):
         Python data structures like list and dict.
 
     Examples:
-        Read ``.edg`` file and create ``SparseGraph`` object using ``.read_edg``
-        method.
+        Read ``.edg`` file and create ``SparseGraph`` object using
+        ``.read_edg`` method.
 
         >>> from pecanpy.graph import AdjlstGraph
         >>>
@@ -311,11 +311,11 @@ class AdjlstGraph(BaseGraph):
 
         Note:
             This method does not return DenseGraph object, but instead return
-            dense adjacency matrix as ``numpy.ndarray``, the index is the same
+            dense adjacency matrix as NDArray, the index is the same
             as that of ``nodes``.
 
         Return:
-            numpy.ndarray: Full adjacency matrix as 2d numpy array.
+            NDArray: Full adjacency matrix as 2d numpy array.
 
         """
         n_nodes = len(self.nodes)
@@ -332,7 +332,7 @@ class AdjlstGraph(BaseGraph):
         """Construct graph using adjacency matrix and node IDs.
 
         Args:
-            adj_mat(:obj:`numpy.ndarray`): 2D numpy array of adjacency matrix
+            adj_mat(NDArray): 2D numpy array of adjacency matrix
             node_ids(:obj:`list` of str): node ID list
 
         Return:
@@ -356,8 +356,8 @@ class SparseGraph(BaseGraph):
     """Sparse Graph object that stores graph as adjacency list.
 
     Examples:
-        Read ``.edg`` file and create ``SparseGraph`` object using ``.read_edg``
-        method.
+        Read ``.edg`` file and create ``SparseGraph`` object using
+        ``.read_edg`` method.
 
         >>> from pecanpy.graph import SparseGraph
         >>>
@@ -473,7 +473,7 @@ class SparseGraph(BaseGraph):
             Only consider positive valued edges.
 
         Args:
-            adj_mat(:obj:`numpy.ndarray`): 2D numpy array of adjacency matrix
+            adj_mat(NDArray): 2D numpy array of adjacency matrix
             node_ids(:obj:`list` of str): node ID list
 
         """
@@ -488,7 +488,7 @@ class DenseGraph(BaseGraph):
     """Dense Graph object that stores graph as array.
 
     Examples:
-        Read ``.npz`` files and create ``DenseGraph`` object using ``read_npz``.
+        Read ``.npz`` files and create ``DenseGraph`` object using ``read_npz``
 
         >>> from pecanpy.graph import DenseGraph
         >>>
@@ -496,7 +496,7 @@ class DenseGraph(BaseGraph):
         >>>
         >>> g.read_npz(paht_to_npz_file, weighted=True, directed=False)
 
-        Read ``.edg`` files and create ``DenseGraph`` object using ``read_edg``.
+        Read ``.edg`` files and create ``DenseGraph`` object using ``read_edg``
 
         >>> from pecanpy.graph import DenseGraph
         >>>
@@ -593,7 +593,7 @@ class DenseGraph(BaseGraph):
         """Construct dense graph using adjacency matrix and node IDs.
 
         Args:
-            adj_mat(:obj:`numpy.ndarray`): 2D numpy array of adjacency matrix
+            adj_mat(NDArray): 2D numpy array of adjacency matrix
             node_ids(:obj:`list` of str): node ID list
 
         """
