@@ -260,10 +260,7 @@ class Base(BaseGraph):
             seed=self.random_state,
         )
 
-        # index mapping back to node IDs
-        idx_list = [w2v.wv.get_index(i) for i in self.nodes]
-
-        return w2v.wv.vectors[idx_list]
+        return w2v.wv[self.nodes]
 
 
 class FirstOrderUnweighted(Base, SparseRWGraph):
