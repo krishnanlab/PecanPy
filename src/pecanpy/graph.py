@@ -1,11 +1,16 @@
 """Lite graph objects used by pecanpy."""
-from typing import Dict
-from typing import Iterator
-from typing import List
-from typing import Optional
-from typing import Tuple
-
 import numpy as np
+
+from .typing import AdjMat
+from .typing import AdjNonZeroMat
+from .typing import CSR
+from .typing import Dict
+from .typing import Float32Array
+from .typing import Iterator
+from .typing import List
+from .typing import Optional
+from .typing import Tuple
+from .typing import Uint32Array
 
 
 class BaseGraph:
@@ -78,8 +83,8 @@ class AdjlstGraph(BaseGraph):
         Python data structures like list and dict.
 
     Examples:
-        Read ``.edg`` file and create ``SparseGraph`` object using ``.read_edg``
-        method.
+        Read ``.edg`` file and create ``SparseGraph`` object using
+        ``.read_edg`` method.
 
         >>> from pecanpy.graph import AdjlstGraph
         >>>
@@ -277,7 +282,7 @@ class AdjlstGraph(BaseGraph):
                 terms = (h_id, t_id) if unweighted else (h_id, t_id, str(w))
                 f.write(f"{delimiter.join(terms)}\n")
 
-    def to_csr(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def to_csr(self) -> CSR:
         """Construct compressed sparse row matrix."""
         indptr = np.zeros(len(self.nodes) + 1, dtype=np.uint32)
         for i, row_data in enumerate(self._data):
@@ -297,16 +302,16 @@ class AdjlstGraph(BaseGraph):
 
         return indptr, indices, data
 
-    def to_dense(self) -> np.ndarray:
+    def to_dense(self) -> AdjMat:
         """Construct dense adjacency matrix.
 
         Note:
             This method does not return DenseGraph object, but instead return
-            dense adjacency matrix as ``numpy.ndarray``, the index is the same
+            dense adjacency matrix as NDArray, the index is the same
             as that of ``nodes``.
 
         Return:
-            numpy.ndarray: Full adjacency matrix as 2d numpy array.
+            NDArray: Full adjacency matrix as 2d numpy array.
 
         """
         n_nodes = len(self.nodes)
@@ -319,11 +324,11 @@ class AdjlstGraph(BaseGraph):
         return mat
 
     @classmethod
-    def from_mat(cls, adj_mat: np.ndarray, node_ids: List[str], **kwargs):
+    def from_mat(cls, adj_mat: AdjMat, node_ids: List[str], **kwargs):
         """Construct graph using adjacency matrix and node IDs.
 
         Args:
-            adj_mat(:obj:`numpy.ndarray`): 2D numpy array of adjacency matrix
+            adj_mat(NDArray): 2D numpy array of adjacency matrix
             node_ids(:obj:`list` of str): node ID list
 
         Return:
@@ -347,8 +352,8 @@ class SparseGraph(BaseGraph):
     """Sparse Graph object that stores graph as adjacency list.
 
     Examples:
-        Read ``.edg`` file and create ``SparseGraph`` object using ``.read_edg``
-        method.
+        Read ``.edg`` file and create ``SparseGraph`` object using
+        ``.read_edg`` method.
 
         >>> from pecanpy.graph import SparseGraph
         >>>
@@ -366,9 +371,9 @@ class SparseGraph(BaseGraph):
     def __init__(self):
         """Initialize SparseGraph object."""
         super().__init__()
-        self.data: Optional[np.ndarray] = None
-        self.indptr: Optional[np.ndarray] = None
-        self.indices: Optional[np.ndarray] = None
+        self.data: Optional[Float32Array] = None
+        self.indptr: Optional[Uint32Array] = None
+        self.indices: Optional[Uint32Array] = None
 
     @property
     def num_edges(self) -> int:
@@ -457,14 +462,14 @@ class SparseGraph(BaseGraph):
         return g
 
     @classmethod
-    def from_mat(cls, adj_mat: np.ndarray, node_ids: List[str], **kwargs):
+    def from_mat(cls, adj_mat: AdjMat, node_ids: List[str], **kwargs):
         """Construct csr graph using adjacency matrix and node IDs.
 
         Note:
             Only consider positive valued edges.
 
         Args:
-            adj_mat(:obj:`numpy.ndarray`): 2D numpy array of adjacency matrix
+            adj_mat(NDArray): 2D numpy array of adjacency matrix
             node_ids(:obj:`list` of str): node ID list
 
         """
@@ -479,7 +484,7 @@ class DenseGraph(BaseGraph):
     """Dense Graph object that stores graph as array.
 
     Examples:
-        Read ``.npz`` files and create ``DenseGraph`` object using ``read_npz``.
+        Read ``.npz`` files and create ``DenseGraph`` object using ``read_npz``
 
         >>> from pecanpy.graph import DenseGraph
         >>>
@@ -487,7 +492,7 @@ class DenseGraph(BaseGraph):
         >>>
         >>> g.read_npz(paht_to_npz_file, weighted=True, directed=False)
 
-        Read ``.edg`` files and create ``DenseGraph`` object using ``read_edg``.
+        Read ``.edg`` files and create ``DenseGraph`` object using ``read_edg``
 
         >>> from pecanpy.graph import DenseGraph
         >>>
@@ -505,8 +510,8 @@ class DenseGraph(BaseGraph):
     def __init__(self):
         """Initialize DenseGraph object."""
         super().__init__()
-        self._data: Optional[np.ndarray] = None
-        self._nonzero: Optional[np.ndarray] = None
+        self._data: Optional[AdjMat] = None
+        self._nonzero: Optional[AdjNonZeroMat] = None
 
     @property
     def num_edges(self) -> int:
@@ -517,18 +522,18 @@ class DenseGraph(BaseGraph):
             raise ValueError("Empty graph.")
 
     @property
-    def data(self) -> Optional[np.ndarray]:
+    def data(self) -> Optional[AdjMat]:
         """Return the adjacency matrix."""
         return self._data
 
     @data.setter
-    def data(self, data: np.ndarray):
+    def data(self, data: AdjMat):
         """Set adjacency matrix and the corresponding nonzero matrix."""
         self._data = data.astype(float)
         self._nonzero = np.array(self._data != 0, dtype=bool)
 
     @property
-    def nonzero(self) -> Optional[np.ndarray]:
+    def nonzero(self) -> Optional[AdjNonZeroMat]:
         """Return the nonzero mask for the adjacency matrix."""
         return self._nonzero
 
@@ -580,11 +585,11 @@ class DenseGraph(BaseGraph):
         return g
 
     @classmethod
-    def from_mat(cls, adj_mat: np.ndarray, node_ids: List[str], **kwargs):
+    def from_mat(cls, adj_mat: AdjMat, node_ids: List[str], **kwargs):
         """Construct dense graph using adjacency matrix and node IDs.
 
         Args:
-            adj_mat(:obj:`numpy.ndarray`): 2D numpy array of adjacency matrix
+            adj_mat(NDArray): 2D numpy array of adjacency matrix
             node_ids(:obj:`list` of str): node ID list
 
         """

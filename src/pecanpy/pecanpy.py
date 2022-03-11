@@ -1,12 +1,6 @@
 """Different strategies for generating node2vec walks."""
-from typing import Any
-from typing import Callable
-from typing import List
-from typing import Optional
-
 import numpy as np
 from gensim.models import Word2Vec
-from nptyping import NDArray
 from numba import njit
 from numba import prange
 from numba.np.ufunc.parallel import _get_thread_id
@@ -15,10 +9,15 @@ from numba_progress import ProgressBar
 from .graph import BaseGraph
 from .rw import DenseRWGraph
 from .rw import SparseRWGraph
+from .typing import Embeddings
+from .typing import Float32Array
+from .typing import HasNbrs
+from .typing import List
+from .typing import MoveForward
+from .typing import Optional
+from .typing import Uint32Array
+from .typing import Uint64Array
 from .wrappers import Timer
-
-HasNbrs = Callable[[np.uint32], bool]
-MoveForward = Callable[..., np.uint32]
 
 
 class Base(BaseGraph):
@@ -99,7 +98,7 @@ class Base(BaseGraph):
         self.random_state = random_state
         self._preprocessed: bool = False
 
-    def _map_walk(self, walk_idx_ary: np.ndarray) -> List[str]:
+    def _map_walk(self, walk_idx_ary: Uint32Array) -> List[str]:
         """Map walk from node index to node ID.
 
         Note:
@@ -166,11 +165,11 @@ class Base(BaseGraph):
         tot_num_jobs: int,
         walk_length: int,
         random_state: Optional[int],
-        start_node_idx_ary: NDArray[(Any,), np.uint32],
+        start_node_idx_ary: Uint32Array,
         has_nbrs: HasNbrs,
         move_forward: MoveForward,
         progress_proxy: ProgressBar,
-    ):
+    ) -> Uint32Array:
         """Simulate a random walk starting from start node."""
         # Seed the random number generator
         if random_state is not None:
@@ -241,7 +240,7 @@ class Base(BaseGraph):
         window_size: int = 10,
         epochs: int = 1,
         verbose: bool = False,
-    ) -> np.ndarray:
+    ) -> Embeddings:
         """Generate embeddings.
 
         This is a shortcut function that combines ``simulate_walks`` with
@@ -264,7 +263,7 @@ class Base(BaseGraph):
                 skip-gram training if set to True
 
         Return:
-            numpy.ndarray: The embedding matrix, each row is a node embedding
+            Embeddings: The embedding matrix, each row is a node embedding
                 vector. The index is the same as that for the graph.
 
         """
@@ -375,7 +374,10 @@ class PreComp(Base, SparseRWGraph):
     def __init__(self, *args, **kwargs):
         """Initialize PreComp mode node2vec."""
         Base.__init__(self, *args, **kwargs)
-        self.alias_j = self.alias_q = self.alias_indptr = self.alias_dim = None
+        self.alias_dim: Optional[Uint32Array] = None
+        self.alias_j: Optional[Uint32Array] = None
+        self.alias_q: Optional[Float32Array] = None
+        self.alias_indptr: Optional[Uint64Array] = None
 
     def get_move_forward(self):
         """Wrap ``move_forward``.
@@ -624,7 +626,7 @@ def alias_setup(probs):
 
     Args:
         probs (list(float32)): normalized transition probabilities array, could
-            be in either list or numpy.ndarray, of float32 values.
+            be in either list or NDArray, of float32 values.
 
     """
     k = probs.size
