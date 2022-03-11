@@ -15,7 +15,6 @@ from .typing import Float32Array
 from .typing import HasNbrs
 from .typing import List
 from .typing import MoveForward
-from .typing import NDArray
 from .typing import Optional
 from .typing import Uint32Array
 from .typing import Uint64Array
@@ -100,7 +99,7 @@ class Base(BaseGraph):
         self.random_state = random_state
         self._preprocessed: bool = False
 
-    def _map_walk(self, walk_idx_ary: NDArray[Any, np.uint32]) -> List[str]:
+    def _map_walk(self, walk_idx_ary: Uint32Array) -> List[str]:
         """Map walk from node index to node ID.
 
         Note:
@@ -167,11 +166,11 @@ class Base(BaseGraph):
         tot_num_jobs: int,
         walk_length: int,
         random_state: Optional[int],
-        start_node_idx_ary: NDArray[(Any,), np.uint32],
+        start_node_idx_ary: Uint32Array,
         has_nbrs: HasNbrs,
         move_forward: MoveForward,
         progress_proxy: ProgressBar,
-    ) -> NDArray[Any, np.uint32]:
+    ) -> Uint32Array:
         """Simulate a random walk starting from start node."""
         # Seed the random number generator
         if random_state is not None:
