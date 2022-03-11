@@ -16,11 +16,12 @@ HasNbrs = Callable[[np.uint32], bool]
 MoveForward = Callable[..., np.uint32]
 
 # Numpy array types ###########################################################
-Embeddings: TypeAlias = NDArray[Any, np.float32]
-AdjMat: TypeAlias = NDArray[[Any, Any], Any]
-AdjNonZeroMat: TypeAlias = NDArray[[Any, Any], bool]
-Uint32Array: TypeAlias = NDArray[[Any], np.uint32]
-Float32Array: TypeAlias = NDArray[[Any], np.float32]
+# issue with type alias (https://stackoverflow.com/questions/62073473)
+Embeddings: TypeAlias = NDArray[(Any, Any), np.float32]  # type: ignore
+AdjMat: TypeAlias = NDArray[(Any, Any), Any]  # type: ignore
+AdjNonZeroMat: TypeAlias = NDArray[(Any, Any), bool]  # type: ignore
+Uint32Array: TypeAlias = NDArray[(Any,), np.uint32]  # type: ignore
+Float32Array: TypeAlias = NDArray[(Any,), np.float32]  # type: ignore
 CSR = Tuple[Uint32Array, Uint32Array, Float32Array]
 
 __all__ = [
