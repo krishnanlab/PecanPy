@@ -11,11 +11,14 @@ from .rw import DenseRWGraph
 from .rw import SparseRWGraph
 from .typing import Any
 from .typing import Embeddings
+from .typing import Float32Array
 from .typing import HasNbrs
 from .typing import List
 from .typing import MoveForward
 from .typing import NDArray
 from .typing import Optional
+from .typing import Uint32Array
+from .typing import Uint64Array
 from .wrappers import Timer
 
 
@@ -373,7 +376,10 @@ class PreComp(Base, SparseRWGraph):
     def __init__(self, *args, **kwargs):
         """Initialize PreComp mode node2vec."""
         Base.__init__(self, *args, **kwargs)
-        self.alias_j = self.alias_q = self.alias_indptr = self.alias_dim = None
+        self.alias_dim: Optional[Uint32Array] = None
+        self.alias_j: Optional[Uint32Array] = None
+        self.alias_q: Optional[Float32Array] = None
+        self.alias_indptr: Optional[Uint64Array] = None
 
     def get_move_forward(self):
         """Wrap ``move_forward``.

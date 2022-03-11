@@ -21,6 +21,7 @@ Embeddings: TypeAlias = NDArray[(Any, Any), np.float32]  # type: ignore
 AdjMat: TypeAlias = NDArray[(Any, Any), Any]  # type: ignore
 AdjNonZeroMat: TypeAlias = NDArray[(Any, Any), bool]  # type: ignore
 Uint32Array: TypeAlias = NDArray[(Any,), np.uint32]  # type: ignore
+Uint64Array: TypeAlias = NDArray[(Any,), np.uint64]  # type: ignore
 Float32Array: TypeAlias = NDArray[(Any,), np.float32]  # type: ignore
 CSR = Tuple[Uint32Array, Uint32Array, Float32Array]
 
