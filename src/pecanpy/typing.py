@@ -6,6 +6,7 @@ from typing import Iterator
 from typing import List
 from typing import Optional
 from typing import Tuple
+from typing import Union
 
 import numpy as np
 from nptyping import NDArray
@@ -33,6 +34,7 @@ __all__ = [
     "List",
     "Tuple",
     "Optional",
+    "Union",
     "NDArray",
     "HasNbrs",
     "MoveForward",

@@ -9,31 +9,6 @@ from ..graph import SparseGraph
 class SparseRWGraph(SparseGraph):
     """Sparse Graph equipped with random walk computation."""
 
-    def get_has_nbrs(self):
-        """Wrap ``has_nbrs``."""
-        indptr = self.indptr
-
-        @njit(nogil=True)
-        def has_nbrs(idx):
-            return indptr[idx] != indptr[idx + 1]
-
-        return has_nbrs
-
-    def get_noise_thresholds(self):
-        """Compute average edge weights."""
-        data = self.data
-        indptr = self.indptr
-
-        noise_threshold_ary = np.zeros(self.num_nodes, dtype=np.float32)
-        for i in range(self.num_nodes):
-            noise_threshold_ary[i] = (
-                data[indptr[i] : indptr[i + 1]].mean()
-                + self.gamma * data[indptr[i] : indptr[i + 1]].std()
-            )
-        noise_threshold_ary = np.maximum(noise_threshold_ary, 0)
-
-        return noise_threshold_ary
-
     @staticmethod
     @njit(nogil=True)
     def get_normalized_probs_first_order(data, indices, indptr, cur_idx):

@@ -7,6 +7,8 @@ from numba.np.ufunc.parallel import _get_thread_id
 from numba_progress import ProgressBar
 
 from .graph import BaseGraph
+from .graph import DenseGraph
+from .graph import SparseGraph
 from .rw import DenseRWGraph
 from .rw import SparseRWGraph
 from .typing import Embeddings
@@ -17,6 +19,7 @@ from .typing import MoveForward
 from .typing import Optional
 from .typing import Uint32Array
 from .typing import Uint64Array
+from .typing import Union
 from .wrappers import Timer
 
 
@@ -61,7 +64,7 @@ class Base(BaseGraph):
         workers: int = 1,
         verbose: bool = False,
         extend: bool = False,
-        gamma: float = 0,
+        gamma: float = 0.0,
         random_state: Optional[int] = None,
     ):
         """Initializ node2vec base class.
@@ -217,7 +220,7 @@ class Base(BaseGraph):
         """
         if self.extend:  # use n2v+
             get_normalized_probs = self.get_extended_normalized_probs
-            noise_thresholds = self.get_noise_thresholds()
+            noise_thresholds = get_noise_thresholds(self)
         else:  # use normal n2v
             get_normalized_probs = self.get_normalized_probs
             noise_thresholds = None
@@ -374,10 +377,10 @@ class PreComp(Base, SparseRWGraph):
     def __init__(self, *args, **kwargs):
         """Initialize PreComp mode node2vec."""
         Base.__init__(self, *args, **kwargs)
-        self.alias_dim: Optional[Uint32Array] = None
-        self.alias_j: Optional[Uint32Array] = None
-        self.alias_q: Optional[Float32Array] = None
-        self.alias_indptr: Optional[Uint64Array] = None
+        self.alias_dim: Uint32Array = np.empty(0, np.uint32)
+        self.alias_j: Uint32Array = np.empty(0, np.uint32)
+        self.alias_q: Float32Array = np.empty(0, np.float32)
+        self.alias_indptr: Uint64Array = np.empty(0, np.uint64)
 
     def get_move_forward(self):
         """Wrap ``move_forward``.
@@ -667,7 +670,7 @@ def alias_setup(probs):
 
 @njit(nogil=True)
 def alias_draw(j, q):
-    """Draw sample from a non-uniform discrete distribution using alias sampling."""
+    """Draw sample from a non-uniform discrete dist using alias sampling."""
     k = j.size
 
     kk = np.random.randint(k)
@@ -675,3 +678,26 @@ def alias_draw(j, q):
         return kk
     else:
         return j[kk]
+
+
+def get_noise_thresholds(
+    graph: Union[DenseGraph, SparseGraph],
+) -> Float32Array:
+    """Compute noise thresholds based on edge statistics."""
+    noise_threshold_ary = np.zeros(graph.num_nodes, dtype=np.float32)
+    if isinstance(graph, SparseGraph):
+        for i in range(graph.num_nodes):
+            start_idx = graph.indptr[i]
+            end_idx = graph.indptr[i + 1]
+            noise_threshold_ary[i] = (
+                graph.data[start_idx:end_idx].mean()
+                + graph.gamma * graph.data[start_idx:end_idx].std()
+            )
+    elif isinstance(graph, DenseGraph):
+        for i in range(graph.num_nodes):
+            weights = graph.data[i, graph.nonzero[i]]
+            noise_threshold_ary[i] = weights.mean() + graph.gamma * weights.std()
+    else:
+        raise TypeError(f"Unknown supported type {graph!r}")
+
+    return np.maximum(noise_threshold_ary, 0)

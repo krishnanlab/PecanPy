@@ -1,5 +1,6 @@
 """Lite graph objects used by pecanpy."""
 import numpy as np
+from numba import njit
 
 from .typing import AdjMat
 from .typing import AdjNonZeroMat
@@ -8,7 +9,6 @@ from .typing import Dict
 from .typing import Float32Array
 from .typing import Iterator
 from .typing import List
-from .typing import Optional
 from .typing import Tuple
 from .typing import Uint32Array
 
@@ -22,8 +22,9 @@ class BaseGraph:
 
     """
 
-    def __init__(self):
+    def __init__(self, gamma: float = 0.0):
         """Initialize ID list and ID map."""
+        self.gamma = gamma
         self._node_ids: List[str] = []
         self._node_idmap: Dict[str, int] = {}  # id -> index
 
@@ -368,20 +369,27 @@ class SparseGraph(BaseGraph):
 
     """
 
-    def __init__(self):
+    def __init__(self, gamma: float = 0.0):
         """Initialize SparseGraph object."""
-        super().__init__()
-        self.data: Optional[Float32Array] = None
-        self.indptr: Optional[Uint32Array] = None
-        self.indices: Optional[Uint32Array] = None
+        super().__init__(gamma=gamma)
+        self.data: Float32Array = np.empty(0, np.float32)
+        self.indptr: Uint32Array = np.empty(0, np.uint32)
+        self.indices: Uint32Array = np.empty(0, np.uint32)
 
     @property
     def num_edges(self) -> int:
         """Return the number of edges in the graph."""
-        if self.indptr is not None:
-            return self.indptr[-1]
-        else:
-            raise ValueError("Empty graph.")
+        return self.indptr[-1]
+
+    def get_has_nbrs(self):
+        """Wrap ``has_nbrs``."""
+        indptr = self.indptr
+
+        @njit(nogil=True)
+        def has_nbrs(idx):
+            return indptr[idx] != indptr[idx + 1]
+
+        return has_nbrs
 
     def read_edg(
         self,
@@ -507,22 +515,19 @@ class DenseGraph(BaseGraph):
 
     """
 
-    def __init__(self):
+    def __init__(self, gamma: float = 0.0):
         """Initialize DenseGraph object."""
-        super().__init__()
-        self._data: Optional[AdjMat] = None
-        self._nonzero: Optional[AdjNonZeroMat] = None
+        super().__init__(gamma=gamma)
+        self._data: AdjMat = np.empty((0, 0))
+        self._nonzero: AdjNonZeroMat = np.empty((0, 0), dtype=bool)
 
     @property
     def num_edges(self) -> int:
         """Return the number of edges in the graph."""
-        if self.nonzero is not None:
-            return self.nonzero.sum()
-        else:
-            raise ValueError("Empty graph.")
+        return self.nonzero.sum()
 
     @property
-    def data(self) -> Optional[AdjMat]:
+    def data(self) -> AdjMat:
         """Return the adjacency matrix."""
         return self._data
 
@@ -533,9 +538,22 @@ class DenseGraph(BaseGraph):
         self._nonzero = np.array(self._data != 0, dtype=bool)
 
     @property
-    def nonzero(self) -> Optional[AdjNonZeroMat]:
+    def nonzero(self) -> AdjNonZeroMat:
         """Return the nonzero mask for the adjacency matrix."""
         return self._nonzero
+
+    def get_has_nbrs(self):
+        """Wrap ``has_nbrs``."""
+        nonzero = self.nonzero
+
+        @njit(nogil=True)
+        def has_nbrs(idx):
+            for j in range(nonzero.shape[1]):
+                if nonzero[idx, j]:
+                    return True
+            return False
+
+        return has_nbrs
 
     def read_npz(self, path: str, weighted: bool):
         """Read ``.npz`` file and create dense graph.
