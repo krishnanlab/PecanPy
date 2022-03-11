@@ -425,8 +425,10 @@ class SparseGraph(BaseGraph):
         raw = np.load(path)
         self.set_node_ids(raw["IDs"].tolist())
         self.data = raw["data"]
-        if not weighted:  # overwrite edge weights with constant
-            self.data[:] = 1.0
+        if self.data is None:
+            raise ValueError("Adjacency matrix data not found.")
+        elif not weighted:
+            self.data[:] = 1.0  # overwrite edge weights with constant
         self.indptr = raw["indptr"]
         self.indices = raw["indices"]
 
@@ -523,7 +525,7 @@ class DenseGraph(BaseGraph):
     def data(self, data: np.ndarray):
         """Set adjacency matrix and the corresponding nonzero matrix."""
         self._data = data.astype(float)
-        self._nonzero = self._data != 0
+        self._nonzero = np.array(self._data != 0, dtype=bool)
 
     @property
     def nonzero(self) -> Optional[np.ndarray]:

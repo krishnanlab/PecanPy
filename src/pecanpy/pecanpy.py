@@ -1,9 +1,12 @@
 """Different strategies for generating node2vec walks."""
+from typing import Any
+from typing import Callable
 from typing import List
 from typing import Optional
 
 import numpy as np
 from gensim.models import Word2Vec
+from nptyping import NDArray
 from numba import njit
 from numba import prange
 from numba.np.ufunc.parallel import _get_thread_id
@@ -13,6 +16,9 @@ from .graph import BaseGraph
 from .rw import DenseRWGraph
 from .rw import SparseRWGraph
 from .wrappers import Timer
+
+HasNbrs = Callable[[np.uint32], bool]
+MoveForward = Callable[..., np.uint32]
 
 
 class Base(BaseGraph):
@@ -137,50 +143,67 @@ class Base(BaseGraph):
         has_nbrs = self.get_has_nbrs()
         verbose = self.verbose
 
-        @njit(parallel=True, nogil=True)
-        def node2vec_walks(num_iter, progress_proxy):
-            """Simulate a random walk starting from start node."""
-            # Seed the random number generator
-            if random_state is not None:
-                np.random.seed(random_state + _get_thread_id())
-
-            # use the last entry of each walk index array to keep track of the
-            # effective walk length
-            walk_idx_mat = np.zeros((num_iter, walk_length + 2), dtype=np.uint32)
-            walk_idx_mat[:, 0] = start_node_idx_ary  # initialize seeds
-            walk_idx_mat[:, -1] = walk_length + 1  # set to full walk length by default
-
-            for i in prange(num_iter):
-                # initialize first step as normal random walk
-                start_node_idx = walk_idx_mat[i, 0]
-                if has_nbrs(start_node_idx):
-                    walk_idx_mat[i, 1] = move_forward(start_node_idx)
-                else:
-                    walk_idx_mat[i, -1] = 1
-                    continue
-
-                # start bias random walk
-                for j in range(2, walk_length + 1):
-                    cur_idx = walk_idx_mat[i, j - 1]
-                    if has_nbrs(cur_idx):
-                        prev_idx = walk_idx_mat[i, j - 2]
-                        walk_idx_mat[i, j] = move_forward(cur_idx, prev_idx)
-                    else:
-                        walk_idx_mat[i, -1] = j
-                        break
-
-                progress_proxy.update(1)
-
-            return walk_idx_mat
-
         # Acquire numba progress proxy for displaying the progress bar
         with ProgressBar(total=tot_num_jobs, disable=not verbose) as progress:
-            walk_idx_mat = node2vec_walks(tot_num_jobs, progress)
+            walk_idx_mat = self._random_walks(
+                tot_num_jobs,
+                walk_length,
+                random_state,
+                start_node_idx_ary,
+                has_nbrs,
+                move_forward,
+                progress,
+            )
 
         # Map node index back to node ID
         walks = [self._map_walk(walk_idx_ary) for walk_idx_ary in walk_idx_mat]
 
         return walks
+
+    @staticmethod
+    @njit(parallel=True, nogil=True)
+    def _random_walks(
+        tot_num_jobs: int,
+        walk_length: int,
+        random_state: Optional[int],
+        start_node_idx_ary: NDArray[(Any,), np.uint32],
+        has_nbrs: HasNbrs,
+        move_forward: MoveForward,
+        progress_proxy: ProgressBar,
+    ):
+        """Simulate a random walk starting from start node."""
+        # Seed the random number generator
+        if random_state is not None:
+            np.random.seed(random_state + _get_thread_id())
+
+        # use the last entry of each walk index array to keep track of the
+        # effective walk length
+        walk_idx_mat = np.zeros((tot_num_jobs, walk_length + 2), dtype=np.uint32)
+        walk_idx_mat[:, 0] = start_node_idx_ary  # initialize seeds
+        walk_idx_mat[:, -1] = walk_length + 1  # set to full walk length by default
+
+        for i in prange(tot_num_jobs):
+            # initialize first step as normal random walk
+            start_node_idx = walk_idx_mat[i, 0]
+            if has_nbrs(start_node_idx):
+                walk_idx_mat[i, 1] = move_forward(start_node_idx)
+            else:
+                walk_idx_mat[i, -1] = 1
+                continue
+
+            # start bias random walk
+            for j in range(2, walk_length + 1):
+                cur_idx = walk_idx_mat[i, j - 1]
+                if has_nbrs(cur_idx):
+                    prev_idx = walk_idx_mat[i, j - 2]
+                    walk_idx_mat[i, j] = move_forward(cur_idx, prev_idx)
+                else:
+                    walk_idx_mat[i, -1] = j
+                    break
+
+            progress_proxy.update(1)
+
+        return walk_idx_mat
 
     def setup_get_normalized_probs(self):
         """Transition probability computation setup.
@@ -260,10 +283,7 @@ class Base(BaseGraph):
             seed=self.random_state,
         )
 
-        # index mapping back to node IDs
-        idx_list = [w2v.wv.get_index(i) for i in self.nodes]
-
-        return w2v.wv.vectors[idx_list]
+        return w2v.wv[self.nodes]
 
 
 class FirstOrderUnweighted(Base, SparseRWGraph):
