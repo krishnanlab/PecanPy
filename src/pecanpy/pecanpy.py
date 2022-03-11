@@ -214,7 +214,7 @@ class Base(BaseGraph):
         average edge weights array, which is used later by the transition
         probability computation function ``get_extended_normalized_probs``,
         if node2vec+ is used. Otherwise, return the normal transition function
-        ``get_noramlized_probs`` with a trivial placeholder for average edge
+        ``get_normalized_probs`` with a trivial placeholder for average edge
         weights array ``noise_thresholds``.
 
         """
