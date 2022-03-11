@@ -9,7 +9,6 @@ from numba_progress import ProgressBar
 from .graph import BaseGraph
 from .rw import DenseRWGraph
 from .rw import SparseRWGraph
-from .typing import Any
 from .typing import Embeddings
 from .typing import Float32Array
 from .typing import HasNbrs
