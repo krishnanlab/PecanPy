@@ -11,6 +11,7 @@ from numba import njit
 from numba import prange
 from numba.np.ufunc.parallel import _get_thread_id
 from numba_progress import ProgressBar
+from typing_extensions import TypeAlias
 
 from .graph import BaseGraph
 from .rw import DenseRWGraph
@@ -19,6 +20,7 @@ from .wrappers import Timer
 
 HasNbrs = Callable[[np.uint32], bool]
 MoveForward = Callable[..., np.uint32]
+Embeddings: TypeAlias = NDArray[Any, np.float32]
 
 
 class Base(BaseGraph):
@@ -99,7 +101,7 @@ class Base(BaseGraph):
         self.random_state = random_state
         self._preprocessed: bool = False
 
-    def _map_walk(self, walk_idx_ary: np.ndarray) -> List[str]:
+    def _map_walk(self, walk_idx_ary: NDArray[Any, np.uint32]) -> List[str]:
         """Map walk from node index to node ID.
 
         Note:
@@ -170,7 +172,7 @@ class Base(BaseGraph):
         has_nbrs: HasNbrs,
         move_forward: MoveForward,
         progress_proxy: ProgressBar,
-    ):
+    ) -> NDArray[Any, np.uint32]:
         """Simulate a random walk starting from start node."""
         # Seed the random number generator
         if random_state is not None:
@@ -241,7 +243,7 @@ class Base(BaseGraph):
         window_size: int = 10,
         epochs: int = 1,
         verbose: bool = False,
-    ) -> np.ndarray:
+    ) -> Embeddings:
         """Generate embeddings.
 
         This is a shortcut function that combines ``simulate_walks`` with

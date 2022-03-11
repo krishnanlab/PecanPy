@@ -1,4 +1,5 @@
 """Lite graph objects used by pecanpy."""
+from typing import Any
 from typing import Dict
 from typing import Iterator
 from typing import List
@@ -6,6 +7,14 @@ from typing import Optional
 from typing import Tuple
 
 import numpy as np
+from numpy.typing import NDArray
+from typing_extensions import TypeAlias
+
+AdjMat: TypeAlias = NDArray[[Any, Any], Any]
+AdjNonZeroMat: TypeAlias = NDArray[[Any, Any], bool]
+Uint32Array: TypeAlias = NDArray[[Any], np.uint32]
+Float32Array: TypeAlias = NDArray[[Any], np.float32]
+CSR = Tuple[Uint32Array, Uint32Array, Float32Array]
 
 
 class BaseGraph:
@@ -277,7 +286,7 @@ class AdjlstGraph(BaseGraph):
                 terms = (h_id, t_id) if unweighted else (h_id, t_id, str(w))
                 f.write(f"{delimiter.join(terms)}\n")
 
-    def to_csr(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def to_csr(self) -> CSR:
         """Construct compressed sparse row matrix."""
         indptr = np.zeros(len(self.nodes) + 1, dtype=np.uint32)
         for i, row_data in enumerate(self._data):
@@ -297,7 +306,7 @@ class AdjlstGraph(BaseGraph):
 
         return indptr, indices, data
 
-    def to_dense(self) -> np.ndarray:
+    def to_dense(self) -> AdjMat:
         """Construct dense adjacency matrix.
 
         Note:
@@ -319,7 +328,7 @@ class AdjlstGraph(BaseGraph):
         return mat
 
     @classmethod
-    def from_mat(cls, adj_mat: np.ndarray, node_ids: List[str], **kwargs):
+    def from_mat(cls, adj_mat: AdjMat, node_ids: List[str], **kwargs):
         """Construct graph using adjacency matrix and node IDs.
 
         Args:
@@ -366,9 +375,9 @@ class SparseGraph(BaseGraph):
     def __init__(self):
         """Initialize SparseGraph object."""
         super().__init__()
-        self.data: Optional[np.ndarray] = None
-        self.indptr: Optional[np.ndarray] = None
-        self.indices: Optional[np.ndarray] = None
+        self.data: Optional[Float32Array] = None
+        self.indptr: Optional[Uint32Array] = None
+        self.indices: Optional[Uint32Array] = None
 
     @property
     def num_edges(self) -> int:
@@ -457,7 +466,7 @@ class SparseGraph(BaseGraph):
         return g
 
     @classmethod
-    def from_mat(cls, adj_mat: np.ndarray, node_ids: List[str], **kwargs):
+    def from_mat(cls, adj_mat: AdjMat, node_ids: List[str], **kwargs):
         """Construct csr graph using adjacency matrix and node IDs.
 
         Note:
@@ -505,8 +514,8 @@ class DenseGraph(BaseGraph):
     def __init__(self):
         """Initialize DenseGraph object."""
         super().__init__()
-        self._data: Optional[np.ndarray] = None
-        self._nonzero: Optional[np.ndarray] = None
+        self._data: Optional[AdjMat] = None
+        self._nonzero: Optional[AdjNonZeroMat] = None
 
     @property
     def num_edges(self) -> int:
@@ -517,18 +526,18 @@ class DenseGraph(BaseGraph):
             raise ValueError("Empty graph.")
 
     @property
-    def data(self) -> Optional[np.ndarray]:
+    def data(self) -> Optional[AdjMat]:
         """Return the adjacency matrix."""
         return self._data
 
     @data.setter
-    def data(self, data: np.ndarray):
+    def data(self, data: AdjMat):
         """Set adjacency matrix and the corresponding nonzero matrix."""
         self._data = data.astype(float)
         self._nonzero = np.array(self._data != 0, dtype=bool)
 
     @property
-    def nonzero(self) -> Optional[np.ndarray]:
+    def nonzero(self) -> Optional[AdjNonZeroMat]:
         """Return the nonzero mask for the adjacency matrix."""
         return self._nonzero
 
@@ -580,7 +589,7 @@ class DenseGraph(BaseGraph):
         return g
 
     @classmethod
-    def from_mat(cls, adj_mat: np.ndarray, node_ids: List[str], **kwargs):
+    def from_mat(cls, adj_mat: AdjMat, node_ids: List[str], **kwargs):
         """Construct dense graph using adjacency matrix and node IDs.
 
         Args:
