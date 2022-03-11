@@ -1,26 +1,22 @@
 """Different strategies for generating node2vec walks."""
-from typing import Any
-from typing import Callable
-from typing import List
-from typing import Optional
-
 import numpy as np
 from gensim.models import Word2Vec
-from nptyping import NDArray
 from numba import njit
 from numba import prange
 from numba.np.ufunc.parallel import _get_thread_id
 from numba_progress import ProgressBar
-from typing_extensions import TypeAlias
 
 from .graph import BaseGraph
 from .rw import DenseRWGraph
 from .rw import SparseRWGraph
+from .typing import Any
+from .typing import Embeddings
+from .typing import HasNbrs
+from .typing import List
+from .typing import MoveForward
+from .typing import NDArray
+from .typing import Optional
 from .wrappers import Timer
-
-HasNbrs = Callable[[np.uint32], bool]
-MoveForward = Callable[..., np.uint32]
-Embeddings: TypeAlias = NDArray[Any, np.float32]
 
 
 class Base(BaseGraph):

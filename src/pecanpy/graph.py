@@ -1,20 +1,16 @@
 """Lite graph objects used by pecanpy."""
-from typing import Any
-from typing import Dict
-from typing import Iterator
-from typing import List
-from typing import Optional
-from typing import Tuple
-
 import numpy as np
-from numpy.typing import NDArray
-from typing_extensions import TypeAlias
 
-AdjMat: TypeAlias = NDArray[[Any, Any], Any]
-AdjNonZeroMat: TypeAlias = NDArray[[Any, Any], bool]
-Uint32Array: TypeAlias = NDArray[[Any], np.uint32]
-Float32Array: TypeAlias = NDArray[[Any], np.float32]
-CSR = Tuple[Uint32Array, Uint32Array, Float32Array]
+from .typing import AdjMat
+from .typing import AdjNonZeroMat
+from .typing import CSR
+from .typing import Dict
+from .typing import Float32Array
+from .typing import Iterator
+from .typing import List
+from .typing import Optional
+from .typing import Tuple
+from .typing import Uint32Array
 
 
 class BaseGraph:
