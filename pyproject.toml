@@ -5,3 +5,6 @@ build-backend = "setuptools.build_meta"
 [tool.mypy]
 ignore_missing_imports = true
 follow_imports = "skip"
+plugins = [
+    "numpy.typing.mypy_plugin",
+]
