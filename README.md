@@ -73,13 +73,13 @@ each of which is better optimized for different network sizes/densities:
 
 #### Compatibility and recommendations
 
-| Mode | Weighted graph | ``p,q!=1`` | Node2vec+ | Use this if |
-|:-----|----------------|---------------|-----------|:------------|
-|``PreComp``|:white_check_mark:|:white_check_mark:|:white_check_mark:|The graph is small and sparse|
-|``SparseOTF``|:white_check_mark:|:white_check_mark:|:white_check_mark:|The graph is sparse but not necessarily small|
-|``DenseOTF``|:white_check_mark:|:white_check_mark:|:white_check_mark:|The graph is extremely dense|
-|``PreCompFirstOrder``|:white_check_mark:|:x:|:x:|Run with ``p = q = 1`` on weighted graph|
-|``FirstOrderUnweighted``|:x:|:x:|:x:|Run with ``p = q = 1`` on unweighted graph|
+| Mode | Weighted | ``p,q!=1`` | Node2vec+ | Speed | Use this if |
+|:-----|----------------|---------------|-----------|:------------|:--------|
+|``PreComp``|:white_check_mark:|:white_check_mark:|:white_check_mark:|:dash::dash:|The graph is small and sparse|
+|``SparseOTF``|:white_check_mark:|:white_check_mark:|:white_check_mark:|:dash:|The graph is sparse but not necessarily small|
+|``DenseOTF``|:white_check_mark:|:white_check_mark:|:white_check_mark:|:dash:|The graph is extremely dense|
+|``PreCompFirstOrder``|:white_check_mark:|:x:|:x:|:dash::dash:|Run with ``p = q = 1`` on weighted graph|
+|``FirstOrderUnweighted``|:x:|:x:|:x:|:dash::dash::dash:|Run with ``p = q = 1`` on unweighted graph|
 
 ### Options
 
