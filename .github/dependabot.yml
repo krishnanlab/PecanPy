@@ -9,3 +9,6 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+    ignore:
+      - dependency-name: "numpy"
+        versions: ["1.22.x"]  # Numba 0.55.1 do not support numpy 1.22.x yet https://github.com/numba/numba/issues/7754
