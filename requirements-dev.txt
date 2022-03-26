@@ -1,4 +1,4 @@
-tox==3.24.4
+tox==3.24.5
 black==21.12b0
 pytest==6.2.5
 pytest-cov==3.0.0
