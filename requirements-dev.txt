@@ -4,6 +4,6 @@ pytest==6.2.5
 pytest-cov==3.0.0
 pytest-xdist==2.5.0
 twine==3.4.1
-pre-commit==2.16.0
+pre-commit==2.17.0
 parameterized==0.8.1
 mypy==0.931
