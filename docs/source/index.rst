@@ -5,4 +5,3 @@ Welcome to PecanPy's documentation
     :maxdepth: 2
 
     pecanpy
-
