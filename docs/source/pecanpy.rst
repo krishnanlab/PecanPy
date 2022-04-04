@@ -24,4 +24,3 @@ Node2vec implementations
    :members:
    :undoc-members:
    :show-inheritance:
-
