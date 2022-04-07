@@ -2,4 +2,4 @@ gensim==4.1.2
 numpy==1.21.5
 numba==0.55.1
 numba-progress==0.0.2
-nptyping==1.4.4
+nptyping==2.0.0
