@@ -21,12 +21,12 @@ MoveForward = Callable[..., UInt32]
 
 # Numpy array types ###########################################################
 # issue with type alias (https://stackoverflow.com/questions/62073473)
-Embeddings: TypeAlias = NDArray[Shape["*, *"], Float32]  # type: ignore
-AdjMat: TypeAlias = NDArray[Shape["*, *"], Any]  # type: ignore
-AdjNonZeroMat: TypeAlias = NDArray[Shape["*, *"], Bool]  # type: ignore
-Uint32Array: TypeAlias = NDArray[Shape["*"], UInt32]  # type: ignore
-Uint64Array: TypeAlias = NDArray[Shape["*"], UInt64]  # type: ignore
-Float32Array: TypeAlias = NDArray[Shape["*"], Float32]  # type: ignore
+Embeddings: TypeAlias = NDArray[Shape["*, *"], Float32]
+AdjMat: TypeAlias = NDArray[Shape["*, *"], Any]
+AdjNonZeroMat: TypeAlias = NDArray[Shape["*, *"], Bool]
+Uint32Array: TypeAlias = NDArray[Shape["*"], UInt32]
+Uint64Array: TypeAlias = NDArray[Shape["*"], UInt64]
+Float32Array: TypeAlias = NDArray[Shape["*"], Float32]
 CSR = Tuple[Uint32Array, Uint32Array, Float32Array]
 
 __all__ = [
