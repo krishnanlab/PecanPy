@@ -7,22 +7,26 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
-import numpy as np
+from nptyping import Bool
+from nptyping import Float32
 from nptyping import NDArray
+from nptyping import Shape
+from nptyping import UInt32
+from nptyping import UInt64
 from typing_extensions import TypeAlias
 
 # Callbacks ###################################################################
-HasNbrs = Callable[[np.uint32], bool]
-MoveForward = Callable[..., np.uint32]
+HasNbrs = Callable[[UInt32], bool]
+MoveForward = Callable[..., UInt32]
 
 # Numpy array types ###########################################################
 # issue with type alias (https://stackoverflow.com/questions/62073473)
-Embeddings: TypeAlias = NDArray[(Any, Any), np.float32]  # type: ignore
-AdjMat: TypeAlias = NDArray[(Any, Any), Any]  # type: ignore
-AdjNonZeroMat: TypeAlias = NDArray[(Any, Any), bool]  # type: ignore
-Uint32Array: TypeAlias = NDArray[(Any,), np.uint32]  # type: ignore
-Uint64Array: TypeAlias = NDArray[(Any,), np.uint64]  # type: ignore
-Float32Array: TypeAlias = NDArray[(Any,), np.float32]  # type: ignore
+Embeddings: TypeAlias = NDArray[Shape["*, *"], Float32]
+AdjMat: TypeAlias = NDArray[Shape["*, *"], Any]
+AdjNonZeroMat: TypeAlias = NDArray[Shape["*, *"], Bool]
+Uint32Array: TypeAlias = NDArray[Shape["*"], UInt32]
+Uint64Array: TypeAlias = NDArray[Shape["*"], UInt64]
+Float32Array: TypeAlias = NDArray[Shape["*"], Float32]
 CSR = Tuple[Uint32Array, Uint32Array, Float32Array]
 
 __all__ = [
