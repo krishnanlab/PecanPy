@@ -35,7 +35,7 @@ class Base(BaseGraph):
     Examples:
         Generate node2vec embeddings
 
-        >>> from pecanpy import node2vec
+        >>> from pecanpy import pecanpy as node2vec
         >>>
         >>> # initialize node2vec object, similarly for SparseOTF and DenseOTF
         >>> g = node2vec.PreComp(p=0.5, q=1, workers=4, verbose=True)
