@@ -128,7 +128,8 @@ Run `tox -e flake8` and resolve suggestions before committing to ensure consiste
 Detailed documentation for PecanPy is available [here](https://pecanpy.readthedocs.io/).
 
 ### Support
-For support please contact [Remy Liu](https://twitter.com/RemyLau3) at liurenmi@msu.edu.
+For support, please consider opening a GitHub issue and we will do our best to reply in a timely manner.
+Alternatively, if you would like to keep the conversation private, feel free to contact [Remy Liu](https://twitter.com/RemyLau3) at liurenmi@msu.edu.
 
 ### License
 This repository and all its contents are released under the [BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause); See [LICENSE.md](https://github.com/krishnanlab/pecanpy/blob/master/LICENSE.md).
