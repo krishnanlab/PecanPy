@@ -1,4 +1,6 @@
 """Lite graph objects used by pecanpy."""
+import warnings
+
 import numpy as np
 
 from .typing import AdjMat
@@ -151,7 +153,10 @@ class AdjlstGraph(BaseGraph):
         """Check if the edge weight is non-negative."""
         if weight <= 0:
             edg_str = f"w({id1},{id2}) = {weight}"
-            print(f"WARNING: non-positive edge ignored: {edg_str}")
+            warnings.warn(
+                f"Non-positive edge ignored: {edg_str}",
+                RuntimeWarning,
+            )
             return False
         return True
 
@@ -170,10 +175,11 @@ class AdjlstGraph(BaseGraph):
 
         """
         if idx2 in self._data[idx1] and self._data[idx1][idx2] != weight:
-            print(
-                f"WARNING: edge from {id1} to {id2} exists, with "
+            warnings.warn(
+                f"edge from {id1} to {id2} exists, with "
                 f"value of {self._data[idx1][idx2]:.2f}. "
                 f"Now overwrite to {weight:.2f}.",
+                RuntimeWarning,
             )
 
     def get_node_idx(self, node_id: str) -> int:

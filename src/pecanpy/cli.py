@@ -13,6 +13,7 @@ Examples:
 
 """
 import argparse
+import warnings
 
 import numba
 import numpy as np
@@ -190,10 +191,11 @@ def check_mode(g, args):
         return
 
     if mode != "FirstOrderUnweighted" and p == q == 1 and not weighted:
-        print(
-            f"WARNING: when p = 1 and q = 1 with unweighted graph, highly "
-            f"recommend using the FirstOrderUnweighted over {mode}. The "
-            f"runtime could be improved greatly with improved  memory usage.",
+        warnings.warn(
+            "When p = 1 and q = 1 with unweighted graph, it is highly "
+            f"recommended to use FirstOrderUnweighted over {mode} (current "
+            "selection). The runtime could be improved greatly with improved  "
+            "memory usage.",
         )
         return
 
@@ -206,10 +208,10 @@ def check_mode(g, args):
         return
 
     if mode != "PreCompFirstOrder" and p == 1 == q:
-        print(
-            f"WARNING: when p = 1 and q = 1, highly recommend using the "
-            f"PreCompFirstOrder over {mode}. The runtime could be improved "
-            f"greatly with low memory usage.",
+        warnings.warn(
+            "When p = 1 and q = 1, it is highly recommended to use "
+            f"PreCompFirstOrder over {mode} (current selection). The runtime "
+            "could be improved greatly with low memory usage.",
         )
         return
 
@@ -217,24 +219,26 @@ def check_mode(g, args):
     g_size = g.num_nodes
     g_dens = g.density
     if (g_dens >= 0.2) & (mode != "DenseOTF"):
-        print(
-            f"WARNING: network density = {g_dens:.3f} (> 0.2), "
-            f"recommend DenseOTF over {mode}",
+        warnings.warn(
+            f"Network density = {g_dens:.3f} (> 0.2), it is recommended to use "
+            f"DenseOTF over {mode} (current selection)",
         )
     if (g_dens < 0.001) & (g_size < 10000) & (mode != "PreComp"):
-        print(
-            f"WARNING: network density = {g_dens:.2e} (< 0.001) with "
-            f"{g_size} nodes (< 10000), recommend PreComp over {mode}",
+        warnings.warn(
+            f"Network density = {g_dens:.2e} (< 0.001) with {g_size} nodes "
+            f"(< 10000), it is recommended to use PreComp over {mode} (current "
+            "selection)",
         )
     if (g_dens >= 0.001) & (g_dens < 0.2) & (mode != "SparseOTF"):
-        print(
-            f"WARNING: network density = {g_dens:.3f}, "
-            f"recommend SparseOTF over {mode}",
+        warnings.warn(
+            f"Network density = {g_dens:.3f}, it is recommended to use "
+            f"SparseOTF over {mode} (current selection)",
         )
     if (g_dens < 0.001) & (g_size >= 10000) & (mode != "SparseOTF"):
-        print(
-            f"WARNING: network density = {g_dens:.3f} (< 0.001) with "
-            f"{g_size} nodes (>= 10000), recommend SparseOTF over {mode}",
+        warnings.warn(
+            f"Network density = {g_dens:.3f} (< 0.001) with {g_size} nodes "
+            f"(>= 10000), it is recommended to use SparseOTF over {mode} "
+            "(current selection)",
         )
 
 
