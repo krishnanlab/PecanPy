@@ -413,7 +413,7 @@ class SparseGraph(BaseGraph):
         self.set_node_ids(g.nodes)
         self.indptr, self.indices, self.data = g.to_csr()
 
-    def read_npz(self, path: str, weighted: bool):
+    def read_npz(self, path: str, weighted: bool, implicit_ids: bool = False):
         """Directly read a CSR sparse graph.
 
         Note:
@@ -431,17 +431,36 @@ class SparseGraph(BaseGraph):
             weighted (bool): whether the graph is weighted, if unweighted,
                 all edge weights will be converted to 1.
             directed (bool): not used, for compatibility with ``SparseGraph``.
+            implicit_ids (bool): Implicitly set the node IDs to the canonical
+                ordering from the CSR graph. If unset and the `IDs` field is
+                not found in the input CSR graph, a warning message will be
+                displayed on screen. The missing `IDs` field can happen, for
+                example, when the user uses the CSR graph prepared by
+                `scipy.sparse.csr`.
 
         """
         raw = np.load(path)
-        self.set_node_ids(raw["IDs"].tolist())
-        self.data = raw["data"]
+        self.indptr = raw["indptr"].astype(np.uint32)
+        self.indices = raw["indices"].astype(np.uint32)
+        self.data = raw["data"].astype(np.float32)
         if self.data is None:
             raise ValueError("Adjacency matrix data not found.")
         elif not weighted:
             self.data[:] = 1.0  # overwrite edge weights with constant
-        self.indptr = raw["indptr"]
-        self.indices = raw["indices"]
+
+        # TODO: make this a function, can be reused by DenseGraph
+        if "IDs" in raw and not implicit_ids:
+            self.set_node_ids(raw["IDs"].tolist())
+        else:
+            self.set_node_ids(list(range(self.indptr.size - 1)))
+            if not implicit_ids:
+                warnings.warn(
+                    "WARNING: Implicitly set node IDs to the canonical node "
+                    "ordering due to missing IDs field in the raw CSR npz "
+                    "file. This warning message can be suppressed by setting "
+                    "implicit_ids to True in the read_npz function call, or "
+                    "by setting the --implicit_ids flag in the CLI",
+                )
 
     def save(self, path: str):
         """Save CSR as ``.csr.npz`` file."""
@@ -543,15 +562,23 @@ class DenseGraph(BaseGraph):
         """Return the nonzero mask for the adjacency matrix."""
         return self._nonzero
 
-    def read_npz(self, path: str, weighted: bool):
+    def read_npz(self, path: str, weighted: bool, implicit_ids: bool = False):
         """Read ``.npz`` file and create dense graph.
 
         Args:
             path (str): path to ``.npz`` file.
             weighted (bool): whether the graph is weighted, if unweighted,
                 all none zero weights will be converted to 1.
+            implicit_ids (bool): Implicitly set the node IDs to the canonical
+                ordering from the CSR graph. If unset and the `IDs` field is
+                not found in the input CSR graph, a warning message will be
+                displayed on screen. The missing `IDs` field can happen, for
+                example, when the user uses the CSR graph prepared by
 
         """
+        if implicit_ids:
+            raise NotImplementedError("TODO")
+
         raw = np.load(path)
         self.data = raw["data"]
         if not weighted:  # overwrite edge weights with constant

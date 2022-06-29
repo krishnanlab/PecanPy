@@ -167,6 +167,12 @@ def parse_args():
         help="Delimiter used bewteen node IDs.",
     )
 
+    parser.add_argument(
+        "--implicit_ids",
+        action="store_true",
+        help="If set, use canonical node ordering for the node IDs.",
+    )
+
     return parser.parse_args()
 
 
@@ -265,6 +271,7 @@ def read_graph(args):
     mode = args.mode
     task = args.task
     delimiter = args.delimiter
+    implicit_ids = args.implicit_ids
 
     if directed and extend:
         raise NotImplementedError("Node2vec+ not implemented for directed graph yet.")
@@ -282,7 +289,7 @@ def read_graph(args):
     g = pecanpy_mode(p, q, workers, verbose, extend, gamma, random_state)
 
     if path.endswith(".npz"):
-        g.read_npz(path, weighted)
+        g.read_npz(path, weighted, implicit_ids=implicit_ids)
     else:
         g.read_edg(path, weighted, directed, delimiter)
 
