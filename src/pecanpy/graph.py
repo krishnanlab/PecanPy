@@ -11,6 +11,7 @@ from .typing import Float32Array
 from .typing import Iterator
 from .typing import List
 from .typing import Optional
+from .typing import Sequence
 from .typing import Tuple
 from .typing import Uint32Array
 
@@ -52,18 +53,49 @@ class BaseGraph:
         """Return the edge density of the graph."""
         return self.num_edges / self.num_nodes / (self.num_nodes - 1)
 
-    def set_node_ids(self, node_ids: List[str]):
+    def set_node_ids(
+        self,
+        node_ids: Optional[Sequence[str]],
+        implicit_ids: bool = False,
+        num_nodes: Optional[int] = None,
+    ):
         """Update ID list and mapping.
 
         Set _node_ids given the input node IDs and also set the corresponding
         _node_idmap based on it, which maps from node ID to the index.
 
         Args:
-            node_ids (:obj:`list` of :obj:`str`): List of node IDs to use.
+            node_ids (:obj:`list` of :obj:`str`, optional): List of node IDs to
+                use. If not available, will implicitly set node IDs to the
+                canonical ordering of nodes with a warning message, which is
+                suppressed if `implicit_ids` is set to True.
+            implicit_ids (bool): Implicitly set the node IDs to the canonical
+                ordering from the CSR graph. If unset and the `IDs` field is
+                not found in the input CSR graph, a warning message will be
+                displayed on screen. The missing `IDs` field can happen, for
+                example, when the user uses the CSR graph prepared by
+                `scipy.sparse.csr`.
+            num_nodes (int, optional): Number of nodes, used when try to set
+                implicit node IDs.
 
         """
-        self._node_ids = node_ids
-        self._node_idmap = {j: i for i, j in enumerate(node_ids)}
+        if (node_ids is not None) and (not implicit_ids):
+            self._node_ids = list(node_ids)
+        elif num_nodes is None:
+            raise ValueError(
+                "Need to specify `num_nodes` when setting implicit node IDs.",
+            )
+        else:
+            self.set_node_ids(list(range(num_nodes)))
+            if not implicit_ids:
+                warnings.warn(
+                    "WARNING: Implicitly set node IDs to the canonical node "
+                    "ordering due to missing IDs field in the raw CSR npz "
+                    "file. This warning message can be suppressed by setting "
+                    "implicit_ids to True in the read_npz function call, or "
+                    "by setting the --implicit_ids flag in the CLI",
+                )
+        self._node_idmap = {j: i for i, j in enumerate(self._node_ids)}
 
     def get_has_nbrs(self):
         """Abstract method to be specified by derived classes."""
@@ -448,19 +480,11 @@ class SparseGraph(BaseGraph):
         elif not weighted:
             self.data[:] = 1.0  # overwrite edge weights with constant
 
-        # TODO: make this a function, can be reused by DenseGraph
-        if "IDs" in raw and not implicit_ids:
-            self.set_node_ids(raw["IDs"].tolist())
-        else:
-            self.set_node_ids(list(range(self.indptr.size - 1)))
-            if not implicit_ids:
-                warnings.warn(
-                    "WARNING: Implicitly set node IDs to the canonical node "
-                    "ordering due to missing IDs field in the raw CSR npz "
-                    "file. This warning message can be suppressed by setting "
-                    "implicit_ids to True in the read_npz function call, or "
-                    "by setting the --implicit_ids flag in the CLI",
-                )
+        self.set_node_ids(
+            raw.get("IDs"),
+            implicit_ids=implicit_ids,
+            num_nodes=int(self.indptr.size - 1),
+        )
 
     def save(self, path: str):
         """Save CSR as ``.csr.npz`` file."""
