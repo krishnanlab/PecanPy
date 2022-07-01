@@ -600,14 +600,16 @@ class DenseGraph(BaseGraph):
                 example, when the user uses the CSR graph prepared by
 
         """
-        if implicit_ids:
-            raise NotImplementedError("TODO")
-
         raw = np.load(path)
         self.data = raw["data"]
         if not weighted:  # overwrite edge weights with constant
             self.data = self.nonzero * 1.0  # type: ignore
-        self.set_node_ids(raw["IDs"].tolist())
+
+        self.set_node_ids(
+            raw.get("IDs"),
+            implicit_ids=implicit_ids,
+            num_nodes=self.data.shape[0],
+        )
 
     def read_edg(
         self,

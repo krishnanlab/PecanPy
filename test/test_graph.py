@@ -317,8 +317,9 @@ def test_csr_from_scipy(tmpdir):
 
 @pytest.mark.usefixtures("karate_graph_converted")
 @pytest.mark.parametrize("implicit_ids", [True, False])
-def test_implicit_ids(implicit_ids):
-    g = SparseGraph()
+@pytest.mark.parametrize("graph_factory", [SparseGraph, DenseGraph])
+def test_implicit_ids(implicit_ids, graph_factory):
+    g = graph_factory()
     g.read_npz(pytest.KARATE_CSR_PATH, weighted=False, implicit_ids=implicit_ids)
     ref_ids = list(range(g.num_nodes)) if implicit_ids else pytest.KARATE_NODE_IDS
     assert sorted(g.nodes) == sorted(ref_ids)
