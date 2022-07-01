@@ -319,9 +319,16 @@ def test_csr_from_scipy(tmpdir):
 @pytest.mark.parametrize("implicit_ids", [True, False])
 @pytest.mark.parametrize("graph_factory", [SparseGraph, DenseGraph])
 def test_implicit_ids(implicit_ids, graph_factory):
+    graph_path = (
+        pytest.KARATE_CSR_PATH
+        if graph_factory == SparseGraph
+        else pytest.KARATE_DENSE_PATH
+    )
+    ref_ids = pytest.KARATE_IMPLICIT_IDS if implicit_ids else pytest.KARATE_NODE_IDS
+
     g = graph_factory()
-    g.read_npz(pytest.KARATE_CSR_PATH, weighted=False, implicit_ids=implicit_ids)
-    ref_ids = list(range(g.num_nodes)) if implicit_ids else pytest.KARATE_NODE_IDS
+    g.read_npz(graph_path, weighted=False, implicit_ids=implicit_ids)
+
     assert sorted(g.nodes) == sorted(ref_ids)
 
 
@@ -335,6 +342,7 @@ def karate_graph_converted(pytestconfig, tmpdir_factory):
     # Load karate node ids
     karate_edgelist = np.loadtxt(pytest.KARATE_ORIG_PATH, dtype=str).tolist()
     pytest.KARATE_NODE_IDS = list(set(chain.from_iterable(karate_edgelist)))
+    pytest.KARATE_IMPLICIT_IDS = list(map(str, range(len(pytest.KARATE_NODE_IDS))))
 
     # Load karate graph and save csr.npz and dense.npz
     g = AdjlstGraph()

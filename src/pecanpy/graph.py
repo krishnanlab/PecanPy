@@ -85,7 +85,7 @@ class BaseGraph:
                 "Need to specify `num_nodes` when setting implicit node IDs.",
             )
         else:
-            self.set_node_ids(list(range(num_nodes)))
+            self.set_node_ids(list(map(str, range(num_nodes))))
             if not implicit_ids:
                 warnings.warn(
                     "WARNING: Implicitly set node IDs to the canonical node "
