@@ -282,13 +282,13 @@ class TestDenseGraph(unittest.TestCase):
         self.validate()
 
 
-def test_csr_from_scipy(pytestconfig, tmpdir):
-    karate_graph_path = osp.join(pytestconfig.rootpath, "demo", "karate.edg")
+@pytest.mark.usefixtures("karate_graph_converted")
+def test_csr_from_scipy(tmpdir):
     tmp_karate_csr_path = osp.join(tmpdir, "karate.csr.npz")
     print(f"Temporary karate CSR will be saved under {tmp_karate_csr_path}")
 
     # Save karate CSR using scipy.sparse.csr
-    edgelist = np.loadtxt(karate_graph_path).astype(int) - 1
+    edgelist = np.loadtxt(pytest.KARATE_ORIG_PATH).astype(int) - 1
     edgelist = np.vstack((edgelist, edgelist[:, [1, 0]])).T  # to undirected
     num_nodes = edgelist.max() + 1
     csr = scipy.sparse.csr_matrix(
@@ -300,7 +300,7 @@ def test_csr_from_scipy(pytestconfig, tmpdir):
     # Load scipy CSR and compare with PecanPy CSR
     scipy_csr_graph, pecanpy_graph = SparseGraph(), AdjlstGraph()
     scipy_csr_graph.read_npz(tmp_karate_csr_path, weighted=False)
-    pecanpy_graph.read(karate_graph_path, weighted=False, directed=False)
+    pecanpy_graph.read(pytest.KARATE_ORIG_PATH, weighted=False, directed=False)
 
     # Assert graph size (number of nodes)
     assert scipy_csr_graph.num_nodes == pecanpy_graph.num_nodes
@@ -312,6 +312,23 @@ def test_csr_from_scipy(pytestconfig, tmpdir):
         assert scipy_csr_nbhd_sizes[scipy_node_idx] == len(
             pecanpy_graph._data[pecanpy_node_idx],
         )
+
+
+@pytest.fixture(scope="module")
+def karate_graph_converted(pytestconfig, tmpdir_factory):
+    tmpdir = tmpdir_factory.mktemp("test_graph")
+    pytest.KARATE_ORIG_PATH = osp.join(pytestconfig.rootpath, "demo/karate.edg")
+    pytest.KARATE_CSR_PATH = osp.join(tmpdir, "karate.csr.npz")
+    pytest.KARATE_DENSE_PATH = osp.join(tmpdir, "karate.dense.npz")
+
+    # Load karate graph and save csr.npz and dense.npz
+    g = AdjlstGraph()
+    g.read(pytest.KARATE_ORIG_PATH, weighted=False, directed=False)
+    SparseGraph.from_adjlst_graph(g).save(pytest.KARATE_CSR_PATH)
+    DenseGraph.from_adjlst_graph(g).save(pytest.KARATE_DENSE_PATH)
+    del g
+
+    yield
 
 
 if __name__ == "__main__":
