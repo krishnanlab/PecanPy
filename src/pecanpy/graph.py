@@ -70,11 +70,10 @@ class BaseGraph:
                 canonical ordering of nodes with a warning message, which is
                 suppressed if `implicit_ids` is set to True.
             implicit_ids (bool): Implicitly set the node IDs to the canonical
-                ordering from the CSR graph. If unset and the `IDs` field is
-                not found in the input CSR graph, a warning message will be
-                displayed on screen. The missing `IDs` field can happen, for
-                example, when the user uses the CSR graph prepared by
-                `scipy.sparse.csr`.
+                node ordering. If set to False and node IDs are not available,
+                it will also set implicit node IDs, but with a warning message.
+                The warning message can be suppressed if `implicit_ids` is set
+                to True as a confirmation of the behavior.
             num_nodes (int, optional): Number of nodes, used when try to set
                 implicit node IDs.
 
@@ -464,8 +463,8 @@ class SparseGraph(BaseGraph):
                 all edge weights will be converted to 1.
             directed (bool): not used, for compatibility with ``SparseGraph``.
             implicit_ids (bool): Implicitly set the node IDs to the canonical
-                ordering from the CSR graph. If unset and the `IDs` field is
-                not found in the input CSR graph, a warning message will be
+                node ordering from the CSR graph. If unset and the `IDs` field
+                is not found in the input CSR graph, a warning message will be
                 displayed on screen. The missing `IDs` field can happen, for
                 example, when the user uses the CSR graph prepared by
                 `scipy.sparse.csr`.
@@ -594,10 +593,11 @@ class DenseGraph(BaseGraph):
             weighted (bool): whether the graph is weighted, if unweighted,
                 all none zero weights will be converted to 1.
             implicit_ids (bool): Implicitly set the node IDs to the canonical
-                ordering from the CSR graph. If unset and the `IDs` field is
-                not found in the input CSR graph, a warning message will be
-                displayed on screen. The missing `IDs` field can happen, for
-                example, when the user uses the CSR graph prepared by
+                ordering from the dense adjacency matrix object. If unset and
+                the `IDs` field is not found in the object, a warning message
+                will be displayed on screen. This warning message can be
+                suppressed if `implicit_ids` is set to True as a confirmation
+                of the behavior.
 
         """
         raw = np.load(path)
