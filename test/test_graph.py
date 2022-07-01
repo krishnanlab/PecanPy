@@ -1,9 +1,12 @@
 import os
+import os.path as osp
 import shutil
 import tempfile
 import unittest
 
 import numpy as np
+import pytest
+import scipy.sparse
 from pecanpy.graph import AdjlstGraph
 from pecanpy.graph import BaseGraph
 from pecanpy.graph import DenseGraph
@@ -277,6 +280,38 @@ class TestDenseGraph(unittest.TestCase):
         self.g2 = DenseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT2, IDS2))
         self.g3 = DenseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT3, IDS3))
         self.validate()
+
+
+def test_csr_from_scipy(pytestconfig, tmpdir):
+    karate_graph_path = osp.join(pytestconfig.rootpath, "demo", "karate.edg")
+    tmp_karate_csr_path = osp.join(tmpdir, "karate.csr.npz")
+    print(f"Temporary karate CSR will be saved under {tmp_karate_csr_path}")
+
+    # Save karate CSR using scipy.sparse.csr
+    edgelist = np.loadtxt(karate_graph_path).astype(int) - 1
+    edgelist = np.vstack((edgelist, edgelist[:, [1, 0]])).T  # to undirected
+    num_nodes = edgelist.max() + 1
+    csr = scipy.sparse.csr_matrix(
+        (np.ones(edgelist.shape[1]), ([edgelist[0], edgelist[1]])),
+        shape=(num_nodes, num_nodes),
+    )
+    scipy.sparse.save_npz(tmp_karate_csr_path, csr)
+
+    # Load scipy CSR and compare with PecanPy CSR
+    scipy_csr_graph, pecanpy_graph = SparseGraph(), AdjlstGraph()
+    scipy_csr_graph.read_npz(tmp_karate_csr_path, weighted=False)
+    pecanpy_graph.read(karate_graph_path, weighted=False, directed=False)
+
+    # Assert graph size (number of nodes)
+    assert scipy_csr_graph.num_nodes == pecanpy_graph.num_nodes
+
+    # Assert neighborhood sizes
+    scipy_csr_nbhd_sizes = scipy_csr_graph.indptr[1:] - scipy_csr_graph.indptr[:-1]
+    for scipy_node_idx in range(scipy_csr_graph.num_nodes):
+        pecanpy_node_idx = pecanpy_graph.get_node_idx(str(scipy_node_idx + 1))
+        assert scipy_csr_nbhd_sizes[scipy_node_idx] == len(
+            pecanpy_graph._data[pecanpy_node_idx],
+        )
 
 
 if __name__ == "__main__":
