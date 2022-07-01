@@ -1,9 +1,13 @@
 import os
+import os.path as osp
 import shutil
 import tempfile
 import unittest
+from itertools import chain
 
 import numpy as np
+import pytest
+import scipy.sparse
 from pecanpy.graph import AdjlstGraph
 from pecanpy.graph import BaseGraph
 from pecanpy.graph import DenseGraph
@@ -277,6 +281,77 @@ class TestDenseGraph(unittest.TestCase):
         self.g2 = DenseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT2, IDS2))
         self.g3 = DenseGraph.from_adjlst_graph(AdjlstGraph.from_mat(MAT3, IDS3))
         self.validate()
+
+
+@pytest.mark.usefixtures("karate_graph_converted")
+def test_csr_from_scipy(tmpdir):
+    tmp_karate_csr_path = osp.join(tmpdir, "karate.csr.npz")
+    print(f"Temporary karate CSR will be saved under {tmp_karate_csr_path}")
+
+    # Save karate CSR using scipy.sparse.csr
+    edgelist = np.loadtxt(pytest.KARATE_ORIG_PATH).astype(int) - 1
+    edgelist = np.vstack((edgelist, edgelist[:, [1, 0]])).T  # to undirected
+    num_nodes = edgelist.max() + 1
+    csr = scipy.sparse.csr_matrix(
+        (np.ones(edgelist.shape[1]), ([edgelist[0], edgelist[1]])),
+        shape=(num_nodes, num_nodes),
+    )
+    scipy.sparse.save_npz(tmp_karate_csr_path, csr)
+
+    # Load scipy CSR and compare with PecanPy CSR
+    scipy_csr_graph, pecanpy_graph = SparseGraph(), AdjlstGraph()
+    scipy_csr_graph.read_npz(tmp_karate_csr_path, weighted=False)
+    pecanpy_graph.read(pytest.KARATE_ORIG_PATH, weighted=False, directed=False)
+
+    # Assert graph size (number of nodes)
+    assert scipy_csr_graph.num_nodes == pecanpy_graph.num_nodes
+
+    # Assert neighborhood sizes
+    scipy_csr_nbhd_sizes = scipy_csr_graph.indptr[1:] - scipy_csr_graph.indptr[:-1]
+    for scipy_node_idx in range(scipy_csr_graph.num_nodes):
+        pecanpy_node_idx = pecanpy_graph.get_node_idx(str(scipy_node_idx + 1))
+        assert scipy_csr_nbhd_sizes[scipy_node_idx] == len(
+            pecanpy_graph._data[pecanpy_node_idx],
+        )
+
+
+@pytest.mark.usefixtures("karate_graph_converted")
+@pytest.mark.parametrize("implicit_ids", [True, False])
+@pytest.mark.parametrize("graph_factory", [SparseGraph, DenseGraph])
+def test_implicit_ids(implicit_ids, graph_factory):
+    graph_path = (
+        pytest.KARATE_CSR_PATH
+        if graph_factory == SparseGraph
+        else pytest.KARATE_DENSE_PATH
+    )
+    ref_ids = pytest.KARATE_IMPLICIT_IDS if implicit_ids else pytest.KARATE_NODE_IDS
+
+    g = graph_factory()
+    g.read_npz(graph_path, weighted=False, implicit_ids=implicit_ids)
+
+    assert sorted(g.nodes) == sorted(ref_ids)
+
+
+@pytest.fixture(scope="module")
+def karate_graph_converted(pytestconfig, tmpdir_factory):
+    tmpdir = tmpdir_factory.mktemp("test_graph")
+    pytest.KARATE_ORIG_PATH = osp.join(pytestconfig.rootpath, "demo/karate.edg")
+    pytest.KARATE_CSR_PATH = osp.join(tmpdir, "karate.csr.npz")
+    pytest.KARATE_DENSE_PATH = osp.join(tmpdir, "karate.dense.npz")
+
+    # Load karate node ids
+    karate_edgelist = np.loadtxt(pytest.KARATE_ORIG_PATH, dtype=str).tolist()
+    pytest.KARATE_NODE_IDS = list(set(chain.from_iterable(karate_edgelist)))
+    pytest.KARATE_IMPLICIT_IDS = list(map(str, range(len(pytest.KARATE_NODE_IDS))))
+
+    # Load karate graph and save csr.npz and dense.npz
+    g = AdjlstGraph()
+    g.read(pytest.KARATE_ORIG_PATH, weighted=False, directed=False)
+    SparseGraph.from_adjlst_graph(g).save(pytest.KARATE_CSR_PATH)
+    DenseGraph.from_adjlst_graph(g).save(pytest.KARATE_DENSE_PATH)
+    del g
+
+    yield
 
 
 if __name__ == "__main__":

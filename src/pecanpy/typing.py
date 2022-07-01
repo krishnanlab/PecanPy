@@ -5,6 +5,7 @@ from typing import Dict
 from typing import Iterator
 from typing import List
 from typing import Optional
+from typing import Sequence
 from typing import Tuple
 
 from nptyping import Bool
@@ -30,20 +31,21 @@ Float32Array: TypeAlias = NDArray[Shape["*"], Float32]
 CSR = Tuple[Uint32Array, Uint32Array, Float32Array]
 
 __all__ = [
-    "Any",
-    "Callable",
-    "Dict",
-    "Iterator",
-    "List",
-    "Tuple",
-    "Optional",
-    "NDArray",
-    "HasNbrs",
-    "MoveForward",
-    "Embeddings",
     "AdjMat",
     "AdjNonZeroMat",
-    "Uint32Array",
-    "Float32Array",
+    "Any",
     "CSR",
+    "Callable",
+    "Dict",
+    "Embeddings",
+    "Float32Array",
+    "HasNbrs",
+    "Iterator",
+    "List",
+    "MoveForward",
+    "NDArray",
+    "Optional",
+    "Sequence",
+    "Tuple",
+    "Uint32Array",
 ]
