@@ -3,6 +3,7 @@ import os.path as osp
 import shutil
 import tempfile
 import unittest
+from itertools import chain
 
 import numpy as np
 import pytest
@@ -314,12 +315,25 @@ def test_csr_from_scipy(tmpdir):
         )
 
 
+@pytest.mark.usefixtures("karate_graph_converted")
+@pytest.mark.parametrize("implicit_ids", [True, False])
+def test_implicit_ids(implicit_ids):
+    g = SparseGraph()
+    g.read_npz(pytest.KARATE_CSR_PATH, weighted=False, implicit_ids=implicit_ids)
+    ref_ids = list(range(g.num_nodes)) if implicit_ids else pytest.KARATE_NODE_IDS
+    assert sorted(g.nodes) == sorted(ref_ids)
+
+
 @pytest.fixture(scope="module")
 def karate_graph_converted(pytestconfig, tmpdir_factory):
     tmpdir = tmpdir_factory.mktemp("test_graph")
     pytest.KARATE_ORIG_PATH = osp.join(pytestconfig.rootpath, "demo/karate.edg")
     pytest.KARATE_CSR_PATH = osp.join(tmpdir, "karate.csr.npz")
     pytest.KARATE_DENSE_PATH = osp.join(tmpdir, "karate.dense.npz")
+
+    # Load karate node ids
+    karate_edgelist = np.loadtxt(pytest.KARATE_ORIG_PATH, dtype=str).tolist()
+    pytest.KARATE_NODE_IDS = list(set(chain.from_iterable(karate_edgelist)))
 
     # Load karate graph and save csr.npz and dense.npz
     g = AdjlstGraph()
