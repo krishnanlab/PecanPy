@@ -3,8 +3,6 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Tests](https://github.com/krishnanlab/PecanPy/actions/workflows/tests.yml/badge.svg)](https://github.com/krishnanlab/PecanPy/actions/workflows/tests.yml)
 
-⚠️**WARNING**: the documentation is currently under construction due to some unknown bug, we will fix the issue ASAP⚠️
-
 # PecanPy: A parallelized, efficient, and accelerated _node2vec(+)_ in Python
 
 Learning low-dimensional representations (embeddings) of nodes in large graphs is key to applying machine learning on massive biological networks. _Node2vec_ is the most widely used method for node embedding. PecanPy is a fast, parallelized, memory efficient, and cache optimized Python implementation of [_node2vec_](https://github.com/aditya-grover/node2vec). It uses cache-optimized compact graph data structures and precomputing/parallelization to result in fast, high-quality node embeddings for biological networks of all sizes and densities. Detailed source code documentation can be found [here](https://pecanpy.readthedocs.io/).
