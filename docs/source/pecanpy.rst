@@ -20,7 +20,7 @@ Graph Data Structures
 Node2vec implementations
 ------------------------
 
-.. automodule:: pecanpy.node2vec
+.. automodule:: pecanpy.pecanpy
    :members:
    :undoc-members:
    :show-inheritance:
