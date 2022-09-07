@@ -1,28 +1,29 @@
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.3.0
     hooks:
-    -   id: trailing-whitespace
-    -   id: end-of-file-fixer
+      - id: trailing-whitespace
+        exclude: .bumpversion.cfg
+      - id: end-of-file-fixer
 
--   repo: https://github.com/asottile/reorder_python_imports
+  - repo: https://github.com/asottile/reorder_python_imports
     rev: v3.8.2
     hooks:
-    -   id: reorder-python-imports
+      - id: reorder-python-imports
         args: ["--py38-plus"]
 
--   repo: https://github.com/asottile/add-trailing-comma
+  - repo: https://github.com/asottile/add-trailing-comma
     rev: v2.2.3
     hooks:
-    -   id: add-trailing-comma
+      - id: add-trailing-comma
 
--   repo: https://github.com/asottile/pyupgrade
+  - repo: https://github.com/asottile/pyupgrade
     rev: v2.37.3
     hooks:
-    -   id: pyupgrade
+      - id: pyupgrade
 
--   repo: https://github.com/psf/black
+  - repo: https://github.com/psf/black
     rev: 22.8.0
     hooks:
-    -   id: black
+      - id: black
         args: [--safe]
