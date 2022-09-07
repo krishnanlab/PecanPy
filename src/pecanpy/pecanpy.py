@@ -3,7 +3,6 @@ import numpy as np
 from gensim.models import Word2Vec
 from numba import njit
 from numba import prange
-from numba.np.ufunc.parallel import _get_thread_id
 from numba_progress import ProgressBar
 
 from .graph import BaseGraph
@@ -18,6 +17,11 @@ from .typing import Optional
 from .typing import Uint32Array
 from .typing import Uint64Array
 from .wrappers import Timer
+
+try:
+    from numba.np.ufunc.parallel import get_thread_id
+except ImportError:  # numba<0.56
+    from numba.np.ufunc.parallel import _get_thread_id as get_thread_id
 
 
 class Base(BaseGraph):
@@ -173,7 +177,7 @@ class Base(BaseGraph):
         """Simulate a random walk starting from start node."""
         # Seed the random number generator
         if random_state is not None:
-            np.random.seed(random_state + _get_thread_id())
+            np.random.seed(random_state + get_thread_id())
 
         # use the last entry of each walk index array to keep track of the
         # effective walk length
