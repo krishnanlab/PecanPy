@@ -9,7 +9,7 @@ Learning low-dimensional representations (embeddings) of nodes in large graphs i
 
 The details of implementation and the optimizations, along with benchmarks, are described in the application note [_PecanPy: a fast, efficient and parallelized Python implementation of node2vec_](https://doi.org/10.1093/bioinformatics/btab202), which is published in _Bioinformatics_. The benchmarking results presented in the preprint can be reproduced using the test scripts provided in the companion [benchmarks repo](https://github.com/krishnanlab/PecanPy_benchmarks).
 
-**v2 update**: PecanPy is now equipped with _node2vec+_, which is a natural extension of _node2vec_ and handles weighted graph more effectively. For more information, see [*Accurately Modeling Biased Random Walks on Weighted Wraphs Using Node2vec+*](https://arxiv.org/abs/2109.08031). The datasets and test scripts for reproducing the presented results are available in the [node2vec+ benchmarks repo](https://github.com/krishnanlab/node2vecplus_benchmarks).
+**v2 update**: PecanPy is now equipped with _node2vec+_, which is a natural extension of _node2vec_ and handles weighted graph more effectively. For more information, see [*Accurately Modeling Biased Random Walks on Weighted Graphs Using Node2vec+*](https://arxiv.org/abs/2109.08031). The datasets and test scripts for reproducing the presented results are available in the [node2vec+ benchmarks repo](https://github.com/krishnanlab/node2vecplus_benchmarks).
 
 ## Installation
 
