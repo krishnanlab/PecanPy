@@ -194,7 +194,7 @@ class TestAdjlstGraph(unittest.TestCase):
                     delimiter=delimiter,
                 )
 
-                with open(tmppath, "r") as f:
+                with open(tmppath) as f:
                     expected_result = expected_results[(unweighted, delimiter)]
                     for line, expected_line in zip(f, expected_result):
                         self.assertEqual(line, expected_line)

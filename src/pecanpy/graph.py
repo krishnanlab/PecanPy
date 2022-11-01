@@ -298,7 +298,7 @@ class AdjlstGraph(BaseGraph):
             delimiter (str): delimiter of the edge list file, default is tab.
 
         """
-        with open(path, "r") as f:
+        with open(path) as f:
             for edge_line in f:
                 edge = self._read_edge_line(edge_line, weighted, delimiter)
                 self.add_edge(*edge, directed)
