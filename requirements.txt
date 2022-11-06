@@ -1,5 +1,5 @@
 gensim==4.2.0
 numpy==1.23.2
-numba==0.56.2
+numba==0.56.3
 numba-progress==0.0.3
 nptyping==2.3.1
