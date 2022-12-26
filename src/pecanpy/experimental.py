@@ -1,3 +1,4 @@
+"""Experimental features."""
 import numpy as np
 from numba import njit
 from pecanpy.pecanpy import Base
