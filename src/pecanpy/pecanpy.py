@@ -29,8 +29,30 @@ class Base(BaseGraph):
 
     This base object provides the skeleton for the node2vec walk algorithm,
     which consists of the ``simulate_walks`` method that generate node2vec
-    random walks. In contrast to the original Python implementaion of node2vec,
-    it is prallelized where each process generate walks independently.
+    random walks. In contrast to the original Python implementation of
+    node2vec, it is prallelized where each process generate walks
+    independently.
+
+    Args:
+        p (float): return parameter, value less than 1 encourages returning
+            back to previous vertex, and discourage for value grater than 1
+            (default: 1).
+        q (float): in-out parameter, value less than 1 encourages walks to
+            go "outward", and value greater than 1 encourage walking within
+            a localized neighborhood (default: 1)
+        workers (int): number of threads to be spawned for running node2vec
+            including walk generation and word2vec embedding (default: 1)
+        verbose (bool): show progress bar for walk generation.
+        extend (bool): use node2vec+ extension if set to :obj:`True`
+            (default: :obj:`False`).
+        gamma (float): Multiplication factor for the std term of edge
+            weights added to the average edge weights as the noisy edge
+            threshold, only used by node2vec+ (default: 0)
+        random_state (int, optional): Random seed for generating random
+            walks. Note that to fully ensure reproducibility, use single
+            thread (i.e., workers=1), and potentially need to set the
+            Python environment variable ``PYTHONHASHSEED`` to match the
+            random_state (default: :obj:`None`).
 
     Note:
         The ``preprocess_transition_probs`` is required for implenetations that
@@ -68,30 +90,6 @@ class Base(BaseGraph):
         gamma: float = 0,
         random_state: Optional[int] = None,
     ):
-        """Initializ node2vec base class.
-
-        Args:
-            p (float): return parameter, value less than 1 encourages returning
-                back to previous vertex, and discourage for value grater than 1
-                (default: 1).
-            q (float): in-out parameter, value less than 1 encourages walks to
-                go "outward", and value greater than 1 encourage walking within
-                a localized neighborhood (default: 1)
-            workers (int): number of threads to be spawned for runing node2vec
-                including walk generation and word2vec embedding (default: 1)
-            verbose (bool): show progress bar for walk generation.
-            extend (bool): use node2vec+ extension if set to :obj:`True`
-                (default: :obj:`False`).
-            gamma (float): Multiplication factor for the std term of edge
-                weights added to the average edge weights as the noisy edge
-                threashold, only used by node2vec+ (default: 0)
-            random_state (int, optional): Random seed for generating random
-                walks. Note that to fully ensure reproducibility, use single
-                thread (i.e., workers=1), and potentially need to set the
-                Python environment variable ``PYTHONHASHSEED`` to match the
-                random_state (default: :obj:`None`).
-
-        """
         super().__init__()
         self.p = p
         self.q = q
@@ -293,7 +291,6 @@ class FirstOrderUnweighted(Base, SparseRWGraph):
     """Directly sample edges for first order random walks."""
 
     def __init__(self, *args, **kwargs):
-        """Initialize FirstOrderUnweighted mode."""
         Base.__init__(self, *args, **kwargs)
 
     def get_move_forward(self):
@@ -313,7 +310,6 @@ class PreCompFirstOrder(Base, SparseRWGraph):
     """Precompute transition probabilities for first order random walks."""
 
     def __init__(self, *args, **kwargs):
-        """Initialize PreCompFirstOrder mode."""
         Base.__init__(self, *args, **kwargs)
         self.alias_j = self.alias_q = None
 
@@ -363,11 +359,11 @@ class PreCompFirstOrder(Base, SparseRWGraph):
 
 
 class PreComp(Base, SparseRWGraph):
-    """Precompute transition probabilites.
+    """Precompute transition probabilities.
 
-    This implementation precomputes and store 2nd order transition probabilites
-    first and uses read off transition probabilities during the process of
-    random walk. The graph type used is ``SparseRWGraph``.
+    This implementation precomputes and store 2nd order transition
+    probabilities first and uses read off transition probabilities during the
+    process of random walk. The graph type used is ``SparseRWGraph``.
 
     Note:
         Need to call ``preprocess_transition_probs()`` first before generating
@@ -376,7 +372,6 @@ class PreComp(Base, SparseRWGraph):
     """
 
     def __init__(self, *args, **kwargs):
-        """Initialize PreComp mode node2vec."""
         Base.__init__(self, *args, **kwargs)
         self.alias_dim: Optional[Uint32Array] = None
         self.alias_j: Optional[Uint32Array] = None
@@ -519,7 +514,6 @@ class SparseOTF(Base, SparseRWGraph):
     """
 
     def __init__(self, *args, **kwargs):
-        """Initialize PreComp mode node2vec."""
         Base.__init__(self, *args, **kwargs)
 
     def get_move_forward(self):
@@ -574,7 +568,6 @@ class DenseOTF(Base, DenseRWGraph):
     """
 
     def __init__(self, *args, **kwargs):
-        """Initialize DenseOTF mode node2vec."""
         Base.__init__(self, *args, **kwargs)
 
     def get_move_forward(self):

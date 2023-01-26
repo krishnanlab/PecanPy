@@ -6,7 +6,6 @@ class Timer:
     """Timer for logging runtime of function."""
 
     def __init__(self, name, verbose=True):
-        """Initialize timer wrapper."""
         self.name = name
         self.verbose = verbose
 

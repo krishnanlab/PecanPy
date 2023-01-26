@@ -15,7 +15,7 @@ class Node2vecPlusPlus(Base, DenseRWGraph):
     and w2 is similarly defined for the edge weight connecting from the next
     to the previous node), and the "in-out" region (w1 > 1 or w2 > 1).
 
-    This continous extension version of node2vec+, i.e., node2vec++, aims to
+    This continuous extension version of node2vec+, i.e., node2vec++, aims to
     provide continuity to those regions by parameterizing the bias-factor as
     a continuous function of w1 and w2. The basic idea is to use w2 to control
     the interpolation between 1 and 1 / q as before, but in addition, use w1
@@ -26,7 +26,6 @@ class Node2vecPlusPlus(Base, DenseRWGraph):
     """
 
     def __init__(self, *args, **kwargs):
-        """Initialize Node2vec++ mode."""
         Base.__init__(self, *args, **kwargs)
 
     def get_move_forward(self):
