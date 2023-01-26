@@ -26,7 +26,6 @@ class BaseGraph:
     """
 
     def __init__(self):
-        """Initialize ID list and ID map."""
         self._node_ids: List[str] = []
         self._node_idmap: Dict[str, int] = {}  # id -> index
 
@@ -136,7 +135,6 @@ class AdjlstGraph(BaseGraph):
     """
 
     def __init__(self):
-        """Initialize AdjlstGraph object."""
         super().__init__()
         self._data: List[Dict[int, float]] = []  # list of nbrs idx -> weights
         self._num_edges: int = 0
@@ -282,14 +280,14 @@ class AdjlstGraph(BaseGraph):
 
         Args:
             path (str): path to edgelist file, where the file is tab
-                seperated and contains 2 or 3 columns depending on whether
+                separated and contains 2 or 3 columns depending on whether
                 the input graph is weighted, where the the first column
                 contains the source nodes and the second column contains the
                 destination nodes that interact with the corresponding source
                 nodes.
             weighted (bool): whether the graph is weighted. If unweighted,
                 only two columns are expected in the edgelist file, and the
-                edge weights are implicitely set to 1 for all interactions. If
+                edge weights are implicitly set to 1 for all interactions. If
                 weighted, a third column encoding the weight of the interaction
                 in numeric value is expected.
             directed (bool): whether the graph is directed, if undirected, the
@@ -406,7 +404,6 @@ class SparseGraph(BaseGraph):
     """
 
     def __init__(self):
-        """Initialize SparseGraph object."""
         super().__init__()
         self.data: Optional[Float32Array] = None
         self.indptr: Optional[Uint32Array] = None
@@ -556,7 +553,6 @@ class DenseGraph(BaseGraph):
     """
 
     def __init__(self):
-        """Initialize DenseGraph object."""
         super().__init__()
         self._data: Optional[AdjMat] = None
         self._nonzero: Optional[AdjNonZeroMat] = None

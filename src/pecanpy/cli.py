@@ -28,7 +28,7 @@ def parse_args():
     """Parse node2vec arguments."""
     parser = argparse.ArgumentParser(
         description="Run pecanpy, a parallelized, efficient, and accelerated "
-        "Python implementataion of node2vec",
+        "Python implementation of node2vec",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
@@ -164,7 +164,7 @@ def parse_args():
         "--delimiter",
         type=str,
         default="\t",
-        help="Delimiter used bewteen node IDs.",
+        help="Delimiter used between node IDs.",
     )
 
     parser.add_argument(

@@ -46,8 +46,8 @@ class DenseRWGraph(DenseGraph):
 
         Calculate 2nd order transition probabilities by first finidng the
         neighbors of the current state that are not reachable from the previous
-        state, and devide the according edge weights by the in-out parameter
-        ``q``. Then devide the edge weight from previous state by the return
+        state, and divide the according edge weights by the in-out parameter
+        ``q``. Then divide the edge weight from previous state by the return
         parameter ``p``. Finally, the transition probabilities are computed by
         normalizing the biased edge weights.
 
