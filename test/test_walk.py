@@ -1,4 +1,3 @@
-import os.path as osp
 import unittest
 
 import numpy as np

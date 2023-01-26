@@ -440,13 +440,13 @@ class PreComp(Base, SparseRWGraph):
         """Precompute and store 2nd order transition probabilities.
 
         Each node contains n ** 2 number of 2nd order transition probabilities,
-        where n is the number of neigbors of that specific nodes, since one can
-        pick any one of its neighbors as the previous node and / or the next
-        node. For each second order transition probability of a node, set up
-        the alias draw table to be used during random walk.
+        where n is the number of neighbors of that specific nodes, since one
+        can pick any one of its neighbors as the previous node and / or the
+        next node. For each second order transition probability of a node, set
+        up the alias draw table to be used during random walk.
 
         Note:
-            Uses uint64 instaed of uint32 for tracking alias_indptr to prevent
+            Uses uint64 instead of uint32 for tracking alias_indptr to prevent
             overflowing since the 2nd order transition probs grows much faster
             than the first order transition probs, which is the same as the
             total number of edges in the graph.

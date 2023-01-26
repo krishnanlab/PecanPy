@@ -41,7 +41,7 @@ class SparseRWGraph(SparseGraph):
 
         Note:
             This function does NOT check whether p = q = 1, which is the
-            requried setup for first order random walk. Need to check before
+            required setup for first order random walk. Need to check before
             calling this function.
 
         """
@@ -64,8 +64,8 @@ class SparseRWGraph(SparseGraph):
 
         Calculate 2nd order transition probabilities by first finidng the
         neighbors of the current state that are not reachable from the previous
-        state, and devide the according edge weights by the in-out parameter
-        ``q``. Then devide the edge weight from previous state by the return
+        state, and divide the according edge weights by the in-out parameter
+        ``q``. Then divide the edge weight from previous state by the return
         parameter ``p``. Finally, the transition probabilities are computed by
         normalizing the biased edge weights.
 
@@ -118,7 +118,7 @@ class SparseRWGraph(SparseGraph):
             # compute out biases
             alpha = 1 / q + (1 - 1 / q) * t[out_ind]
 
-            # surpress noisy edges
+            # suppress noisy edges
             alpha[
                 unnormalized_probs[out_ind] < noise_threshold_ary[cur_idx]
             ] = np.minimum(1, 1 / q)
@@ -171,7 +171,7 @@ def isnotin(ptr_ary1, ptr_ary2):
         element in ``ptr_ary1``, compare against every element in``ptr_ary2``),
         which is much slower. Checkout the following example for more intuition.
         The ``*`` above ``ptr_ary1`` and ``ptr_ary2`` indicate the indices
-        ``idx1`` and ``idx2``, respectively, which keep track of the scaning
+        ``idx1`` and ``idx2``, respectively, which keep track of the scanning
         progress.
 
         >>> ptr_ary1 = [1, 2, 5]
