@@ -136,14 +136,14 @@ This repository and all its contents are released under the [BSD 3-Clause Licens
 
 ### Citation
 If you use PecanPy, please cite:
-Liu R, Krishnan A (2021) **PecanPy: a fast, efficient, and parallelized Python implementation of node2vec.** _Bioinformatics_ https://doi.org/10.1093/bioinformatics/btab202
+Liu R, Krishnan A (2021) **PecanPy: a fast, efficient, and parallelized Python implementation of _node2vec_.** _Bioinformatics_ https://doi.org/10.1093/bioinformatics/btab202
 
 If you find _node2vec+_ useful, please cite:
-Liu R, Hirn M, Krishnan A (2021) **Accurately Modeling Biased Random Walks on Weighted Wraphs Using Node2vec+.** _axXiv_ https://arxiv.org/abs/2109.08031
+Liu R, Hirn M, Krishnan A (2023) **Accurately modeling biased random walks on weighted graphs using _node2vec+_.** _Bioinformatics_ https://doi.org/10.1093/bioinformatics/btad047
 
 ### Authors
 Renming Liu, Arjun Krishnan*
->\*General correspondence should be addressed to AK at arjun@msu.edu.
+>\*General correspondence should be addressed to AK at arjun.krishnan@cuanschutz.edu.
 
 ### Funding
 This work was primarily supported by US National Institutes of Health (NIH) grants R35 GM128765 to AK and in part by MSU start-up funds to AK.
