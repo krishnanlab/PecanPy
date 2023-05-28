@@ -202,6 +202,7 @@ def check_mode(g, args):
             f"recommended to use FirstOrderUnweighted over {mode} (current "
             "selection). The runtime could be improved greatly with improved  "
             "memory usage.",
+            stacklevel=2,
         )
         return
 
@@ -218,6 +219,7 @@ def check_mode(g, args):
             "When p = 1 and q = 1, it is highly recommended to use "
             f"PreCompFirstOrder over {mode} (current selection). The runtime "
             "could be improved greatly with low memory usage.",
+            stacklevel=2,
         )
         return
 
@@ -228,23 +230,27 @@ def check_mode(g, args):
         warnings.warn(
             f"Network density = {g_dens:.3f} (> 0.2), it is recommended to use "
             f"DenseOTF over {mode} (current selection)",
+            stacklevel=2,
         )
     if (g_dens < 0.001) & (g_size < 10000) & (mode != "PreComp"):
         warnings.warn(
             f"Network density = {g_dens:.2e} (< 0.001) with {g_size} nodes "
             f"(< 10000), it is recommended to use PreComp over {mode} (current "
             "selection)",
+            stacklevel=2,
         )
     if (g_dens >= 0.001) & (g_dens < 0.2) & (mode != "SparseOTF"):
         warnings.warn(
             f"Network density = {g_dens:.3f}, it is recommended to use "
             f"SparseOTF over {mode} (current selection)",
+            stacklevel=2,
         )
     if (g_dens < 0.001) & (g_size >= 10000) & (mode != "SparseOTF"):
         warnings.warn(
             f"Network density = {g_dens:.3f} (< 0.001) with {g_size} nodes "
             f"(>= 10000), it is recommended to use SparseOTF over {mode} "
             "(current selection)",
+            stacklevel=2,
         )
 
 

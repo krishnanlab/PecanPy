@@ -92,6 +92,7 @@ class BaseGraph:
                     "file. This warning message can be suppressed by setting "
                     "implicit_ids to True in the read_npz function call, or "
                     "by setting the --implicit_ids flag in the CLI",
+                    stacklevel=2,
                 )
         self._node_idmap = {j: i for i, j in enumerate(self._node_ids)}
 
@@ -185,6 +186,7 @@ class AdjlstGraph(BaseGraph):
             warnings.warn(
                 f"Non-positive edge ignored: {edg_str}",
                 RuntimeWarning,
+                stacklevel=2,
             )
             return False
         return True
@@ -209,6 +211,7 @@ class AdjlstGraph(BaseGraph):
                 f"value of {self._data[idx1][idx2]:.2f}. "
                 f"Now overwrite to {weight:.2f}.",
                 RuntimeWarning,
+                stacklevel=2,
             )
 
     def get_node_idx(self, node_id: str) -> int:
