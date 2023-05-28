@@ -1,5 +1,6 @@
 gensim==4.3.0
-numpy==1.23.2
-numba==0.56.4
-numba-progress==0.0.4
 nptyping==2.4.1
+numba-progress==0.0.4
+numba==0.56.4
+numpy==1.23.2
+typing_extensions==4.6.2
