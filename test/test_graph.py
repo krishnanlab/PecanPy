@@ -32,8 +32,8 @@ ADJLST = [
 IDS = ["a", "b", "c"]
 IDMAP = {"a": 0, "b": 1, "c": 2}
 
-# Test to make sure the IDs are loaded in order even in the case when the
-# order in which the node ID appears (from edges) is not ordered correctly.
+# This test ensures that the node IDs (from edges) are loaded in the correct order
+# even if they appear to have been loaded in an incorrect order.
 MAT2 = np.array(
     [
         [0, 1, 0, 0, 0],
