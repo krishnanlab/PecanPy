@@ -8,7 +8,7 @@ from pecanpy.rw.dense_rw import DenseRWGraph
 class Node2vecPlusPlus(Base, DenseRWGraph):
     """Continuous extension of node2vec+ with DenseOTF framework.
 
-    In node2vec+ (see `DenseRWGraph.get_extended_normalized_probs`), there are
+    In node2vec+ (see `DenseRWGraph.get_extended_normalized_probs`), there is
     discontinuous region of the bias-factor (alpha). More specifically, the
     transition between the noisy-edge region (w1 < 1 and w2 < 1, where w1 is
     the normalized edge weight connecting from current to the previous node,
@@ -76,14 +76,14 @@ class Node2vecPlusPlus(Base, DenseRWGraph):
         if prev_idx is not None:  # 2nd order biased walks
             prev_nbrs_weight = data[prev_idx].copy()
 
-            # Note: we assume here the network is undirectly, hence the edge
+            # Note: we assume here the network is undirected, hence the edge
             # weight connecting the next to prev is the same as the reverse.
             out_ind = cur_nbrs_ind & (prev_nbrs_weight < noise_threshold_ary)
             out_ind[prev_idx] = False  # exclude previous state from out biases
 
             t = prev_nbrs_weight[out_ind] / noise_threshold_ary[out_ind]
-            # Determine whether use 1 - t or t depending on whether q is less
-            # than or greater than one so that alpha is suppressed to
+            # Determine whether to use '1 - t' or 't' depending on whether q
+            # is less than or greater than one so that alpha is suppressed to
             # min{1, 1 / q} as w1 approaches 0.
             t = 1 - t.clip(0, 1) if q < 1 else t.clip(0, 1)
             b = cur_nbrs_weight[out_ind] / noise_threshold_ary[out_ind]
