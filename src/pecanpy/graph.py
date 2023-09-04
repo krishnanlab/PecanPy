@@ -222,7 +222,7 @@ class AdjlstGraph(BaseGraph):
     def add_node(self, node_id: str):
         """Create a new node.
 
-        Add a new node to the graph if not already exsitsed, by updating the
+        Add a new node to the graph if not already existing, by updating the
         ID list, ID map, and the adjacency list data. Otherwise pass through
         without further actions.
 
@@ -344,8 +344,8 @@ class AdjlstGraph(BaseGraph):
         """Construct dense adjacency matrix.
 
         Note:
-            This method does not return DenseGraph object, but instead return
-            dense adjacency matrix as NDArray, the index is the same
+            This method does not return a DenseGraph object, but instead returns
+            a dense adjacency matrix as NDArray, where the index is the same
             as that of ``nodes``.
 
         Return:
