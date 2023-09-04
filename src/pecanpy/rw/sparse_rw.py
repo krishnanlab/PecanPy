@@ -37,7 +37,7 @@ class SparseRWGraph(SparseGraph):
     @staticmethod
     @njit(nogil=True)
     def get_normalized_probs_first_order(data, indices, indptr, cur_idx):
-        """Clculate first order transition probabilities.
+        """Calculate first order transition probabilities.
 
         Note:
             This function does NOT check whether p = q = 1, which is the
@@ -62,9 +62,9 @@ class SparseRWGraph(SparseGraph):
     ):
         """Calculate node2vec transition probabilities.
 
-        Calculate 2nd order transition probabilities by first finidng the
+        Calculate 2nd order transition probabilities by first finding the
         neighbors of the current state that are not reachable from the previous
-        state, and divide the according edge weights by the in-out parameter
+        state, and divide the corresponding edge weights by the in-out parameter
         ``q``. Then divide the edge weight from previous state by the return
         parameter ``p``. Finally, the transition probabilities are computed by
         normalizing the biased edge weights.
@@ -143,8 +143,8 @@ def get_nbrs(indptr, indices, data, idx):
 def isnotin(ptr_ary1, ptr_ary2):
     """Find node2vec out edges.
 
-    The node2vec out edges is determined by non-common neighbors. This function
-    find out neighbors of node1 that are not neighbors of node2, by picking out
+    The node2vec out edges are determined by non-common neighbors. This function
+    finds out neighbors of node1 that are not neighbors of node2, by picking out
     values in ``ptr_ary1`` but not in ``ptr_ary2``, which correspond to the
     neighbor pointers for the current state and the previous state, resp.
 
@@ -234,8 +234,8 @@ def isnotin(ptr_ary1, ptr_ary2):
 def isnotin_extended(ptr_ary1, ptr_ary2, wts_ary2, noise_thresholds):
     """Find node2vec+ out edges.
 
-    The node2vec+ out edges is determined by considering the edge weights
-    connecting node2 (the potential next state) to the previous state. Unlinke
+    The node2vec+ out edges are determined by considering the edge weights
+    connecting node2 (the potential next state) to the previous state. Unlike
     node2vec, which only considers neighbors of current state that are not
     neighbors of the previous state, node2vec+ also considers neighbors of
     the previous state as out edges if the edge weight is below average.
