@@ -44,9 +44,9 @@ class DenseRWGraph(DenseGraph):
     ):
         """Calculate node2vec transition probabilities.
 
-        Calculate 2nd order transition probabilities by first finidng the
+        Calculate 2nd order transition probabilities by first finding the
         neighbors of the current state that are not reachable from the previous
-        state, and divide the according edge weights by the in-out parameter
+        state, and divide the corresponding edge weights by the in-out parameter
         ``q``. Then divide the edge weight from previous state by the return
         parameter ``p``. Finally, the transition probabilities are computed by
         normalizing the biased edge weights.
@@ -89,7 +89,7 @@ class DenseRWGraph(DenseGraph):
         if prev_idx is not None:  # 2nd order biased walks
             prev_nbrs_weight = data[prev_idx].copy()
 
-            # Note: we assume here the network is undirectly, hence the edge
+            # Note: we assume here the network is undirected, hence the edge
             # weight connecting the next to prev is the same as the reverse.
             out_ind = cur_nbrs_ind & (prev_nbrs_weight < noise_threshold_ary)
             out_ind[prev_idx] = False  # exclude previous state from out biases
