@@ -30,7 +30,7 @@ class Base(BaseGraph):
     This base object provides the skeleton for the node2vec walk algorithm,
     which consists of the ``simulate_walks`` method that generate node2vec
     random walks. In contrast to the original Python implementation of
-    node2vec, it is prallelized where each process generate walks
+    node2vec, it is parallelized where each process generates walks
     independently.
 
     Args:
@@ -55,8 +55,8 @@ class Base(BaseGraph):
             random_state (default: :obj:`None`).
 
     Note:
-        The ``preprocess_transition_probs`` is required for implenetations that
-        precomputes and store 2nd order transition probabilities.
+        The ``preprocess_transition_probs`` is required for implementations that
+        precomputes and stores 2nd order transition probabilities.
 
     Examples:
         Generate node2vec embeddings
@@ -209,10 +209,10 @@ class Base(BaseGraph):
     def setup_get_normalized_probs(self):
         """Transition probability computation setup.
 
-        This is function performs necessary preprocessing of computing the
+        This function performs necessary preprocessing of computing the
         average edge weights array, which is used later by the transition
         probability computation function ``get_extended_normalized_probs``,
-        if node2vec+ is used. Otherwise, return the normal transition function
+        if node2vec+ is used. Otherwise, returns the normal transition function
         ``get_noramlized_probs`` with a trivial placeholder for average edge
         weights array ``noise_thresholds``.
 
@@ -361,7 +361,7 @@ class PreCompFirstOrder(Base, SparseRWGraph):
 class PreComp(Base, SparseRWGraph):
     """Precompute transition probabilities.
 
-    This implementation precomputes and store 2nd order transition
+    This implementation precomputes and stores 2nd order transition
     probabilities first and uses read off transition probabilities during the
     process of random walk. The graph type used is ``SparseRWGraph``.
 
@@ -383,7 +383,7 @@ class PreComp(Base, SparseRWGraph):
 
         This function returns a ``numba.njit`` compiled function that takes
         current vertex index (and the previous vertex index if available) and
-        return the next vertex index by sampling from a discrete random
+        returns the next vertex index by sampling from a discrete random
         distribution based on the transition probabilities that are read off
         the precomputed transition probabilities table.
 
@@ -440,7 +440,7 @@ class PreComp(Base, SparseRWGraph):
         """Precompute and store 2nd order transition probabilities.
 
         Each node contains n ** 2 number of 2nd order transition probabilities,
-        where n is the number of neighbors of that specific nodes, since one
+        where n is the number of neighbors of that specific node, since one
         can pick any one of its neighbors as the previous node and / or the
         next node. For each second order transition probability of a node, set
         up the alias draw table to be used during random walk.
@@ -507,8 +507,8 @@ class PreComp(Base, SparseRWGraph):
 class SparseOTF(Base, SparseRWGraph):
     """Sparse graph transition on the fly.
 
-    This implementation do *NOT* precompute transition probabilities in advance
-    but instead calculate them on-the-fly during the process of random walk.
+    This implementation does *NOT* precompute transition probabilities in advance
+    but instead calculates them on-the-fly during the process of random walk.
     The graph type used is ``SparseRWGraph``.
 
     """
@@ -521,7 +521,7 @@ class SparseOTF(Base, SparseRWGraph):
 
         This function returns a ``numba.njit`` compiled function that takes
         current vertex index (and the previous vertex index if available) and
-        return the next vertex index by sampling from a discrete random
+        returns the next vertex index by sampling from a discrete random
         distribution based on the transition probabilities that are calculated
         on-the-fly.
 
@@ -561,8 +561,8 @@ class SparseOTF(Base, SparseRWGraph):
 class DenseOTF(Base, DenseRWGraph):
     """Dense graph transition on the fly.
 
-    This implementation do *NOT* precompute transition probabilities in advance
-    but instead calculate them on-the-fly during the process of random walk.
+    This implementation does *NOT* precompute transition probabilities in advance
+    but instead calculates them on-the-fly during the process of random walk.
     The graph type used is ``DenseRWGraph``.
 
     """
@@ -575,7 +575,7 @@ class DenseOTF(Base, DenseRWGraph):
 
         This function returns a ``numba.njit`` compiled function that takes
         current vertex index (and the previous vertex index if available) and
-        return the next vertex index by sampling from a discrete random
+        returns the next vertex index by sampling from a discrete random
         distribution based on the transition probabilities that are calculated
         on-the-fly.
 
@@ -617,7 +617,7 @@ def alias_setup(probs):
 
     This code is modified from the blog post here:
     https://lips.cs.princeton.edu/the-alias-method-efficient-sampling-with-many-discrete-outcomes/
-    , where you can find more details about how the method work. In general,
+    , where you can find more details about how the method works. In general,
     the alias method improves the time complexity of sampling from a discrete
     random distribution to O(1) if the alias table is setup in advance.
 
