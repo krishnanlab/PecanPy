@@ -2,5 +2,5 @@
 from . import graph
 from . import pecanpy
 
-__version__ = "2.0.9-dev"
+version = "2.0.9"
 __all__ = ["graph", "pecanpy"]
