@@ -21,7 +21,7 @@ copyright = "2020, Renming Liu and Arjun Krishnan"
 author = "Renming Liu and Arjun Krishnan"
 
 # The full version, including alpha/beta/rc tags
-release = "2.0.9"
+release = "2.0.10-dev"
 
 
 # -- General configuration ---------------------------------------------------
