@@ -3,4 +3,4 @@ nptyping==2.5.0
 numba-progress==1.1.0
 numba==0.58.1
 numpy==1.23.2
-typing_extensions==4.9.0
+typing_extensions==4.10.0
