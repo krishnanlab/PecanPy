@@ -299,7 +299,7 @@ class AdjlstGraph(BaseGraph):
             delimiter (str): delimiter of the edge list file, default is tab.
 
         """
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             for edge_line in f:
                 edge = self._read_edge_line(edge_line, weighted, delimiter)
                 self.add_edge(*edge, directed)
@@ -314,7 +314,7 @@ class AdjlstGraph(BaseGraph):
             delimiter (str): Delimiter for separating fields.
 
         """
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             for h, t, w in self.edges_iter:
                 h_id, t_id = self.nodes[h], self.nodes[t]
                 terms = (h_id, t_id) if unweighted else (h_id, t_id, str(w))
