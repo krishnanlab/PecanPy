@@ -90,7 +90,7 @@ class Base(BaseGraph):
         self.p = p
         self.q = q
         self.workers = workers 
-        set_num_threads(workers)
+        set_num_threads(workers) 
         self.verbose = verbose
         self.extend = extend
         self.gamma = gamma
@@ -162,7 +162,7 @@ class Base(BaseGraph):
         return walks
 
     @staticmethod
-    def _get_random_seeds(base_seed: int, num_jobs:int) -> np.ndarray:
+    def _get_random_seeds(base_seed: int, num_jobs: int) -> np.ndarray:
         """Get random number generators for each thread."""
         rng = np.random.default_rng(base_seed)
         return rng.integers(0, 2**31 - 1, size=num_jobs, dtype=np.int32)
@@ -208,7 +208,6 @@ class Base(BaseGraph):
             progress_proxy.update(1)
 
         return walk_idx_mat
-    
 
     def setup_get_normalized_probs(self):
         """Transition probability computation setup.
