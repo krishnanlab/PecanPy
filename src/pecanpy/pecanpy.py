@@ -89,8 +89,8 @@ class Base(BaseGraph):
         super().__init__()
         self.p = p
         self.q = q
-        self.workers = workers 
-        set_num_threads(workers) 
+        self.workers = workers
+        set_num_threads(workers)
         self.verbose = verbose
         self.extend = extend
         self.gamma = gamma
