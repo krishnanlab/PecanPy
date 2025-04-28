@@ -179,7 +179,10 @@ class Base(BaseGraph):
 
         # use the last entry of each walk index array to keep track of the
         # effective walk length
-        walk_idx_mat = np.zeros((tot_num_jobs, walk_length + 2), dtype=np.uint32)
+        walk_idx_mat: Uint32Array = np.zeros(
+            (tot_num_jobs, walk_length + 2),
+            dtype=np.uint32,
+        )
         walk_idx_mat[:, 0] = start_node_idx_ary  # initialize seeds
         walk_idx_mat[:, -1] = walk_length + 1  # set to full walk length by default
 

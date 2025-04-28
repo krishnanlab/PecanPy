@@ -322,7 +322,7 @@ class AdjlstGraph(BaseGraph):
 
     def to_csr(self) -> CSR:
         """Construct compressed sparse row matrix."""
-        indptr = np.zeros(len(self.nodes) + 1, dtype=np.uint32)
+        indptr: Uint32Array = np.zeros(len(self.nodes) + 1, dtype=np.uint32)
         for i, row_data in enumerate(self._data):
             indptr[i + 1] = indptr[i] + len(row_data)
 
