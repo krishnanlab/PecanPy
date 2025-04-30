@@ -4,4 +4,4 @@ numba-progress==1.1.0
 numba==0.58.1
 numpy==1.23.2
 scipy<1.13  # triu import issue (https://stackoverflow.com/a/78279318/12519564)
-typing_extensions==4.10.0
+typing_extensions==4.13.2
