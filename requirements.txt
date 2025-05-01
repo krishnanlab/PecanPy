@@ -1,6 +1,6 @@
 gensim==4.3.2
 nptyping==2.5.0
-numba-progress==1.1.0
+numba-progress==1.1.3
 numba==0.58.1
 numpy==1.23.2
 scipy<1.13  # triu import issue (https://stackoverflow.com/a/78279318/12519564)
