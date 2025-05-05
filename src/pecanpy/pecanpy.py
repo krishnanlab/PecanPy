@@ -97,7 +97,6 @@ class Base(BaseGraph):
         self.random_state = random_state
         self._preprocessed: bool = False
 
-
     def _map_walk(self, walk_idx_ary: Uint32Array) -> List[str]:
         """Map walk from node index to node ID.
 
