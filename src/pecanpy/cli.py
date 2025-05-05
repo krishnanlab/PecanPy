@@ -156,7 +156,7 @@ def parse_args():
     parser.add_argument(
         "--random_state",
         type=int,
-        default=None,
+        default=42,
         help="Random seed for generating random walks.",
     )
 
