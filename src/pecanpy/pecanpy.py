@@ -84,7 +84,7 @@ class Base(BaseGraph):
         verbose: bool = False,
         extend: bool = False,
         gamma: float = 0,
-        random_state: int = 42,
+        random_state: int = None,
     ):
         super().__init__()
         self.p = p
@@ -96,7 +96,7 @@ class Base(BaseGraph):
         self.gamma = gamma
         self.random_state = random_state
         self._preprocessed: bool = False
-        print("Using Keenan's branch!!!")
+
 
     def _map_walk(self, walk_idx_ary: Uint32Array) -> List[str]:
         """Map walk from node index to node ID.
