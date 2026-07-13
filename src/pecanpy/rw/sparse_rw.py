@@ -1,4 +1,5 @@
 """Sparse Graph equipped with random walk computation."""
+
 import numpy as np
 from numba import boolean
 from numba import njit
@@ -119,9 +120,9 @@ class SparseRWGraph(SparseGraph):
             alpha = 1 / q + (1 - 1 / q) * t[out_ind]
 
             # suppress noisy edges
-            alpha[
-                unnormalized_probs[out_ind] < noise_threshold_ary[cur_idx]
-            ] = np.minimum(1, 1 / q)
+            alpha[unnormalized_probs[out_ind] < noise_threshold_ary[cur_idx]] = (
+                np.minimum(1, 1 / q)
+            )
             unnormalized_probs[out_ind] *= alpha  # apply out biases
             unnormalized_probs[prev_ptr] /= p  # apply the return bias
 
