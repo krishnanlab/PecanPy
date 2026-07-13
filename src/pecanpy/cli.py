@@ -12,6 +12,7 @@ Examples:
         $ pecanpy --help
 
 """
+
 import argparse
 import warnings
 
