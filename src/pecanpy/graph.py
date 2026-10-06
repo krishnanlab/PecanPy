@@ -1,4 +1,5 @@
 """Lite graph objects used by pecanpy."""
+
 import warnings
 
 import numpy as np
