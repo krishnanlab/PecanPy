@@ -1,4 +1,5 @@
 """Dense Graph object equipped with random walk computation."""
+
 import numpy as np
 from numba import njit
 
@@ -106,9 +107,9 @@ class DenseRWGraph(DenseGraph):
             alpha = 1 / q + (1 - 1 / q) * t
 
             # suppress noisy edges
-            alpha[
-                unnormalized_probs[out_ind] < noise_threshold_ary[cur_idx]
-            ] = np.minimum(1, 1 / q)
+            alpha[unnormalized_probs[out_ind] < noise_threshold_ary[cur_idx]] = (
+                np.minimum(1, 1 / q)
+            )
             unnormalized_probs[out_ind] *= alpha  # apply out biases
             unnormalized_probs[prev_idx] /= p  # apply the return bias
 
